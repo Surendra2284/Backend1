@@ -1,4 +1,4 @@
 export const environment = {
     production: false,
-    apiUrl:'https://r18hk424-3000.inc1.devtunnels.ms',
+    apiUrl:'https://backend1-m4j8.onrender.com/',
 };
