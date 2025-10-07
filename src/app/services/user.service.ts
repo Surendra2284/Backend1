@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'https://backend1-m4j8.onrender.com/login';
+  private apiUrl = 'https://school-backend-main.onrender.com';
   private role: string = '';
   private username: string = '';
   constructor(private http: HttpClient) {}
