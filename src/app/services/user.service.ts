@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
   providedIn: 'root'
 })
 export class UserService {
-  private apiUrl = 'http://192.168.29.188:3000/login';
+  private apiUrl = 'https://backend1-m4j8.onrender.com/login';
   private role: string = '';
   private username: string = '';
   constructor(private http: HttpClient) {}
