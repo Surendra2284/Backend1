@@ -20,8 +20,9 @@ export class AuthService {
     private logoutTimer: any;
     apiEndpoint = `${environment.apiUrl}`;
     private loginUrl = `${environment.apiUrl}/login`;
-  private logoutUrl = `${environment.apiUrl}/logout`;
-  private updateActivityUrl = `${environment.apiUrl}/update-activity`;
+    private logoutUrl = `${environment.apiUrl}/logout`;
+    private signupUrl = `${environment.apiUrl}/users`;
+    private updateActivityUrl = `${environment.apiUrl}/update-activity`;
   // Timer for automatic logout
 
     
@@ -37,7 +38,7 @@ export class AuthService {
       // Optionally, listen to online/offline events:
       window.addEventListener("offline", () => console.error("You are offline!"));
       window.addEventListener("online", () => console.info("You are back online."));
-      console.log('apiEndpoint', this.apiEndpoint);
+      console.log('apiEndpoint', this.signupUrl);
     }
   
     // Helper: Check for network connection (disconnected object scenario)
@@ -104,14 +105,15 @@ export class AuthService {
     }
 
     signupUser(username: string, password: string, role: string): Observable<any> {
-        const authData: AuthModel = { username, password, role };
-        return this.addUser(authData).pipe(
-            catchError(error => {
-                alert(error.message);
-                return of(null);
-            })
-        );
-    }
+    const authData: AuthModel = { username, password, role };
+    return this.http.post(`${this.apiEndpoint}`, authData).pipe(
+      catchError(error => {
+        alert(error.message || 'Signup failed');
+        return of(null);
+      })
+    );
+  }
+
 
     loginUser(username: string, password: string, role: string): void {
         const authData: AuthModel = { username, password, role };
