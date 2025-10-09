@@ -20,8 +20,22 @@ export class SignUpComponent implements OnInit {
       'role': new FormControl('', [Validators.required])  
     })
   }
- onSubmit(){
-    this.authService.signupUser(this.signupForm.value.username, this.signupForm.value.password,this.signupForm.value.role);
-    this.signupForm.reset();
-  }
+ onSubmit() {
+  this.authService.signupUser(
+    this.signupForm.value.username,
+    this.signupForm.value.password,
+    this.signupForm.value.role
+  ).subscribe({
+    next: (response) => {
+      console.log('Signup successful:', response);
+      alert('Signup successful!');
+      this.signupForm.reset();
+    },
+    error: (error) => {
+      console.error('Signup error:', error);
+      alert('Signup failed. Please try again.');
+    }
+  });
+}
+
 }

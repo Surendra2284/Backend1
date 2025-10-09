@@ -21,7 +21,7 @@ export class AuthService {
     apiEndpoint = `${environment.apiUrl}`;
     private loginUrl = `${environment.apiUrl}/login`;
     private logoutUrl = `${environment.apiUrl}/logout`;
-    private signupUrl = `${environment.apiUrl}/users`;
+    private signupUrl = `${environment.apiUrl}/sign-up`;
     private updateActivityUrl = `${environment.apiUrl}/update-activity`;
   // Timer for automatic logout
 
@@ -106,7 +106,9 @@ export class AuthService {
 
     signupUser(username: string, password: string, role: string): Observable<any> {
     const authData: AuthModel = { username, password, role };
-    return this.http.post(`${this.apiEndpoint}`, authData).pipe(
+    console.log('Submitting form:', authData, this.signupUrl );
+
+    return this.http.post(`${this.signupUrl}`, authData).pipe(
       catchError(error => {
         alert(error.message || 'Signup failed');
         return of(null);
@@ -263,23 +265,23 @@ export class AuthService {
 
     // CRUD Operations for Users
     getUsers(): Observable<any> {
-        return this.http.get(this.loginUrl);
+        return this.http.get(this.signupUrl);
     }
 
     getUser(id: string): Observable<any> {
-        return this.http.get(`${this.loginUrl}/${id}`);
+        return this.http.get(`${this.signupUrl}/${id}`);
     }
 
     addUser(user: any): Observable<any> {
-        return this.http.post(`${this.loginUrl}`, user);
+        return this.http.post(`${this.signupUrl}`, user);
     }
 
     updateUser(id: string, user: any): Observable<any> {
-        return this.http.put(`${this.loginUrl}/${id}`, user);
+        return this.http.put(`${this.signupUrl}/${id}`, user);
     }
 
     deleteUser(id: string): Observable<any> {
-        return this.http.delete(`${this.loginUrl}/${id}`);
+        return this.http.delete(`${this.signupUrl}/${id}`);
     }
     
 }
