@@ -14,6 +14,7 @@ import { UploadPhotoComponent } from './components/upload-photo/upload-photo.com
 import { NoticeComponent } from './components/notice/notice.component';
 import { AttendanceComponent } from './components/attendance/attendance.component'; 
 import{StudentComponent} from './components/student/student.component';
+import{UserComponent} from './components/User/user.component';
 const routes: Routes = [
   
  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
@@ -22,7 +23,7 @@ const routes: Routes = [
   { path: 'login', component: LoginComponent },
   { path: 'admin', component: AdminComponent },
   { path: 'teacher', component: TeacherComponent },
- // { path: 'exit', component: ExitComponent },
+  { path: 'user', component: UserComponent },
   { path: 'exit', component:  ExcelUploadComponent },
   { path: 'studentdetail', component: StudentDetailsComponent },
   { path: 'signup', component: SignUpComponent },

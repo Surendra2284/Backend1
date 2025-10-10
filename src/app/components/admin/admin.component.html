@@ -56,7 +56,7 @@
 
     .btn-primary {
       background-color: #28a745;
-      color: white;
+      color: rgba(255, 255, 255, 0.83);
     }
 
     .btn-primary:hover {
@@ -67,7 +67,7 @@
 
     .btn-danger {
       background-color: #dc3545;
-      color: white;
+      color: rgba(255, 255, 255, 0.667);
     }
 
     .btn-danger:hover {
@@ -81,31 +81,35 @@
     }
 
     .tab-headings {
-      display: flex;
-      justify-content: space-around;
-      background: #004080;
-      color: white;
-      padding: 10px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-      list-style-type: none;
-    }
+  display: flex;
+  justify-content: space-around;
+  background: linear-gradient(to right, #0052cc, #0073e6);
+  color: rgb(66, 13, 13);
+  padding: 10px;
+  border-radius: 10px;
+  margin-bottom: 20px;
+  list-style-type: none;
+}
 
-    .tab-headings li {
-      cursor: pointer;
-      padding: 10px 20px;
-      border-radius: 5px;
-      transition: background 0.3s;
-    }
+.tab-headings li {
+  cursor: pointer;
+  padding: 10px 20px;
+  border-radius: 5px;
+  transition: background 0.3s, transform 0.2s;
+}
 
-    .tab-headings li:hover,
-    .tab-headings li.active {
-      background: #0066cc;
-    }
+.tab-headings li:hover {
+  background: #3399ff;
+  transform: scale(1.05);
+}
 
+.tab-headings li.active {
+  background: #003d99;
+  font-weight: bold;
+}
     .tab-content {
-      background: #ffffff;
-      border: 1px solid #ccc;
+      background: #cf5b5b;
+      border: 1px solid #cccccc5d;
       padding: 20px;
       border-radius: 10px;
     }
@@ -121,7 +125,26 @@
       <p><strong>Username:</strong> {{ username }}</p>
       <p><strong>Role:</strong> {{ role }}</p>
     </div>
+<!-- Unapproved Users Section -->
+<div class="user-details" *ngIf="unapprovedUsers.length > 0">
+  <h2>Unapproved Users</h2>
+  <div *ngFor="let user of unapprovedUsers">
+    <p><strong>Username:</strong> {{ user.username }}</p>
+    <p><strong>Role:</strong> {{ user.role }}</p>
+    <button class="btn btn-primary" (click)="approveUser(user._id)">Approve</button>
+    <hr>
+  </div>
+</div>
 
+<!-- Notices Section -->
+<div class="user-details" *ngIf="notices.length > 0">
+  <h2>Recent Notices</h2>
+  <ul>
+    <li *ngFor="let notice of notices">
+      <strong>{{ notice.title }}</strong>: {{ notice.message }}
+    </li>
+  </ul>
+</div>
     <div class="action-buttons">
       <button class="btn btn-primary" (click)="performAction()">✔ Take Action</button>
       <button class="btn btn-danger" (click)="logout()">⎋ Log Out</button>
@@ -134,6 +157,7 @@
         <li (click)="selectTab('notice')" [class.active]="activeTab === 'notice'">Notice</li>
         <li (click)="selectTab('attendance')" [class.active]="activeTab === 'attendance'">Attendance</li>
         <li (click)="selectTab('photo')" [class.active]="activeTab === 'photo'">Photo</li>
+        <li (click)="selectTab('users')" [class.active]="activeTab === 'users'">users</li>
       </ul>
 
       <div class="tab-content" *ngIf="activeTab === 'student'">
@@ -164,9 +188,10 @@
         <h2>Desktop Photos</h2>
         <app-upload-photo></app-upload-photo>
       </div>
-      <div class="tab-content" *ngIf="activeTab === 'Users'">
+      <div class="tab-content" *ngIf="activeTab === 'users'">
         <h2>Users Details </h2>
-        <app-upload-photo></app-upload-photo>
+        <app-user></app-user>
+        
       </div>
     </div>
   </div>

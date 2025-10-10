@@ -11,6 +11,7 @@ export interface Notice {
   Role: string;
   Notice: string;
   classteacher?: string;
+  isApproved?: boolean;
 }
 
 @Injectable({
@@ -45,4 +46,12 @@ export class NoticeService {
   getNoticesByRole(role: string): Observable<Notice[]> {
     return this.http.get<Notice[]>(`${this.BASE_URL}/role/${role}`);
   }
+  getNoticesByAproval(isApproved:boolean): Observable<Notice[]> {
+    return this.http.get<Notice[]>(`${this.BASE_URL}/isApproved/${isApproved}`);
+  }
+  getUnapprovedNotices(): Observable<Notice[]> {
+  return this.http.get<Notice[]>(`${this.BASE_URL}/isApproved/false`);
+  }
+
+  
 }

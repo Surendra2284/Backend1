@@ -23,7 +23,7 @@ import { AttendanceComponent } from './components/attendance/attendance.componen
 import{StudentComponent} from './components/student/student.component';
 import { StudentExlDataService } from './services/StudentExlDataService.service';
 import { CardPreviewComponent } from './components/card-preview/card-preview.component';
-
+import{UserComponent} from './components/User/user.component';
 
 @NgModule({
   imports: [
@@ -53,7 +53,8 @@ import { CardPreviewComponent } from './components/card-preview/card-preview.com
     NoticeComponent,
     AttendanceComponent,
     TeacherComponent,
-    CardPreviewComponent
+    CardPreviewComponent,
+    UserComponent
   ],
   providers: [StudentExlDataService],
 
