@@ -15,7 +15,17 @@ export class UserService {
   getUsers(): Observable<any> {
     return this.http.get(this.apiUrl);
   }
+  getUsersByApproval(isApproved: boolean): Observable<any> {
+    return this.http.get(`${this.apiUrl}/isApproved/${isApproved}`);
+  }
 
+  getPendingUsers(): Observable<any> {
+    return this.http.get(`${this.apiUrl}/pending-users`);
+  }
+
+  approveUser(userId: string): Observable<any> {
+    return this.http.put(`${this.apiUrl}/approve-user/${userId}`, {});
+  }
   getUser(id: string): Observable<any> {
     return this.http.get(`${this.apiUrl}/${id}`);
   }
@@ -32,17 +42,7 @@ export class UserService {
     return this.http.delete(`${this.apiUrl}/${id}`);
   }
 
-  getUsersByApproval(isApproved: boolean): Observable<any> {
-    return this.http.get(`${this.apiUrl}/isApproved/${isApproved}`);
-  }
-
-  getPendingUsers(): Observable<any> {
-    return this.http.get(`${this.apiUrl}/pending-users`);
-  }
-
-  approveUser(userId: string): Observable<any> {
-    return this.http.put(`${this.apiUrl}/approve-user/${userId}`, {});
-  }
+  
 
   setUserDetails(id: string, name: string): void {
     this.role = id;
