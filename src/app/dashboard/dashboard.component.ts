@@ -21,9 +21,48 @@ export class DashboardComponent implements OnInit {
     private noticeService: NoticeService
   ) {}
 
+currentSlide = 0;
+modalOpen = false;
+modalImage = '';
+slideInterval: any;
+
+
+
+ngOnDestroy(): void {
+  // Clear interval when component is destroyed
+  if (this.slideInterval) {
+    clearInterval(this.slideInterval);
+  }
+}
+
+startAutoSlide() {
+  this.slideInterval = setInterval(() => {
+    this.nextSlide();
+  }, 5000); // 5000ms = 5 seconds
+}
+
+nextSlide() {
+  this.currentSlide = (this.currentSlide + 1) % this.photos.length;
+}
+
+prevSlide() {
+  this.currentSlide = (this.currentSlide - 1 + this.photos.length) % this.photos.length;
+}
+
+openModal(image: string) {
+  this.modalImage = image;
+  this.modalOpen = true;
+  clearInterval(this.slideInterval); // pause auto-slide when modal is open
+}
+
+closeModal() {
+  this.modalOpen = false;
+  this.startAutoSlide(); // resume auto-slide when modal closes
+}
   ngOnInit(): void {
     this.fetchPhotos();
     this.loadNotices();
+    this.startAutoSlide();
   }
 
   fetchPhotos(): void {

@@ -1,120 +1,88 @@
-/* General Layout */
-.row {
-  display: flex;
-  justify-content: center; /* Center the form horizontally */
-  align-items: center; /* Center the form vertically */
-  height: 100vh; /* Full viewport height */
-  background-color: #f8f9fa; /* Light background color */
-  margin: 0;
-  padding: 0;
-}
-
-/* Form Container Styling */
-.col {
-  width: 100%;
-  max-width: 400px; /* Restrict the form's width */
-  background-color: #ffffff; /* White background for the form */
+.login-container {
+  max-width: 340px;
+  margin: 40px auto;
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  text-align: center;
 }
 
-/* Form Elements Styling */
-.form-group {
-  margin-bottom: 20px; /* Space between input fields */
-}
-
-/* Labels */
-label {
-  display: block;
+.moving-heading {
+  font-size: 18px;
   font-weight: bold;
-  margin-bottom: 5px;
-  color: #343a40; /* Dark gray color for labels */
+  color: #004080;
+  margin-bottom: 20px;
+  white-space: nowrap;
+  overflow: hidden;
+  box-sizing: border-box;
+  animation: moveHeading 10s linear infinite;
 }
 
-/* Input Fields */
-input.form-control,
-select.form-control {
-  width: 100%; /* Ensure all input fields are the same width */
-  padding: 10px;
-  font-size: 14px;
+@keyframes moveHeading {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+.form-group {
+  margin-bottom: 15px;
+  position: relative;
+  text-align: left;
+}
+
+.form-label {
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+  color: #333;
+}
+
+.form-control {
+  width: 100%;
+  height: 42px; /* uniform size */
+  padding: 8px 12px;
+  border-radius: 6px;
   border: 1px solid #ccc;
-  border-radius: 4px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  box-sizing: border-box; /* Include padding and border in width calculations */
-}
-
-input.form-control:focus,
-select.form-control:focus {
-  border-color: #28a745; /* Green border on focus */
-  outline: none; /* Remove default focus outline */
-  box-shadow: 0 0 5px rgba(40, 167, 69, 0.5); /* Subtle shadow on focus */
-}
-
-/* Password Field Toggle */
-.password-field-container {
-  position: relative; /* Parent container for positioning the toggle button */
-}
-
-.password-toggle {
-  position: absolute;
-  top: 50%;
-  right: 10px; /* Position toggle button near the edge of input */
-  transform: translateY(-50%);
-  cursor: pointer;
   font-size: 14px;
-  color: #6c757d; /* Gray color for toggle button */
-  background: none; /* Remove background */
-  border: none; /* Remove border */
+  box-sizing: border-box;
 }
 
-.password-toggle:hover {
-  color: #343a40; /* Darker gray on hover */
+.password-container {
+  position: relative;
 }
 
-/* Submit Button */
-button.btn-success {
+.toggle-icon {
+  position: absolute;
+  right: 12px;
+  top: 38px;
+  cursor: pointer;
+  font-size: 18px;
+  color: #007bff;
+}
+
+.login-btn {
   width: 100%;
   padding: 10px;
-  font-size: 16px;
-  font-weight: bold;
-  color: #fff;
-  background-color: #28a745; /* Green background for success */
-  border: none;
-  border-radius: 4px;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.3s ease;
-}
-
-button.btn-success:hover {
-  background-color: #218838; /* Darker green on hover */
-  transform: translateY(-2px); /* Slight lift effect */
-}
-
-button.btn-success:disabled {
-  background-color: #6c757d; /* Gray background for disabled state */
-  cursor: not-allowed; /* Disabled cursor */
-}
-
-/* Responsive Design */
-@media (max-width: 768px) {
-  .col {
-      max-width: 90%; /* Adjust form width for smaller screens */
-  }
-
-  input.form-control,
-  select.form-control {
-      font-size: 13px; /* Slightly smaller input fields on small screens */
-  }
-
-  button.btn-success {
-      font-size: 14px; /* Adjust button size */
-  }
-}
-
-/* Error Message Styling */
-.error-message {
-  color: red;
-  font-weight: bold;
+  font-size: 15px;
+  border-radius: 6px;
   margin-top: 10px;
+}
+
+.signup-prompt {
+  margin-top: 15px;
+  font-size: 14px;
+}
+
+.signup-prompt a {
+  color: #28a745;
+  font-weight: bold;
+  text-decoration: none;
+}
+
+.signup-prompt a:hover {
+  text-decoration: underline;
 }

@@ -1,43 +1,66 @@
-<div class="row">
-    <div class="col">
-        <form (ngSubmit)="onSubmit()" [formGroup]="loginForm">
-            <div class="form-group">
-                <!-- Correctly linked <label> with <input> using id -->
-                <label for="username">Username</label>
-                <input class="form-control" id="username" name="usernameField" formControlName="username" type="text" autocomplete="username">
-                <div class="form-group password-field-container">
-                    <label for="password">Password:</label>
-                    <input
-                      id="password"
-                      [type]="passwordVisible ? 'text' : 'password'"
-                      formControlName="password"
-                      class="form-control"
-                      placeholder="Enter your password"
-                    />
-                    <button
-                      type="button"
-                      class="password-toggle"
-                      (click)="togglePasswordVisibility()"
-                    >
-                      {{ passwordVisible ? 'Hide' : 'Show' }}
-                    </button>
-                  </div>
-                
-                
-                
-                <label for="role">Role</label>
-                <select class="form-control" id="role" name="roleField" formControlName="role"autocomplete="current-role">
-                    <option value="Admin">Admin</option>
-                    <option value="Student">Student</option>
-                    <option value="Teacher">Teacher</option>
-                </select>
-            </div>
-            <button [disabled]="!loginForm.valid" type="submit" class="btn btn-success">Login</button>
-        </form>
+<div class="login-container">
+  <!-- Animated Heading -->
+  <h2 class="moving-heading">✨ Existing User? Login Below | New User? Please Sign Up ✨</h2>
+
+  <form (ngSubmit)="onSubmit()" [formGroup]="loginForm" class="login-form">
+    <!-- Username -->
+    <div class="form-group">
+      <label for="username" class="form-label">Username</label>
+      <input
+        class="form-control"
+        id="username"
+        formControlName="username"
+        type="text"
+        autocomplete="username"
+        placeholder="Enter your username"
+      />
     </div>
-</div>
-<div *ngIf="serverMessage" [ngClass]="{ 'error-message': isError, 'success-message': !isError }">
-    {{ serverMessage }}
-</div>
 
+    <!-- Password -->
+    <div class="form-group password-container">
+      <label for="password" class="form-label">Password</label>
+      <input
+        id="password"
+        [type]="passwordVisible ? 'text' : 'password'"
+        formControlName="password"
+        class="form-control"
+        placeholder="Enter your password"
+      />
+      <span
+        class="toggle-icon"
+        (click)="togglePasswordVisibility()"
+        [innerHTML]="passwordVisible ? '&#128065;' : '&#128274;'"
+        title="Toggle Password Visibility"
+      ></span>
+    </div>
 
+    <!-- Role -->
+    <div class="form-group">
+      <label for="role" class="form-label">Role</label>
+      <select
+        class="form-control"
+        id="role"
+        formControlName="role"
+        autocomplete="current-role"
+      >
+        <option value="Admin">Admin</option>
+        <option value="Student">Student</option>
+        <option value="Teacher">Teacher</option>
+      </select>
+    </div>
+
+    <!-- Submit -->
+    <button
+      [disabled]="!loginForm.valid"
+      type="submit"
+      class="btn btn-success login-btn"
+    >
+      Login
+    </button>
+  </form>
+
+  <!-- Signup Prompt -->
+  <div class="signup-prompt">
+    <p>🌟 New here? <a routerLink="/signup">Click here to Sign Up</a></p>
+  </div>
+</div>

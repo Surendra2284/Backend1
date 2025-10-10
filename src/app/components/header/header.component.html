@@ -1,15 +1,18 @@
-<nav class="navbar navbar-default">
-      <div class="navbar-header">
-       
-      </div>
-      <ul class="nav navbar-nav">
-        <li><a routerLink="">Home</a></li>
-        <li><a routerLink="">Overview</a></li>
-      </ul>
-      <ul class="nav navbar-nav" style="float:right">
-        <li *ngIf="!userAuthenticated"><a routerLink="login">Login</a></li>
-        <li *ngIf="!userAuthenticated"><a routerLink="signup">Sign-Up</a></li>
-        <li *ngIf="userAuthenticated"><button type="submit" style="margin-top:10px" (click)="logout()">Logout</button></li>
-      </ul>
+<<nav class="navbar navbar-default">
+  <ul class="nav navbar-nav">
+    <li routerLinkActive="active"><a routerLink="">Home</a></li>
+    <li routerLinkActive="active"><a routerLink="overview">Overview</a></li>
+  </ul>
 
+  <ul class="nav navbar-nav navbar-right">
+    <li *ngIf="!userAuthenticated" routerLinkActive="active">
+      <a routerLink="login">Login</a>
+    </li>
+    <li *ngIf="!userAuthenticated" routerLinkActive="active">
+      <a routerLink="signup">Sign-Up</a>
+    </li>
+    <li *ngIf="userAuthenticated" routerLinkActive="active">
+  <a href="javascript:void(0)" (click)="logout()" class="logout-link">Logout</a>
+</li>
+  </ul>
 </nav>

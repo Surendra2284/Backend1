@@ -12,8 +12,7 @@
       <p>Loading data, please wait...</p>
     </div>
 
-   
-<!-- 🗒️ Notice Board Section -->
+    <!-- 🗒️ Notice Board Section -->
     <div class="notice-board">
       <h1 class="section-title">🗒️ Notice Board</h1>
       <ul class="notice-list">
@@ -25,16 +24,23 @@
       </ul>
       <p *ngIf="notices.length === 0" class="no-notices">No notices to display.</p>
     </div>
-  
- <!-- Photo Gallery -->
-    <div *ngIf="!isLoading && photos.length > 0">
+
+    <!-- 🌟 Photo Gallery Slideshow -->
+    <div *ngIf="!isLoading && photos.length > 0" class="gallery-section">
       <h2 class="section-title">🌟 Our Beautiful Campus</h2>
-      <div class="photos-grid">
-        <div *ngFor="let photo of photos" class="photo-card">
-          <img [src]="photo.image" [alt]="photo.name" loading="lazy" />
+
+      <!-- Slideshow -->
+      <div class="slideshow-container">
+        <div *ngFor="let photo of photos; let i = index" class="slide" [class.active]="i === currentSlide">
+          <img [src]="photo.image" [alt]="photo.name" (click)="openModal(photo.image)" />
           <p class="photo-name">{{ photo.name }}</p>
         </div>
+
+        <!-- Navigation arrows -->
+        <a class="prev" (click)="prevSlide()">&#10094;</a>
+        <a class="next" (click)="nextSlide()">&#10095;</a>
       </div>
+
       <!-- School Motto -->
       <div class="motto-section">
         <h2 class="section-title">🎓 Our Motto</h2>
@@ -46,5 +52,18 @@
     <div *ngIf="!isLoading && photos.length === 0" class="no-photos">
       <p>No photos available at the moment. Please check back later.</p>
     </div>
+
+    <!-- 👨‍💻 Developer Section -->
+    <div class="dev-section">
+      <h2 class="section-title">👨‍💻 Developer Section</h2>
+      <img src="assets/dev-photo.jpg" alt="Developer" class="dev-photo" />
+      <p>Developed by: <strong>SURENDRA KUSHWAHA</strong></p>
+    </div>
   </section>
+
+  <!-- Modal for Zoom -->
+  <div id="photoModal" class="modal" [class.show]="modalOpen" (click)="closeModal()">
+    <span class="close">&times;</span>
+    <img class="modal-content" [src]="modalImage" />
+  </div>
 </div>

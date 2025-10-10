@@ -8,7 +8,13 @@
   align-items: center; /* Aligns items vertically */
   flex-wrap: nowrap; /* Prevents wrapping to a new line */
 }
-
+.navbar-nav > li > button.nav-link {
+  background: none;
+  border: none;
+  color: #337ab7; /* same as link color */
+  padding: 15px;
+  cursor: pointer;
+}
 /* Navigation container */
 .navbar-nav-container {
   display: flex;
@@ -94,4 +100,22 @@
 
 .navbar {
   border-bottom: 2px solid #f8f9fa;
+}
+.navbar-nav > li > a {
+  font-weight: 500;
+  color: #004080;
+  transition: background 0.3s, color 0.3s;
+}
+
+.navbar-nav > li > a:hover {
+  background-color: #e6f0ff;
+  color: #003366;
+}
+
+.navbar-nav > .active > a,
+.navbar-nav > .active > a:focus,
+.navbar-nav > .active > a:hover {
+  background-color: #004080;
+  color: #fff !important;
+  border-radius: 4px;
 }
