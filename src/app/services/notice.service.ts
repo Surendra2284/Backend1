@@ -53,5 +53,9 @@ export class NoticeService {
   return this.http.get<Notice[]>(`${this.BASE_URL}/isApproved/false`);
   }
 
-  
+  approveNotice(id: string): Observable<Notice> {
+    return this.http.put<Notice>(`${this.BASE_URL}/approve/${id}`, {});
+  }
+
 }
+

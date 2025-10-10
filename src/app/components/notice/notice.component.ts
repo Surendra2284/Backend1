@@ -10,6 +10,7 @@ import { NoticeService, Notice } from '../../services/notice.service';
 export class NoticeComponent implements OnInit {
   noticeForm: FormGroup;
   notices: Notice[] = [];
+  unapprovedNotices: Notice[] = [];
   isEdit = false;
   currentNoticeId: string | null = null;
   lastNoticeid: string | null = null;
@@ -28,44 +29,36 @@ export class NoticeComponent implements OnInit {
 
   ngOnInit(): void {
     this.loadNotices();
+    this.loadUnapprovedNotices();
   }
 
-  loadNotices1(): void {
+  // Load all notices (approved + unapproved)
+  loadNotices(): void {
     this.noticeService.getNotices().subscribe((data: Notice[]) => {
-      this.notices = data;
+      // Sort notices by Noticeid in descending order (latest first)
+      const sorted = data.sort((a, b) => parseInt(b.Noticeid) - parseInt(a.Noticeid));
+      this.notices = sorted;
 
-      // Safely calculate next Notice ID from numeric values
-      const ids = this.notices
-        .map(n => parseInt(n.Noticeid, 10))
-        .filter(id => !isNaN(id));
+      // Generate next Notice ID
+      const ids = sorted.map(n => parseInt(n.Noticeid, 10)).filter(id => !isNaN(id));
       const maxId = ids.length > 0 ? Math.max(...ids) : 0;
       this.lastNoticeid = (maxId + 1).toString();
 
       if (!this.isEdit) {
         this.noticeForm.patchValue({ Noticeid: this.lastNoticeid });
       }
-
-      console.log('Next Noticeid:', this.lastNoticeid);
     });
   }
-loadNotices(): void {
-  this.noticeService.getNotices().subscribe((data: Notice[]) => {
-    // Sort notices by Noticeid in descending order (latest first)
-    const sorted = data.sort((a, b) => parseInt(b.Noticeid) - parseInt(a.Noticeid));
-    this.notices = sorted;
 
-    // Generate next Notice ID
-    const ids = sorted.map(n => parseInt(n.Noticeid, 10)).filter(id => !isNaN(id));
-    const maxId = ids.length > 0 ? Math.max(...ids) : 0;
-    this.lastNoticeid = (maxId + 1).toString();
-
-    if (!this.isEdit) {
-      this.noticeForm.patchValue({ Noticeid: this.lastNoticeid });
-    }
-
-    console.log('Next Noticeid:', this.lastNoticeid);
-  });
-}
+  // Load only unapproved notices
+  loadUnapprovedNotices(): void {
+    this.noticeService.getUnapprovedNotices().subscribe({
+      next: (data: Notice[]) => {
+        this.unapprovedNotices = data;
+      },
+      error: (err) => console.error('Error loading unapproved notices:', err)
+    });
+  }
 
   onSubmit(): void {
     if (this.noticeForm.invalid) {
@@ -80,12 +73,14 @@ loadNotices(): void {
     if (this.isEdit && this.currentNoticeId) {
       this.noticeService.editNotice(this.currentNoticeId, noticeData).subscribe(() => {
         this.loadNotices();
+        this.loadUnapprovedNotices();
         this.resetForm();
       });
     } else {
       noticeData.Noticeid = this.lastNoticeid ?? '1';
       this.noticeService.addNotice(noticeData).subscribe(() => {
         this.loadNotices();
+        this.loadUnapprovedNotices();
         this.resetForm();
       });
     }
@@ -94,14 +89,22 @@ loadNotices(): void {
   editNotice(notice: Notice): void {
     this.isEdit = true;
     this.currentNoticeId = notice._id ?? null;
-
     this.noticeForm.patchValue(notice);
-    this.noticeForm.get('Noticeid')?.disable(); // ensure Noticeid remains readonly
+    this.noticeForm.get('Noticeid')?.disable(); // keep Noticeid readonly
   }
 
   deleteNotice(id: string): void {
     this.noticeService.deleteNotice(id).subscribe(() => {
       this.loadNotices();
+      this.loadUnapprovedNotices();
+    });
+  }
+
+  approveNotice(notice: Notice): void {
+    if (!notice._id) return;
+    this.noticeService.approveNotice(notice._id).subscribe(() => {
+      this.loadNotices();
+      this.loadUnapprovedNotices();
     });
   }
 
