@@ -13,7 +13,7 @@ export class AdminComponent implements OnInit {
   username: string = '';
   activeTab: string = 'student'; // Default tab
   unapprovedUsers: any[] = [];
-  notices: any[] = [];
+  pendingNotices: any[] = [];   // <-- store pending notices
   message: string = '';
 
   constructor(
@@ -24,11 +24,11 @@ export class AdminComponent implements OnInit {
 
   ngOnInit(): void {
     const userDetails = this.userService.getUserDetails();
-    //this.role = userDetails.role;
+    this.role = userDetails.userId;
     this.username = userDetails.username;
 
     this.loadUnapprovedUsers();
-    this.loadNotices();
+    this.loadPendingNotices();   // <-- load pending notices instead of all
   }
 
   // Tab switching
@@ -52,8 +52,8 @@ export class AdminComponent implements OnInit {
   // Load unapproved users
   loadUnapprovedUsers(): void {
     this.adminService.getPendingUsers().subscribe({
-      next: (users) => this.unapprovedUsers = users,
-      error: (err) => console.error('Failed to load unapproved users', err)
+      next: (users) => (this.unapprovedUsers = users),
+      error: (err) => console.error('Failed to load unapproved users', err),
     });
   }
 
@@ -67,15 +67,29 @@ export class AdminComponent implements OnInit {
       error: (err) => {
         console.error('Approval failed', err);
         this.message = 'Failed to approve user';
-      }
+      },
     });
   }
 
-  // Load notices
-  loadNotices(): void {
-    this.noticeService.getNotices().subscribe({
-      next: (data) => this.notices = data,
-      error: (err) => console.error('Failed to load notices', err)
+  // Load pending notices
+  loadPendingNotices(): void {
+    this.noticeService.getUnapprovedNotices().subscribe({
+      next: (data) => (this.pendingNotices = data),
+      error: (err) => console.error('Failed to load pending notices', err),
+    });
+  }
+
+  // Approve a notice
+  approveNotice(noticeId: string): void {
+    this.noticeService.approveNotice(noticeId).subscribe({
+      next: () => {
+        this.message = 'Notice approved successfully';
+        this.loadPendingNotices(); // Refresh list
+      },
+      error: (err) => {
+        console.error('Notice approval failed', err);
+        this.message = 'Failed to approve notice';
+      },
     });
   }
 }

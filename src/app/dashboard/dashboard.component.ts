@@ -39,13 +39,10 @@ export class DashboardComponent implements OnInit {
     );
   }
 loadNotices(): void {
-  this.noticeService.getNotices().subscribe((data: Notice[]) => {
+  this.noticeService.getApprovedNotices().subscribe((data: Notice[]) => {
     // Sort notices by Noticeid in descending order (latest first)
     const sorted = data.sort((a, b) => parseInt(b.Noticeid) - parseInt(a.Noticeid));
-    this.notices = sorted;
-
-    
-    
+    this.notices = sorted; 
   });
 }
   fetchNotices(): void {

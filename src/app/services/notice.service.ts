@@ -2,10 +2,12 @@ import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
- const noticeUrl= `${environment.apiUrl}/notices`;
+
+const noticeUrl = `${environment.apiUrl}/notices`;
+
 export interface Notice {
   _id?: string;
-  Noticeid: string; 
+  Noticeid: string;
   name: string;
   class: string;
   Role: string;
@@ -18,13 +20,12 @@ export interface Notice {
   providedIn: 'root'
 })
 export class NoticeService {
-  private readonly BASE_URL = noticeUrl; // Base URL for the API
+  private readonly BASE_URL = noticeUrl;
 
   constructor(private http: HttpClient) {}
 
   getNotices(): Observable<Notice[]> {
     return this.http.get<Notice[]>(this.BASE_URL);
-    
   }
 
   addNotice(notice: Notice): Observable<Notice> {
@@ -46,16 +47,20 @@ export class NoticeService {
   getNoticesByRole(role: string): Observable<Notice[]> {
     return this.http.get<Notice[]>(`${this.BASE_URL}/role/${role}`);
   }
-  getNoticesByAproval(isApproved:boolean): Observable<Notice[]> {
+
+  getNoticesByApproval(isApproved: boolean): Observable<Notice[]> {
     return this.http.get<Notice[]>(`${this.BASE_URL}/isApproved/${isApproved}`);
   }
+
   getUnapprovedNotices(): Observable<Notice[]> {
-  return this.http.get<Notice[]>(`${this.BASE_URL}/isApproved/false`);
+    return this.http.get<Notice[]>(`${this.BASE_URL}/pending-notices`);
+  }
+
+  getApprovedNotices(): Observable<Notice[]> {
+    return this.http.get<Notice[]>(`${this.BASE_URL}/approved`);
   }
 
   approveNotice(id: string): Observable<Notice> {
     return this.http.put<Notice>(`${this.BASE_URL}/approve/${id}`, {});
   }
-
 }
-

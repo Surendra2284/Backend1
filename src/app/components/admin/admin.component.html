@@ -137,13 +137,42 @@
 </div>
 
 <!-- Notices Section -->
-<div class="user-details" *ngIf="notices.length > 0">
+<div class="user-details">
   <h2>Recent Notices</h2>
-  <ul>
-    <li *ngFor="let notice of notices">
-      <strong>{{ notice.title }}</strong>: {{ notice.message }}
-    </li>
-  </ul>
+  <!-- Pending Notices -->
+  <h3>Pending Notices</h3>
+  <div *ngIf="pendingNotices.length > 0; else noPending">
+    <table>
+      <thead>
+        <tr>
+          <th>Notice ID</th>
+          <th>Title</th>
+          <th>Class</th>
+          <th>Role</th>
+          <th>Notice</th>
+          <th>Class Teacher</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let notice of pendingNotices">
+          <td>{{ notice.Noticeid }}</td>
+          <td>{{ notice.name }}</td>
+          <td>{{ notice.class }}</td>
+          <td>{{ notice.Role }}</td>
+          <td>{{ notice.Notice }}</td>
+          <td>{{ notice.classteacher }}</td>
+          <td>
+            <button (click)="approveNotice(notice._id)">Approve</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+  <ng-template #noPending>
+    <p>No pending notices.</p>
+  </ng-template>
+</div>
 </div>
     <div class="action-buttons">
       <button class="btn btn-primary" (click)="performAction()">✔ Take Action</button>
@@ -194,7 +223,7 @@
         
       </div>
     </div>
-  </div>
+  
 
 </body>
 </html>
