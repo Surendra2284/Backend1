@@ -1,22 +1,30 @@
+/* === Login Container === */
 .login-container {
-  max-width: 340px;
-  margin: 40px auto;
-  padding: 20px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  max-width: 360px;
+  margin: 60px auto;
+  padding: 30px 25px;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 16px;
+  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
   text-align: center;
+  backdrop-filter: blur(10px);
+  animation: fadeIn 0.8s ease;
 }
 
+/* === Moving Heading === */
 .moving-heading {
-  font-size: 18px;
-  font-weight: bold;
-  color: #004080;
-  margin-bottom: 20px;
+  font-size: 1.3rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #007bff, #00b4d8, #00e1ff);
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
   white-space: nowrap;
   overflow: hidden;
   box-sizing: border-box;
-  animation: moveHeading 10s linear infinite;
+  animation: moveHeading 8s linear infinite;
+  text-shadow: 0 0 10px rgba(0, 180, 255, 0.3);
+  margin-bottom: 25px;
 }
 
 @keyframes moveHeading {
@@ -28,8 +36,9 @@
   }
 }
 
+/* === Form Fields === */
 .form-group {
-  margin-bottom: 15px;
+  margin-bottom: 18px;
   position: relative;
   text-align: left;
 }
@@ -39,18 +48,30 @@
   margin-bottom: 6px;
   display: block;
   color: #333;
+  letter-spacing: 0.3px;
+  font-size: 0.95rem;
 }
 
+/* === Input Fields === */
 .form-control {
   width: 100%;
-  height: 42px; /* uniform size */
-  padding: 8px 12px;
-  border-radius: 6px;
+  height: 44px;
+  padding: 10px 14px;
+  border-radius: 8px;
   border: 1px solid #ccc;
-  font-size: 14px;
-  box-sizing: border-box;
+  font-size: 0.95rem;
+  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.9);
+  outline: none;
 }
 
+.form-control:focus {
+  border-color: #007bff;
+  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
+  background: #f9fbff;
+}
+
+/* === Password Visibility Icon === */
 .password-container {
   position: relative;
 }
@@ -58,31 +79,85 @@
 .toggle-icon {
   position: absolute;
   right: 12px;
-  top: 38px;
+  top: 50%;
+  transform: translateY(-10%);
   cursor: pointer;
-  font-size: 18px;
+  font-size: 1.2rem;
   color: #007bff;
+  transition: color 0.3s ease, transform 0.3s ease;
 }
 
+.toggle-icon:hover {
+  color: #0056b3;
+  transform: scale(1.1);
+}
+
+/* === Login Button === */
 .login-btn {
   width: 100%;
-  padding: 10px;
-  font-size: 15px;
-  border-radius: 6px;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  border: none;
+  border-radius: 8px;
   margin-top: 10px;
+  background: linear-gradient(90deg, #007bff, #00b4d8);
+  color: white;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
+.login-btn:hover {
+  background: linear-gradient(90deg, #0056b3, #0096c7);
+  transform: translateY(-2px);
+  box-shadow: 0 6px 18px rgba(0, 123, 255, 0.4);
+}
+
+/* === Signup Prompt === */
 .signup-prompt {
-  margin-top: 15px;
-  font-size: 14px;
+  margin-top: 20px;
+  font-size: 0.9rem;
+  color: #555;
 }
 
 .signup-prompt a {
   color: #28a745;
-  font-weight: bold;
+  font-weight: 700;
   text-decoration: none;
+  transition: color 0.3s ease, text-shadow 0.3s ease;
 }
 
 .signup-prompt a:hover {
-  text-decoration: underline;
+  color: #1e7e34;
+  text-shadow: 0 0 6px rgba(40, 167, 69, 0.4);
+}
+
+/* === Animation === */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* === Responsive Design === */
+@media (max-width: 480px) {
+  .login-container {
+    padding: 25px 18px;
+    margin: 40px 15px;
+  }
+  .moving-heading {
+    font-size: 1.1rem;
+  }
+  .form-control {
+    font-size: 0.9rem;
+  }
+  .login-btn {
+    font-size: 0.95rem;
+  }
 }
