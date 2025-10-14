@@ -1,131 +1,218 @@
+/* === General Layout === */
 .dashboard-container {
-  font-family: 'Segoe UI', sans-serif;
+  font-family: "Poppins", sans-serif;
+  background: linear-gradient(135deg, #eef6ff, #ffffff);
   padding: 20px;
-  background: linear-gradient(to right, #f5f8ff, #e6f0ff);
+  color: #333;
+  min-height: 100vh;
 }
 
+/* === Header === */
 .dashboard-header {
   text-align: center;
   margin-bottom: 30px;
 }
 
 .title {
-  font-size: 28px;
-  color: #004080;
+  font-size: 2.3rem;
+  font-weight: 700;
+  background: linear-gradient(to right, #007bff, #00b4d8);
+  
+  color: transparent;
+  animation: glowText 3s ease-in-out infinite alternate;
 }
 
 .subtitle {
-  font-size: 16px;
+  font-size: 1.1rem;
   color: #555;
 }
 
-.notice-board, .gallery-section, .dev-section {
+/* === Card Style === */
+.card {
   background: #fff;
-  padding: 20px;
-  margin: 20px auto;
-  border-radius: 12px;
-  box-shadow: 0 6px 15px rgba(0,0,0,0.1);
+  border-radius: 18px;
+  padding: 25px;
+  margin-bottom: 25px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.08);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+.card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
 }
 
+/* === Section Titles === */
 .section-title {
-  color: #004080;
+  color: #004aad;
+  border-left: 5px solid #007bff;
+  padding-left: 12px;
   margin-bottom: 15px;
+  font-weight: 600;
 }
 
+/* === Notice Board === */
 .notice-list {
   list-style: none;
   padding: 0;
 }
-
 .notice-item {
-  padding: 10px;
-  border-bottom: 1px solid #ddd;
+  background: #f7faff;
+  padding: 12px 16px;
+  border-radius: 12px;
+  margin-bottom: 10px;
+  transition: background 0.3s;
+}
+.notice-item:hover {
+  background: #e6f0ff;
+}
+.notice-class {
+  color: #007bff;
+  font-weight: 500;
+  margin-bottom: 5px;
 }
 
-.no-notices, .no-photos {
-  text-align: center;
-  color: #888;
+/* === Director Message === */
+.director-content {
+  display: flex;
+  align-items: flex-start;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+.director-photo {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  border: 3px solid #007bff;
+  object-fit: cover;
+}
+.message-text {
+  flex: 1;
+  line-height: 1.6;
+}
+.greeting {
+  font-weight: 500;
+  color: #444;
+}
+.signature {
+  margin-top: 10px;
+  font-style: italic;
+  color: #666;
 }
 
-/* Slideshow */
+/* === Gallery === */
 .slideshow-container {
   position: relative;
-  max-width: 100%;
-  margin: auto;
+  overflow: hidden;
+  border-radius: 15px;
 }
-
 .slide {
   display: none;
   text-align: center;
 }
-
 .slide.active {
   display: block;
 }
-
 .slide img {
   width: 100%;
-  max-height: 400px;
-  object-fit: cover;
-  border-radius: 10px;
-  cursor: zoom-in;
-}
-
-.prev, .next {
+  border-radius: 12px;
   cursor: pointer;
+  transition: transform 0.4s ease;
+}
+.slide img:hover {
+  transform: scale(1.03);
+}
+.photo-name {
+  margin-top: 8px;
+  font-weight: 500;
+  color: #444;
+}
+.prev,
+.next {
   position: absolute;
   top: 50%;
-  padding: 12px;
-  color: white;
-  font-weight: bold;
-  font-size: 20px;
-  user-select: none;
-  background: rgba(0,0,0,0.4);
+  transform: translateY(-50%);
+  background: rgba(0, 0, 0, 0.4);
+  color: #fff;
+  font-size: 2rem;
+  padding: 6px 12px;
   border-radius: 50%;
+  cursor: pointer;
+  user-select: none;
+}
+.prev:hover,
+.next:hover {
+  background: rgba(0, 0, 0, 0.7);
+}
+.prev {
+  left: 10px;
+}
+.next {
+  right: 10px;
 }
 
-.prev { left: 10px; }
-.next { right: 10px; }
+/* === Motto === */
+.motto-section {
+  text-align: center;
+  margin-top: 20px;
+}
+.motto {
+  font-size: 1.1rem;
+  color: #333;
+  font-style: italic;
+}
 
-/* Modal Zoom */
+/* === Developer Section === */
+.dev-photo {
+  width: 100px;
+  border-radius: 50%;
+  margin: 10px 0;
+}
+
+/* === Animations === */
+.fade-in {
+  animation: fadeIn 0.8s ease-in-out;
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(15px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+@keyframes glowText {
+  from {
+    text-shadow: 0 0 8px #00aaff;
+  }
+  to {
+    text-shadow: 0 0 20px #00ccff;
+  }
+}
+
+/* === Modal === */
 .modal {
   display: none;
   position: fixed;
-  z-index: 100;
-  padding-top: 60px;
-  left: 0; top: 0;
-  width: 100%; height: 100%;
-  background: rgba(0,0,0,0.9);
-  text-align: center;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.85);
+  justify-content: center;
+  align-items: center;
 }
-
 .modal.show {
-  display: block;
+  display: flex;
 }
-
 .modal-content {
-  max-width: 80%;
+  max-width: 90%;
   max-height: 80%;
   border-radius: 10px;
 }
-
 .close {
   position: absolute;
-  top: 20px; right: 35px;
-  color: #fff;
-  font-size: 40px;
+  top: 20px;
+  right: 25px;
+  font-size: 2rem;
+  color: white;
   cursor: pointer;
-}
-
-/* Developer Section */
-.dev-section {
-  text-align: center;
-}
-
-.dev-photo {
-  width: 120px;
-  height: 120px;
-  border-radius: 50%;
-  margin: 10px 0;
-  object-fit: cover;
 }
