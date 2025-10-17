@@ -9,6 +9,7 @@ import { environment } from '../../environments/environment';
 @Injectable({
   providedIn: 'root',
 })
+
 export class TeacherService {
   private readonly BASE_URL = teacherUrl; // Base URL for the API
 
@@ -27,7 +28,11 @@ export class TeacherService {
       catchError(this.handleError('fetch teachers'))
     );
   }
-  
+  getTeacherByUsername(username: string): Observable<Teacher> {
+  return this.http.get<Teacher>(`${this.BASE_URL}/username/${username}`).pipe(
+    catchError(this.handleError('fetch teacher by username'))
+  );
+}
 
   /** --- Add a New Teacher --- */
   addTeacher(teacher: Teacher): Observable<void> {

@@ -1,18 +1,11 @@
 <div class="teacher-container">
   <h1>Teacher Dashboard</h1>
-
-  <!-- Teacher Info -->
-  <div class="user-details">
-    <h2>Teacher Information</h2>
-    <p><strong>Name:</strong> {{ displayName }}</p>
-    <p><strong>Class Teacher of:</strong> {{ loggedInTeacher?.class }}</p>
-  </div>
-
-  <!-- Action Buttons -->
-  <div class="action-buttons">
-    <button class="btn btn-primary" (click)="performAction()">✔ Take Action</button>
-    <button class="btn btn-danger" (click)="logout()">⎋ Log Out</button>
-  </div>
+ <!-- Teacher Info -->
+<div class="user-details" *ngIf="loggedInTeacher">
+  <h2>Teacher Information</h2>
+  <p><strong>Name:</strong> {{ displayName }}</p>
+  <p><strong>Class Teacher of:</strong> {{ loggedInTeacher.Assignclass }}</p>
+</div>
 
   <!-- Tabs -->
   <div class="tabs">
@@ -24,7 +17,7 @@
 
     <!-- Students Tab -->
     <div class="tab-content" *ngIf="activeTab === 'students'">
-      <h2>👨‍🎓 Students of {{ loggedInTeacher?.class }}</h2>
+     <h2>👨‍🎓 Students of {{ loggedInTeacher.Assignclass }}</h2>
       <ul class="student-list">
         <li *ngFor="let student of students" class="student-item">
           <strong>{{ student.name }}</strong> - Roll No: {{ student.studentId }}
@@ -57,35 +50,33 @@
         </form>
       </div>
     </div>
-
-    <!-- Attendance Tab -->
-    <div class="tab-content" *ngIf="activeTab === 'attendance'">
-      <h2>📅 Attendance for {{ loggedInTeacher?.class }}</h2>
-      <form (ngSubmit)="saveAttendance()">
-        <table class="attendance-table">
-          <thead>
-            <tr>
-              <th>Roll No</th>
-              <th>Name</th>
-              <th>Status</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr *ngFor="let student of students">
-              <td>{{ student.studentId }}</td>
-              <td>{{ student.name }}</td>
-              <td>
-                <select [(ngModel)]="attendance[student.studentId]" name="att_{{student.studentId}}">
-                  <option value="Present">Present</option>
-                  <option value="Absent">Absent</option>
-                  <option value="Late">Late</option>
-                </select>
-              </td>
-            </tr>
-          </tbody>
-        </table>
-        <button type="submit" class="btn btn-primary">Save Attendance</button>
-      </form>
-    </div>
-  </div>
+<!-- Attendance Tab -->
+<div class="tab-content" *ngIf="activeTab === 'attendance'">
+  <h2>📅 Attendance for {{ loggedInTeacher.Assignclass }}</h2>
+  <form (ngSubmit)="saveAttendance()">
+    <table class="attendance-table">
+      <thead>
+        <tr>
+          <th>Roll No</th>
+          <th>Name</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let student of students">
+          <td>{{ student.studentId }}</td>
+          <td>{{ student.name }}</td>
+          <td>
+            <select [(ngModel)]="attendance[student.studentId]" name="att_{{student.studentId}}">
+              <option value="Present">Present</option>
+              <option value="Absent">Absent</option>
+              <option value="Late">Late</option>
+            </select>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <button type="submit" class="btn btn-primary">Save Attendance</button>
+  </form>
+  <p *ngIf="students.length === 0" class="no-data">No students available for attendance.</p>
 </div>

@@ -1,182 +1,157 @@
-<div class="container py-4">
-  <h2>{{ isEdit ? '✏️ Edit Teacher' : '➕ Add New Teacher' }}</h2>
+<div class="container py-4 teacher-container">
+  <!-- ✅ Toast Notification -->
+  <div *ngIf="showToast" class="toast-message" [ngClass]="toastType">
+    {{ toastMessage }}
+  </div>
 
-  <!-- Teacher Form -->
-  <form [formGroup]="teacherForm" (ngSubmit)="onSubmit()" novalidate>
-    <div class="row g-3">
-      <!-- Teacher ID -->
-      <div class="col-md-3">
-        <label class="form-label">Teacher ID</label>
-        <input type="text" class="form-control" formControlName="teacherid" />
-        <div *ngIf="teacherForm.get('teacherid')?.touched && teacherForm.get('teacherid')?.hasError('required')" class="text-danger small">
-          Teacher ID is required
+  <div class="card shadow-lg border-0 p-4 mb-4">
+    <h2 class="mb-4 text-primary fw-bold">
+      {{ isEdit ? '✏️ Edit Teacher' : '➕ Add New Teacher' }}
+    </h2>
+
+    <!-- Teacher Form -->
+    <form [formGroup]="teacherForm" (ngSubmit)="onSubmit()" novalidate>
+      <div class="row g-3">
+        <!-- Teacher ID -->
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Teacher ID</label>
+          <input type="text" class="form-control form-control-sm" formControlName="teacherid" />
+          <small class="text-danger" *ngIf="teacherForm.get('teacherid')?.touched && teacherForm.get('teacherid')?.hasError('required')">
+            Required
+          </small>
+        </div>
+
+        <!-- Name -->
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Name</label>
+          <input type="text" class="form-control form-control-sm" formControlName="name" />
+          <small class="text-danger" *ngIf="teacherForm.get('name')?.touched && teacherForm.get('name')?.hasError('required')">
+            Required
+          </small>
+        </div>
+
+        <!-- Assign Class -->
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Assign Class</label>
+          <input type="text" class="form-control form-control-sm" formControlName="Assignclass" />
+        </div>
+
+        <!-- Mobile -->
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Mobile</label>
+          <input type="text" class="form-control form-control-sm" formControlName="mobileNo" />
+          <small class="text-danger" *ngIf="teacherForm.get('mobileNo')?.hasError('pattern')">10 digits</small>
+        </div>
+
+        <!-- Address -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Address</label>
+          <input type="text" class="form-control form-control-sm" formControlName="address" />
+        </div>
+
+        <!-- Role -->
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Role</label>
+          <input type="text" class="form-control form-control-sm" formControlName="Role" />
+        </div>
+
+        <!-- Notice -->
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Notice</label>
+          <input type="text" class="form-control form-control-sm" formControlName="Notice" />
+        </div>
+
+        <!-- Email -->
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Email</label>
+          <input type="email" class="form-control form-control-sm" formControlName="Email" />
+        </div>
+
+        <!-- Subject -->
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Subject</label>
+          <input type="text" class="form-control form-control-sm" formControlName="subject" />
+        </div>
+
+        <!-- Attendance -->
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Attendance %</label>
+          <input type="number" class="form-control form-control-sm" formControlName="attendance" />
+        </div>
+
+        <!-- Class Teacher -->
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Class Teacher Of</label>
+          <input type="text" class="form-control form-control-sm" formControlName="classteacher" />
+        </div>
+
+        <!-- Experience -->
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Experience (Years)</label>
+          <input type="number" class="form-control form-control-sm" formControlName="experience" />
+        </div>
+
+        <!-- Photo Upload -->
+        <div class="col-md-6">
+          <label class="form-label fw-semibold">Photo</label>
+          <input type="file" class="form-control form-control-sm" (change)="onPhotoUpload($event)" />
+          <div *ngIf="teacherForm.get('photo')?.value" class="mt-2">
+            <img [src]="teacherForm.get('photo')?.value" alt="Preview" class="img-thumbnail shadow-sm border" style="max-height: 120px;" />
+          </div>
         </div>
       </div>
 
-      <!-- Name -->
-      <div class="col-md-3">
-        <label class="form-label">Name</label>
-        <input type="text" class="form-control" formControlName="name" />
-        <div *ngIf="teacherForm.get('name')?.touched && teacherForm.get('name')?.hasError('required')" class="text-danger small">
-          Name is required
-        </div>
-        <div *ngIf="teacherForm.get('name')?.touched && teacherForm.get('name')?.hasError('minlength')" class="text-danger small">
-          Name must be at least 2 characters
-        </div>
+      <!-- Buttons -->
+      <div class="d-flex justify-content-end mt-4">
+        <button type="submit" class="btn btn-success px-4 me-2 shadow-sm" [disabled]="teacherForm.invalid">
+          {{ isEdit ? 'Update Teacher' : 'Add Teacher' }}
+        </button>
+        <button type="button" class="btn btn-secondary px-4 shadow-sm" (click)="resetForm()">Clear</button>
       </div>
-
-      <!-- Assign Class -->
-      <div class="col-md-3">
-        <label class="form-label">Assign Class</label>
-        <input type="text" class="form-control" formControlName="Assignclass" />
-        <div *ngIf="teacherForm.get('Assignclass')?.touched && teacherForm.get('Assignclass')?.hasError('required')" class="text-danger small">
-          Assign Class is required
-        </div>
-      </div>
-
-      <!-- Mobile No -->
-      <div class="col-md-3">
-        <label class="form-label">Mobile No</label>
-        <input type="text" class="form-control" formControlName="mobileNo" />
-        <div *ngIf="teacherForm.get('mobileNo')?.touched && teacherForm.get('mobileNo')?.hasError('required')" class="text-danger small">
-          Mobile number is required
-        </div>
-        <div *ngIf="teacherForm.get('mobileNo')?.touched && teacherForm.get('mobileNo')?.hasError('pattern')" class="text-danger small">
-          Must be a valid 10-digit number
-        </div>
-      </div>
-
-      <!-- Address -->
-      <div class="col-md-6">
-        <label class="form-label">Address</label>
-        <input type="text" class="form-control" formControlName="address" />
-        <div *ngIf="teacherForm.get('address')?.touched && teacherForm.get('address')?.hasError('required')" class="text-danger small">
-          Address is required
-        </div>
-        <div *ngIf="teacherForm.get('address')?.touched && teacherForm.get('address')?.hasError('minlength')" class="text-danger small">
-          Address must be at least 5 characters
-        </div>
-      </div>
-
-      <!-- Role -->
-      <div class="col-md-3">
-        <label class="form-label">Role</label>
-        <input type="text" class="form-control" formControlName="Role" />
-        <div *ngIf="teacherForm.get('Role')?.touched && teacherForm.get('Role')?.hasError('required')" class="text-danger small">
-          Role is required
-        </div>
-      </div>
-
-      <!-- Notice -->
-      <div class="col-md-3">
-        <label class="form-label">Notice</label>
-        <input type="text" class="form-control" formControlName="Notice" />
-      </div>
-
-      <!-- Email -->
-      <div class="col-md-3">
-        <label class="form-label">Email</label>
-        <input type="email" class="form-control" formControlName="Email" />
-        <div *ngIf="teacherForm.get('Email')?.touched && teacherForm.get('Email')?.hasError('required')" class="text-danger small">
-          Email is required
-        </div>
-        <div *ngIf="teacherForm.get('Email')?.touched && teacherForm.get('Email')?.hasError('email')" class="text-danger small">
-          Invalid email format
-        </div>
-      </div>
-
-      <!-- Subject -->
-      <div class="col-md-3">
-        <label class="form-label">Subject</label>
-        <input type="text" class="form-control" formControlName="subject" />
-        <div *ngIf="teacherForm.get('subject')?.touched && teacherForm.get('subject')?.hasError('required')" class="text-danger small">
-          Subject is required
-        </div>
-      </div>
-
-      <!-- Attendance -->
-      <div class="col-md-3">
-        <label class="form-label">Attendance %</label>
-        <input type="number" class="form-control" formControlName="attendance" />
-        <div *ngIf="teacherForm.get('attendance')?.touched && teacherForm.get('attendance')?.hasError('required')" class="text-danger small">
-          Attendance is required
-        </div>
-        <div *ngIf="teacherForm.get('attendance')?.hasError('min') || teacherForm.get('attendance')?.hasError('max')" class="text-danger small">
-          Must be between 0 and 100
-        </div>
-      </div>
-
-      <!-- Class Teacher -->
-      <div class="col-md-3">
-        <label class="form-label">Class Teacher Of</label>
-        <input type="text" class="form-control" formControlName="classteacher" />
-        <div *ngIf="teacherForm.get('classteacher')?.touched && teacherForm.get('classteacher')?.hasError('required')" class="text-danger small">
-          Class Teacher is required
-        </div>
-      </div>
-
-      <!-- Experience -->
-      <div class="col-md-3">
-        <label class="form-label">Experience (Years)</label>
-        <input type="number" class="form-control" formControlName="experience" />
-        <div *ngIf="teacherForm.get('experience')?.touched && teacherForm.get('experience')?.hasError('required')" class="text-danger small">
-          Experience is required
-        </div>
-        <div *ngIf="teacherForm.get('experience')?.hasError('min')" class="text-danger small">
-          Must be 0 or greater
-        </div>
-      </div>
-
-      <!-- Photo Upload -->
-      <div class="col-md-6">
-        <label class="form-label">Photo</label>
-        <input type="file" class="form-control" (change)="onPhotoUpload($event)" />
-        <div *ngIf="teacherForm.get('photo')?.touched && teacherForm.get('photo')?.hasError('required')" class="text-danger small">
-          Photo is required
-        </div>
-        <div *ngIf="teacherForm.get('photo')?.hasError('maxSizeExceeded')" class="text-danger small">
-          File size exceeds 0.5 MB
-        </div>
-        <div *ngIf="teacherForm.get('photo')?.value" class="mt-2">
-          <img [src]="teacherForm.get('photo')?.value" alt="Preview" class="img-thumbnail" style="max-height: 120px;" />
-        </div>
-      </div>
-    </div>
-
-    <!-- Buttons -->
-    <div class="d-flex justify-content-end mt-3">
-      <button type="submit" class="btn btn-success me-2" [disabled]="teacherForm.invalid">
-        {{ isEdit ? 'Update Teacher' : 'Add Teacher' }}
-      </button>
-      <button type="button" class="btn btn-warning" (click)="resetForm()">Clear</button>
-    </div>
-  </form>
-
-  <hr />
+    </form>
+  </div>
 
   <!-- Teachers List -->
-  <h3>Teachers List</h3>
-  <table class="table table-striped" *ngIf="teachers.length > 0">
-    <thead>
-      <tr>
-        <th>Name</th>
-        <th>Email</th>
-        <th>Subject</th>
-        <th>Mobile</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr *ngFor="let teacher of teachers">
-        <td>{{ teacher.name }}</td>
-        <td>{{ teacher.Email }}</td>
-        <td>{{ teacher.subject }}</td>
-        <td>{{ teacher.mobileNo }}</td>
-        <td>
-          <button class="btn btn-sm btn-primary me-2" (click)="editTeacher(teacher)">Edit</button>
-          <button class="btn btn-sm btn-danger" (click)="deleteTeacher(teacher)">Delete</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
- 
+  <div class="card shadow-lg border-0 p-3">
+    <h3 class="text-primary fw-bold mb-3">📋 Teachers List</h3>
+
+    <table class="table table-hover align-middle text-center table-bordered rounded-3 overflow-hidden">
+      <thead class="table-primary">
+        <tr>
+          <th>Photo</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Subject</th>
+          <th>Mobile</th>
+          <th>Assign Class</th>
+          <th>Class Teacher</th>
+          <th>Notice</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let teacher of teachers" class="table-row">
+          <td>
+            <img
+              [src]="'data:image/jpeg;base64,' + teacher.photo"
+              alt="Teacher Photo"
+              class="rounded-circle border"
+              style="height: 70px; width: 70px; object-fit: cover;"
+            />
+          </td>
+          <td>{{ teacher.name }}</td>
+          <td>{{ teacher.Email }}</td>
+          <td>{{ teacher.subject }}</td>
+          <td>{{ teacher.mobileNo }}</td>
+          <td>{{ teacher.Assignclass }}</td>
+          <td>{{ teacher.classteacher }}</td>
+          <td>{{ teacher.Notice }}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary me-1" (click)="editTeacher(teacher)">Edit</button>
+            <button class="btn btn-sm btn-outline-danger" (click)="deleteTeacher(teacher)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
