@@ -1,8 +1,12 @@
 <<nav class="navbar navbar-default">
   <ul class="nav navbar-nav">
     <li routerLinkActive="active"><a routerLink="">Home</a></li>
-    <li routerLinkActive="active"><a routerLink="overview">Overview</a></li>
+    <li *ngIf="userAuthenticated" routerLinkActive="active">
+  <a href="javascript:void(0)" (click)="goToDashboard()">Overview</a>
+</li>
+
   </ul>
+
 
   <ul class="nav navbar-nav navbar-right">
     <li *ngIf="!userAuthenticated" routerLinkActive="active">

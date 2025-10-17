@@ -15,6 +15,7 @@ import { NoticeComponent } from './components/notice/notice.component';
 import { AttendanceComponent } from './components/attendance/attendance.component'; 
 import{StudentComponent} from './components/student/student.component';
 import{UserComponent} from './components/User/user.component';
+import{TeacherloginComponent} from './components/teacherlogin/teacherlogin.component';
 const routes: Routes = [
   
  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
@@ -32,6 +33,7 @@ const routes: Routes = [
   { path: 'upload-photo', component: UploadPhotoComponent },
   { path: 'notice', component: NoticeComponent },
   { path:'Attendance', component:AttendanceComponent},
+  {path:'teacherlogin', component:TeacherloginComponent},
   {path:'Student',component:StudentComponent},
 ];
 

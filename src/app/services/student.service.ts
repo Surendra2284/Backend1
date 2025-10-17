@@ -14,8 +14,8 @@ export interface Student {
   Role: string;
   Notice?: string;
   Email: string;
-  attendance: Date;
-  photo: any;
+  attendance: number;   // ✅ should be number, not Date
+  photo: string;   
   classteacher?: string;
   createdAt?: Date;
   updatedAt?: Date;

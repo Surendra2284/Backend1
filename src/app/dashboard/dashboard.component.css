@@ -313,3 +313,67 @@
     height: 120px;
   }
 }
+/* 🧾 Director + Notice side-by-side layout */
+.dual-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  margin-bottom: 40px;
+  justify-content: space-between;
+}
+
+/* Each card takes equal width */
+.dual-section .card {
+  flex: 1 1 48%;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  padding: 20px;
+  transition: all 0.3s ease;
+}
+
+/* Smooth hover effect */
+.dual-section .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+/* Responsive stacking on small screens */
+@media (max-width: 768px) {
+  .dual-section {
+    flex-direction: column;
+  }
+  .dual-section .card {
+    flex: 1 1 100%;
+  }
+}
+.dual-section {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: space-between;
+  margin-bottom: 40px;
+}
+
+.dual-section .card {
+  flex: 1 1 48%;
+  background: #ffffff;
+  border-radius: 15px;
+  padding: 20px;
+  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.dual-section .card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+}
+
+@media (max-width: 768px) {
+  .dual-section {
+    flex-direction: column;
+  }
+  .dual-section .card {
+    flex: 1 1 100%;
+  }
+}

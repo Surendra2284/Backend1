@@ -2,7 +2,7 @@
   <!-- 🌟 Header Section -->
   <header class="dashboard-header fade-in">
     <h1 class="title animate">🏫 Welcome to MjRP Academy, Tiwaripur</h1>
-    <p class="subtitle">A place where learning and growth meet!</p>
+    <p>A place where learning and growth meet!</p>
   </header>
 
   <section class="dashboard-content">
@@ -12,37 +12,42 @@
       <p>Loading data, please wait...</p>
     </div>
 
-    <!-- 🗒️ Notice Board Section -->
-    <div *ngIf="!isLoading" class="card notice-board fade-in">
-      <h2 class="section-title">🗒️ Notice Board</h2>
-      <ul class="notice-list">
-        <li *ngFor="let notice of notices" class="notice-item">
-          <strong>{{ notice.name }}</strong>
-          <p class="notice-class">{{ notice.class }}</p>
-          <p class="notice-text">{{ notice.Notice }}</p>
-        </li>
-      </ul>
-      <p *ngIf="notices.length === 0" class="no-notices">No notices to display.</p>
-    </div>
+    <!-- 🧾 Notice Board + Director's Message side by side -->
+    <div *ngIf="!isLoading" class="dual-section fade-in">
+      
+      <!-- 🗒️ Notice Board Section -->
+      <div class="card notice-board">
+        <h2 class="section-title">🗒️ Notice Board</h2>
+        <ul class="notice-list">
+          <li *ngFor="let notice of notices" class="notice-item">
+            <strong>{{ notice.name }}</strong>
+            <p class="notice-class">{{ notice.class }}</p>
+            <p class="notice-text">{{ notice.Notice }}</p>
+          </li>
+        </ul>
+        <p *ngIf="notices.length === 0" class="no-notices">No notices to display.</p>
+      </div> <!-- ✅ properly closed notice board -->
 
-    <!-- 🎤 Director's Message Section -->
-    <div *ngIf="!isLoading" class="card director-message fade-in">
-      <h2 class="section-title">🎤 Director’s Message</h2>
-      <div class="director-content">
-        <img src="assets/director.jpg" alt="Director" class="director-photo" />
-        <div class="message-text">
-          <p class="greeting">Dear Students, Parents, and Staff,</p>
-          <p class="body">
-            At <strong>MjRP Academy</strong>, we believe that education goes beyond books — it’s about building character,
-            creativity, and confidence. We aim to provide every student with the best opportunities to grow and achieve excellence.
-          </p>
-          <p class="body">
-            Together, we can make learning a joyful journey toward success and wisdom.
-          </p>
-          <p class="signature">— Mr. Rajesh Kumar<br /><small>Director, MjRP Academy</small></p>
+      <!-- 🎤 Director's Message Section -->
+      <div class="card director-message">
+        <h2 class="section-title">🎤 Director’s Message</h2>
+        <div class="director-content">
+          <img src="assets/director.jpg" alt="Director" class="director-photo" />
+          <div class="message-text">
+            <p class="greeting">Dear Students, Parents, and Staff,</p>
+            <p class="body">
+              At <strong>MjRP Academy</strong>, we believe that education goes beyond books — it’s about building character,
+              creativity, and confidence. We aim to provide every student with the best opportunities to grow and achieve excellence.
+            </p>
+            <p class="body">
+              Together, we can make learning a joyful journey toward success and wisdom.
+            </p>
+            <p class="signature">— Mr. Rajesh Kumar<br /><small>Director, MjRP Academy</small></p>
+          </div>
         </div>
       </div>
-    </div>
+
+    </div> <!-- ✅ closes dual-section -->
 
     <!-- 🌅 Gallery Section -->
     <div *ngIf="!isLoading && photos.length > 0" class="card gallery-section fade-in">

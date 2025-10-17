@@ -24,6 +24,7 @@ import{StudentComponent} from './components/student/student.component';
 import { StudentExlDataService } from './services/StudentExlDataService.service';
 import { CardPreviewComponent } from './components/card-preview/card-preview.component';
 import{UserComponent} from './components/User/user.component';
+import{TeacherloginComponent} from './components/teacherlogin/teacherlogin.component';
 
 @NgModule({
   imports: [
@@ -33,14 +34,14 @@ import{UserComponent} from './components/User/user.component';
     AppRoutingModule,
     ReactiveFormsModule,
     StuDashboardComponent,
-    
+    TeacherloginComponent,
     StudentComponent,
   ],
   declarations: [
     AppComponent,
     DashboardComponent,
     ExcelUploadComponent,
-    
+  
     HeroDetailComponent,
     LoginComponent,
     ExitComponent,

@@ -101,7 +101,7 @@ export class AuthService {
         localStorage.removeItem('authToken');
         localStorage.removeItem('expiresIn');
         localStorage.removeItem("username");
-
+        localStorage.removeItem("userRole");
     }
 
     signupUser(username: string, password: string, role: string): Observable<any> {
@@ -148,15 +148,16 @@ export class AuthService {
                         this.userService.setUserDetails(role, username);
                         localStorage.setItem("username", username);
                         localStorage.setItem("authToken", this.token);
+                        localStorage.setItem("userRole", role);
                         switch (role) {
                             case "Admin":
                                 this.router.navigate(['/admin']);
                                 break;
                             case "Teacher":
-                                this.router.navigate(['/teacher']);
+                                this.router.navigate(['/teacherlogin']);
                                 break;
                             case "Student":
-                                this.router.navigate(['/dashboard']);
+                                this.router.navigate(['/studentdashboard']);
                                 break;
                         }
 
@@ -262,7 +263,33 @@ export class AuthService {
             }
         }
     }
+isSessionValid(): boolean {
+  const token = localStorage.getItem("authToken");
+  const expiresIn = localStorage.getItem("expiresIn");
+  const role = localStorage.getItem("userRole");
 
+  if (!token || !expiresIn || !role) {
+    return false;
+  }
+
+  const expirationDate = new Date(expiresIn);
+  const now = new Date();
+
+  return expirationDate > now;
+}
+getDashboardRoute(): string {
+  const role = localStorage.getItem("userRole");
+  switch (role) {
+    case "Admin":
+      return "/admin";
+    case "Teacher":
+      return "/teacherlogin";
+    case "Student":
+      return "/studentdashboard";
+    default:
+      return "/";
+  }
+}
     // CRUD Operations for Users
     getUsers(): Observable<any> {
         return this.http.get(this.signupUrl);
@@ -285,6 +312,5 @@ export class AuthService {
     }
     
 }
-
 
 

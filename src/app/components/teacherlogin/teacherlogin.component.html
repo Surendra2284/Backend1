@@ -1,1 +1,91 @@
-<p>teacherlogin works!</p>
+<div class="teacher-container">
+  <h1>Teacher Dashboard</h1>
+
+  <!-- Teacher Info -->
+  <div class="user-details">
+    <h2>Teacher Information</h2>
+    <p><strong>Name:</strong> {{ displayName }}</p>
+    <p><strong>Class Teacher of:</strong> {{ loggedInTeacher?.class }}</p>
+  </div>
+
+  <!-- Action Buttons -->
+  <div class="action-buttons">
+    <button class="btn btn-primary" (click)="performAction()">✔ Take Action</button>
+    <button class="btn btn-danger" (click)="logout()">⎋ Log Out</button>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tabs">
+    <ul class="tab-headings">
+      <li (click)="selectTab('students')" [class.active]="activeTab === 'students'">Students</li>
+      <li (click)="selectTab('notices')" [class.active]="activeTab === 'notices'">Notices</li>
+      <li (click)="selectTab('attendance')" [class.active]="activeTab === 'attendance'">Attendance</li>
+    </ul>
+
+    <!-- Students Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'students'">
+      <h2>👨‍🎓 Students of {{ loggedInTeacher?.class }}</h2>
+      <ul class="student-list">
+        <li *ngFor="let student of students" class="student-item">
+          <strong>{{ student.name }}</strong> - Roll No: {{ student.studentId }}
+          <button class="btn btn-sm btn-warning" (click)="editStudent(student)">Edit</button>
+          <button class="btn btn-sm btn-danger" (click)="deleteStudent(student.studentId)">Delete</button>
+        </li>
+      </ul>
+      <p *ngIf="students.length === 0" class="no-data">No students found for this class.</p>
+    </div>
+
+    <!-- Notices Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'notices'">
+      <h2>🗒️ Notices Posted by You</h2>
+      <ul class="notice-list">
+        <li *ngFor="let notice of teacherNotices" class="notice-item">
+          <strong>{{ notice.Notice }}</strong>
+          <p>Class: {{ notice.class }}</p>
+          <button class="btn btn-sm btn-warning" (click)="editNotice(notice)">Edit</button>
+          <button class="btn btn-sm btn-danger" (click)="deleteNotice(notice._id!)">Delete</button>
+        </li>
+      </ul>
+      <p *ngIf="teacherNotices.length === 0" class="no-data">You have not posted any notices yet.</p>
+
+      <!-- Add New Notice -->
+      <div class="add-notice-form">
+        <h3>Add New Notice</h3>
+        <form (ngSubmit)="addNotice()">
+          <textarea [(ngModel)]="newNotice.Notice" name="Notice" placeholder="Write your notice..." required></textarea>
+          <button type="submit" class="btn btn-primary">Post Notice</button>
+        </form>
+      </div>
+    </div>
+
+    <!-- Attendance Tab -->
+    <div class="tab-content" *ngIf="activeTab === 'attendance'">
+      <h2>📅 Attendance for {{ loggedInTeacher?.class }}</h2>
+      <form (ngSubmit)="saveAttendance()">
+        <table class="attendance-table">
+          <thead>
+            <tr>
+              <th>Roll No</th>
+              <th>Name</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let student of students">
+              <td>{{ student.studentId }}</td>
+              <td>{{ student.name }}</td>
+              <td>
+                <select [(ngModel)]="attendance[student.studentId]" name="att_{{student.studentId}}">
+                  <option value="Present">Present</option>
+                  <option value="Absent">Absent</option>
+                  <option value="Late">Late</option>
+                </select>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <button type="submit" class="btn btn-primary">Save Attendance</button>
+      </form>
+    </div>
+  </div>
+</div>
