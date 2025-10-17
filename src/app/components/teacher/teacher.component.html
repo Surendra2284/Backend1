@@ -1,17 +1,19 @@
 <div class="container py-4 teacher-container">
+
   <!-- ✅ Toast Notification -->
   <div *ngIf="showToast" class="toast-message" [ngClass]="toastType">
     {{ toastMessage }}
   </div>
 
+  <!-- 🧾 Add / Edit Teacher Form -->
   <div class="card shadow-lg border-0 p-4 mb-4">
     <h2 class="mb-4 text-primary fw-bold">
       {{ isEdit ? '✏️ Edit Teacher' : '➕ Add New Teacher' }}
     </h2>
 
-    <!-- Teacher Form -->
     <form [formGroup]="teacherForm" (ngSubmit)="onSubmit()" novalidate>
       <div class="row g-3">
+
         <!-- Teacher ID -->
         <div class="col-md-3">
           <label class="form-label fw-semibold">Teacher ID</label>
@@ -40,7 +42,9 @@
         <div class="col-md-3">
           <label class="form-label fw-semibold">Mobile</label>
           <input type="text" class="form-control form-control-sm" formControlName="mobileNo" />
-          <small class="text-danger" *ngIf="teacherForm.get('mobileNo')?.hasError('pattern')">10 digits</small>
+          <small class="text-danger" *ngIf="teacherForm.get('mobileNo')?.hasError('pattern')">
+            Must be 10 digits
+          </small>
         </div>
 
         <!-- Address -->
@@ -95,10 +99,16 @@
         <div class="col-md-6">
           <label class="form-label fw-semibold">Photo</label>
           <input type="file" class="form-control form-control-sm" (change)="onPhotoUpload($event)" />
-          <div *ngIf="teacherForm.get('photo')?.value" class="mt-2">
-            <img [src]="teacherForm.get('photo')?.value" alt="Preview" class="img-thumbnail shadow-sm border" style="max-height: 120px;" />
+          <div *ngIf="teacherForm.get('photo')?.value" class="mt-2 text-center">
+            <img
+              [src]="teacherForm.get('photo')?.value"
+              alt="Preview"
+              class="img-thumbnail shadow-sm border border-primary"
+              style="max-height: 120px; border-radius: 10px;"
+            />
           </div>
         </div>
+
       </div>
 
       <!-- Buttons -->
@@ -111,12 +121,12 @@
     </form>
   </div>
 
-  <!-- Teachers List -->
+  <!-- 🧑‍🏫 Teachers List -->
   <div class="card shadow-lg border-0 p-3">
     <h3 class="text-primary fw-bold mb-3">📋 Teachers List</h3>
 
     <table class="table table-hover align-middle text-center table-bordered rounded-3 overflow-hidden">
-      <thead class="table-primary">
+      <thead class="table-primary text-dark">
         <tr>
           <th>Photo</th>
           <th>Name</th>
@@ -129,13 +139,13 @@
           <th>Actions</th>
         </tr>
       </thead>
-      <tbody>
+      <tbody *ngIf="teachers.length > 0; else noData">
         <tr *ngFor="let teacher of teachers" class="table-row">
           <td>
             <img
               [src]="'data:image/jpeg;base64,' + teacher.photo"
               alt="Teacher Photo"
-              class="rounded-circle border"
+              class="rounded-circle border border-secondary shadow-sm"
               style="height: 70px; width: 70px; object-fit: cover;"
             />
           </td>
@@ -152,6 +162,12 @@
           </td>
         </tr>
       </tbody>
+
+      <ng-template #noData>
+        <tr>
+          <td colspan="9" class="text-muted py-3">No teachers found.</td>
+        </tr>
+      </ng-template>
     </table>
   </div>
 </div>
