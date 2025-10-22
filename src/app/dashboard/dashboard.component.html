@@ -6,83 +6,105 @@
   </header>
 
   <section class="dashboard-content">
+
     <!-- Loading Spinner -->
     <div *ngIf="isLoading" class="spinner">
       <div class="loader"></div>
       <p>Loading data, please wait...</p>
     </div>
 
-    <!-- 🧾 Notice Board + Director's Message side by side -->
-    <div *ngIf="!isLoading" class="dual-section fade-in">
-      
-      <!-- 🗒️ Notice Board Section -->
-      <div class="card notice-board">
-        <h2 class="section-title">🗒️ Notice Board</h2>
-        <ul class="notice-list">
-          <li *ngFor="let notice of notices" class="notice-item">
-            <strong>{{ notice.name }}</strong>
-            <p class="notice-class">{{ notice.class }}</p>
-            <p class="notice-text">{{ notice.Notice }}</p>
-          </li>
-        </ul>
-        <p *ngIf="notices.length === 0" class="no-notices">No notices to display.</p>
-      </div> <!-- ✅ properly closed notice board -->
+    <!-- Main Content -->
+    <div *ngIf="!isLoading" class="fade-in">
 
-      <!-- 🎤 Director's Message Section -->
-      <div class="card director-message">
-        <h2 class="section-title">🎤 Director’s Message</h2>
-        <div class="director-content">
-          <img src="assets/director.jpg" alt="Director" class="director-photo" />
-          <div class="message-text">
-            <p class="greeting">Dear Students, Parents, and Staff,</p>
-            <p class="body">
-              At <strong>MjRP Academy</strong>, we believe that education goes beyond books — it’s about building character,
-              creativity, and confidence. We aim to provide every student with the best opportunities to grow and achieve excellence.
-            </p>
-            <p class="body">
-              Together, we can make learning a joyful journey toward success and wisdom.
-            </p>
-            <p class="signature">— Mr. Rajesh Kumar<br /><small>Director, MjRP Academy</small></p>
+      <!-- 🧾 Notice Board + Director's Message side by side -->
+      <div class="dual-section">
+
+        <!-- 🗒️ Notice Board Section -->
+        <div class="card notice-board">
+          <h2 class="section-title">🗒️ Notice Board</h2>
+          <ul class="notice-list">
+            <li *ngFor="let notice of notices" class="notice-item">
+              <strong>{{ notice.name }}</strong>
+              <p class="notice-class">{{ notice.class }}</p>
+              <p class="notice-text">{{ notice.Notice }}</p>
+            </li>
+          </ul>
+          <p *ngIf="notices.length === 0" class="no-notices">No notices to display.</p>
+        </div>
+
+        <!-- 🎤 Director's Message Section -->
+        <div class="card director-message">
+          <h2 class="section-title">🎤 Director’s Message</h2>
+          <div class="director-content">
+            
+            <div class="message-text">
+              <p class="greeting">Dear Students, Parents, and Staff,</p>
+              <p class="body">
+                At <strong>MjRP Academy</strong>, we focus on holistic education, nurturing academic excellence and character building. We aim to develop responsible, innovative, and confident students ready for global challenges.
+              </p>
+              <p class="body">
+                Together, we will make learning a joyful and meaningful journey.
+              </p>
+              <p class="signature">— Mr. Rajesh Kumar<br /><small>Director, MjRP Academy</small></p>
+            </div>
           </div>
         </div>
-      </div>
 
-    </div> <!-- ✅ closes dual-section -->
+      </div> <!-- dual-section -->
 
-    <!-- 🌅 Gallery Section -->
-    <div *ngIf="!isLoading && photos.length > 0" class="card gallery-section fade-in">
-      <h2 class="section-title">🌟 Our Beautiful Campus</h2>
-      <div class="slideshow-container">
-        <div
-          *ngFor="let photo of photos; let i = index"
-          class="slide"
-          [class.active]="i === currentSlide"
-        >
-          <img [src]="photo.image" [alt]="photo.name" (click)="openModal(photo.image)" />
-          <p class="photo-name">{{ photo.name }}</p>
+      <!-- 🌅 Gallery Section -->
+      <div class="card gallery-section">
+        <h2 class="section-title">🌟 Our Beautiful Campus</h2>
+
+        <!-- Slideshow -->
+        <div class="slideshow-container" *ngIf="photos.length > 0">
+          <div *ngFor="let photo of photos; let i = index" class="slide" [class.active]="i === currentSlide">
+            <img [src]="photo.image" [alt]="photo.name"
+                 (click)="openModal(photo.image)"
+                  />
+            <p class="photo-name">{{ photo.name }}</p>
+          </div>
+
+          <a class="prev" (click)="prevSlide()">&#10094;</a>
+          <a class="next" (click)="nextSlide()">&#10095;</a>
         </div>
 
-        <a class="prev" (click)="prevSlide()">&#10094;</a>
-        <a class="next" (click)="nextSlide()">&#10095;</a>
+        <!-- No Photos -->
+        <div *ngIf="photos.length === 0" class="no-photos">
+          <p>No photos available at the moment. Please check back later.</p>
+        </div>
+
+        <!-- Motto -->
+        <div class="motto-section">
+          <h3>🎓 Our Motto</h3>
+          <p class="motto">"Empowering students to achieve their full potential."</p>
+        </div>
       </div>
 
-      <div class="motto-section">
-        <h3>🎓 Our Motto</h3>
-        <p class="motto">"Empowering students to achieve their full potential."</p>
+      <!-- 🏫 School Information (CBSE Requirements) -->
+      <div class="card school-info">
+        <h2 class="section-title">🏫 School Information</h2>
+        <div class="info-grid">
+          <div><h3>School Name</h3><p>MjRP Academy, Tiwaripur</p></div>
+          <div><h3>Affiliation Number (CBSE)</h3><p>2131844</p></div>
+          <div><h3>Principal</h3><p>Mr. Uday Sankar</p></div>
+          <div><h3>Address</h3><p>Tiwaripur, [Ghazipur], [Uttar Pradesh], India</p></div>
+          <div><h3>Contact</h3><p>Email: info@mjrpacademy.com<br>Phone: +91 9415890085</p></div>
+          <div><h3>Established</h3><p>[2008]</p></div>
+          <div><h3>Board</h3><p>CBSE</p></div>
+          <div><h3>Medium of Instruction</h3><p>English / Hindi</p></div>
+        </div>
       </div>
-    </div>
 
-    <!-- No Photos -->
-    <div *ngIf="!isLoading && photos.length === 0" class="card no-photos fade-in">
-      <p>No photos available at the moment. Please check back later.</p>
-    </div>
+      <!-- 👨‍💻 Developer Section -->
+      <div class="card dev-section">
+        <h2 class="section-title">👨‍💻 Developer Section</h2>
+        <
+        <p>Developed by: <strong>SURENDRA KUSHWAHA</strong></p>
+      </div>
 
-    <!-- 👨‍💻 Developer Section -->
-    <div *ngIf="!isLoading" class="card dev-section fade-in">
-      <h2 class="section-title">👨‍💻 Developer Section</h2>
-      <img src="assets/dev-photo.jpg" alt="Developer" class="dev-photo" />
-      <p>Developed by: <strong>SURENDRA KUSHWAHA</strong></p>
-    </div>
+    </div> <!-- fade-in content -->
+
   </section>
 
   <!-- 🖼️ Modal -->
@@ -90,4 +112,45 @@
     <span class="close">&times;</span>
     <img class="modal-content" [src]="modalImage" />
   </div>
+
+  <!-- =======================
+     FOOTER
+  ======================= -->
+  <footer class="school-footer fade-in">
+    <div class="footer-container">
+
+      <!-- School Logo & Name -->
+      <div class="footer-logo">
+        
+        <h3>MjRP Academy, Tiwaripur</h3>
+      </div>
+
+      <!-- Accreditation & CBSE Info -->
+      <div class="footer-info">
+        <p>📜 CBSE Affiliation Number: 2131844</p>
+        <p>✅ Accredited by CBSE, New Delhi</p>
+        <p>Medium of Instruction: English / Hindi</p>
+      </div>
+
+      <!-- Contact Info -->
+      <div class="footer-contact">
+        <p>📧 Email: info@mjrpacademy.com</p>
+        <p>📞 Phone: +91 7007732541</p>
+        <p>📍 Tiwaripur, [Ghazipur], [Uttar Pradesh], India</p>
+      </div>
+
+      <!-- Social Media Links -->
+      <div class="footer-social">
+        <a href="#" target="_blank">🌐 Website</a>
+        <a href="#" target="_blank">📘 Facebook</a>
+        <a href="#" target="_blank">📸 Instagram</a>
+        <a href="#" target="_blank">🐦 Twitter</a>
+      </div>
+
+    </div>
+
+    <div class="footer-bottom">
+      <p>&copy; 2025 MjRP Academy Tiwaripur. All Rights Reserved.</p>
+    </div>
+  </footer>
 </div>
