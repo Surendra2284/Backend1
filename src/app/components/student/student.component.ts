@@ -318,7 +318,7 @@ commitBulk(): void {
     },
     error: (err) => {
       console.error(err);
-      alert('Bulk import failed.');
+      alert('Bulk Uimport failed.');
     }
   });
 }
