@@ -30,6 +30,53 @@
       </div>
     </div>
   </div>
+<!-- Bulk import controls -->
+<div class="bulk-import">
+  <button type="button" (click)="downloadTemplate()">Download Excel Template</button>
+
+  <label class="file">
+    <input type="file" accept=".xlsx,.xls" (change)="onExcelSelected($event)" />
+  </label>
+
+  <label>
+    <input type="checkbox" [(ngModel)]="upsertMode" />
+    Update existing by StudentId (upsert)
+  </label>
+</div>
+
+<!-- Preview + errors -->
+<div *ngIf="bulkErrors.length" class="errors">
+  <h4>Errors:</h4>
+  <ul><li *ngFor="let e of bulkErrors">{{ e }}</li></ul>
+</div>
+
+<div *ngIf="bulkPreview.length">
+  <h4>Preview ({{ bulkPreview.length }} rows)</h4>
+  <div style="max-height:240px; overflow:auto;">
+    <table>
+      <thead>
+        <tr>
+          <th>StudentId</th><th>Name</th><th>Class</th><th>MobileNo</th>
+          <th>Email</th><th>Role</th><th>Attendance</th><th>ClassTeacher</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let r of bulkPreview">
+          <td>{{ r.studentId }}</td>
+          <td>{{ r.name }}</td>
+          <td>{{ r.class }}</td>
+          <td>{{ r.mobileNo }}</td>
+          <td>{{ r.Email }}</td>
+          <td>{{ r.Role }}</td>
+          <td>{{ r.attendance }}</td>
+          <td>{{ r.classteacher }}</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <button type="button" (click)="commitBulk()">Import {{ bulkPreview.length }} students</button>
+</div>
 
   <!-- 📝 Student Form -->
   <div class="card shadow-sm mb-4">

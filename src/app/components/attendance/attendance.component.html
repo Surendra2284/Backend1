@@ -1,64 +1,123 @@
 <div class="container">
   <h1>Attendance Management</h1>
 
-  <form [formGroup]="attendanceForm">
-    <!-- Class Input -->
-    <label for="className">Class:</label>
-    <input type="text" id="className" formControlName="className" placeholder="Enter class name" />
+  <!-- Summary / Dashboard -->
+  <div class="summary">
+    <div class="card">Total <strong>{{ totals.total }}</strong></div>
+    <div class="card">Present <strong>{{ totals.Present }}</strong> ({{ totals.pctPresent }}%)</div>
+    <div class="card">Absent <strong>{{ totals.Absent }}</strong> ({{ totals.pctAbsent }}%)</div>
+    <div class="card">Late <strong>{{ totals.Late }}</strong> ({{ totals.pctLate }}%)</div>
+  </div>
 
-    <!-- Teacher Input -->
-    <label for="teacher">Class Teacher:</label>
-    <input type="text" id="teacher" formControlName="teacher" placeholder="Enter teacher's name" />
+  <!-- Filters -->
+  <form [formGroup]="filterForm" class="filters" (ngSubmit)="applyFilters()">
+    <input type="text" placeholder="Class" formControlName="className" />
+    <input type="text" placeholder="Student name" formControlName="name" />
+    <input type="text" placeholder="Username" formControlName="username" />
+    <input type="text" placeholder="Student ID" formControlName="studentId" />
+    <input type="date" formControlName="date" />
+    <select formControlName="status">
+      <option value="">Any status</option>
+      <option value="Present">Present</option>
+      <option value="Absent">Absent</option>
+      <option value="Late">Late</option>
+    </select>
+    <button type="submit">Search</button>
+    <button type="button" (click)="clearFilters()">Clear</button>
 
-    <!-- Date Input -->
-    <label for="date">Date:</label>
-    <input type="date" id="date" formControlName="date" />
+    <div class="spacer"></div>
+    <button type="button" (click)="exportExcel()">Export Excel</button>
+    <button type="button" (click)="exportPDF()">Export PDF</button>
+  </form>
 
-    <!-- Student List -->
+  <!-- Create / Bulk Mark -->
+  <h2>Mark Attendance</h2>
+  <form [formGroup]="attendanceForm" class="create" novalidate>
+    <input id="className" type="text" placeholder="Class" formControlName="className" />
+    <input id="teacher" type="text" placeholder="Teacher" formControlName="teacher" />
+    <input id="username" type="text" placeholder="Username" formControlName="username" />
+    <input id="date" type="date" formControlName="date" />
+
+    <select id="status" formControlName="status">
+      <option value="Present">Present</option>
+      <option value="Absent">Absent</option>
+      <option value="Late">Late</option>
+    </select>
+
     <div class="student-list">
-      <h2>Students:</h2>
-      <div *ngFor="let student of students">
-        <input type="checkbox" [id]="student.id" [(ngModel)]="student.selected" />
-        <label [for]="student.id">{{ student.name }}</label>
+      <div class="select-all">
+        <input id="selectAll" type="checkbox" [checked]="allSelected" (change)="toggleSelectAll($event)" />
+        <label for="selectAll">Select all</label>
+      </div>
+
+      <div class="students">
+        <!-- Use trackBy function; prefer _id, fallback to studentId -->
+        <label
+          class="student"
+          *ngFor="let s of students; trackBy: trackByStudent"
+          [attr.for]="s._id || ('sid_' + s.studentId)"
+        >
+          <input
+            type="checkbox"
+            [id]="s._id || ('sid_' + s.studentId)"
+            [(ngModel)]="s.selected"
+            [ngModelOptions]="{ standalone: true }"
+            [name]="'student_' + (s._id || ('sid_' + s.studentId))"
+          />
+          <span>{{ s.name }} ({{ s.class }})</span>
+        </label>
       </div>
     </div>
 
-    <!-- Status -->
-    <label for="status">Status:</label>
-    <select id="status" formControlName="status">
-      <option value="present">Present</option>
-      <option value="absent">Absent</option>
-    </select>
-
-    <!-- Save Button -->
-    <button type="button" (click)="saveAttendance()">Save Attendance</button>
+    <button type="button" (click)="saveAttendance()" [disabled]="attendanceForm.invalid || loading">
+      {{ loading ? 'Saving…' : 'Save Attendance' }}
+    </button>
   </form>
 
   <div class="result">{{ message }}</div>
 
-  <!-- Attendance Records -->
+  <!-- Table (sorting + paging) -->
   <h2>Attendance Records</h2>
+  <div class="table-controls">
+    <label>
+      Page size:
+      <select [(ngModel)]="pageSize" [ngModelOptions]="{ standalone: true }">
+        <option *ngFor="let s of [5,10,20,50]" [value]="s">{{ s }}</option>
+      </select>
+    </label>
+  </div>
+
   <table>
     <thead>
       <tr>
-        <th>Class</th>
-        <th>Teacher</th>
-        <th>Date</th>
-        <th>Status</th>
+        <th (click)="setSort('student')">Student</th>
+        <th (click)="setSort('className')">Class</th>
+        <th (click)="setSort('teacher')">Teacher</th>
+        <th (click)="setSort('username')">Username</th>
+        <th (click)="setSort('date')">Date</th>
+        <th (click)="setSort('status')">Status</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
-      <tr *ngFor="let record of attendances">
-        <td>{{ record.className }}</td>
-        <td>{{ record.teacher }}</td>
-        <td>{{ record.date }}</td>
-        <td>{{ record.status }}</td>
+      <tr *ngFor="let r of paged; trackBy: trackByRecord">
+        <td>{{ r.student?.name }} ({{ r.student?.studentId }})</td>
+        <td>{{ r.className }}</td>
+        <td>{{ r.teacher }}</td>
+        <td>{{ r.username }}</td>
+        <td>{{ r.date | date:'yyyy-MM-dd' }}</td>
+        <td>{{ r.status }}</td>
         <td>
-          <button (click)="updateAttendance(record._id, { status: 'present' })">Mark Present</button>
-          <button (click)="deleteAttendance(record._id)">Delete</button>
+          <button (click)="updateAttendance(r._id!, { status: 'Present' })">Mark Present</button>
+          <button (click)="deleteAttendance(r._id!)">Delete</button>
         </td>
       </tr>
     </tbody>
   </table>
+
+  <div class="pager">
+    <button (click)="prevPage()">&laquo; Prev</button>
+    <span>Page {{ page }} / {{ totalPages }}</span>
+    <button (click)="nextPage()">Next &raquo;</button>
+  </div>
 </div>
