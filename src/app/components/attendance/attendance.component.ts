@@ -1,6 +1,12 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { AttendanceService, Attendance, Student, AttStatus } from '../../services/attendance.service';
+import {
+  AttendanceService,
+  Attendance,
+  Student,
+  AttStatus,
+  Paginated
+} from '../../services/attendance.service';
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -19,9 +25,12 @@ export class AttendanceComponent implements OnInit {
   students: Array<Student & { selected?: boolean }> = [];
   attendances: Attendance[] = [];
 
-  // pagination + sorting
+  // server pagination
   page = 1;
   pageSize = 10;
+  totalCount = 0;
+
+  // sorting (current page only)
   sortKey: SortKey = 'date';
   sortDir: 'asc' | 'desc' = 'desc';
 
@@ -34,7 +43,7 @@ export class AttendanceComponent implements OnInit {
       teacher: ['', Validators.required],
       username: ['', Validators.required],
       date: ['', Validators.required],
-      status: ['Present', Validators.required],
+      status: ['Present', Validators.required], // Present | Absent | Leave
     });
 
     this.filterForm = this.fb.group({
@@ -49,47 +58,62 @@ export class AttendanceComponent implements OnInit {
 
   ngOnInit(): void {
     const today = new Date();
-    const iso = new Date(today.getTime() - today.getTimezoneOffset() * 60000).toISOString().slice(0, 10);
+    const iso = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 10);
     this.attendanceForm.patchValue({ date: iso });
-
     this.loadStudents();
     this.applyFilters();
   }
 
-  // --- Data loading
+  // ---------------- Data loading ----------------
   loadStudents() {
     this.attendanceService.getStudents().subscribe({
-      next: (data) => this.students = (data || []).map(s => ({ ...s, selected: false })),
-      error: () => this.msg('Failed to load students.')
+      next: (data) => (this.students = (data || []).map((s) => ({ ...s, selected: false }))),
+      error: () => this.msg('Failed to load students.'),
     });
   }
 
   applyFilters() {
     const f = this.filterForm.value;
-    this.attendanceService.getAttendance({
+    const query = {
       className: f.className || undefined,
       name: f.name || undefined,
       username: f.username || undefined,
       studentId: f.studentId || undefined,
       date: f.date || undefined,
       status: f.status || undefined,
-    }).subscribe({
-      next: (data) => {
-        this.attendances = data || [];
-        this.page = 1; // reset to first page
+      page: String(this.page),
+      limit: String(this.pageSize),
+    };
+
+    this.loading = true;
+    this.attendanceService.getAttendance(query).subscribe({
+      next: (res: Paginated<Attendance>) => {
+        this.loading = false;
+        this.attendances = res?.data || [];
+        this.totalCount = res?.total || 0;
       },
-      error: () => this.msg('Failed to load attendance records.')
+      error: () => {
+        this.loading = false;
+        this.msg('Failed to load attendance records.');
+      },
     });
   }
 
   clearFilters() {
     this.filterForm.reset();
+    this.page = 1;
     this.applyFilters();
   }
 
-  // --- Create (bulk)
+  // ---------------- Create (bulk) ----------------
   private normalizeStatus(val: any): AttStatus {
-    const map: Record<string, AttStatus> = { present: 'Present', absent: 'Absent', late: 'Late' };
+    const map: Record<string, AttStatus> = {
+      present: 'Present',
+      absent: 'Absent',
+      leave: 'Leave',
+    };
     return map[String(val || '').toLowerCase()] ?? 'Present';
   }
 
@@ -101,7 +125,11 @@ export class AttendanceComponent implements OnInit {
       return;
     }
 
-    const selectedIds = this.students.filter(s => s.selected).map(s => (s as any)._id).filter(Boolean);
+    const selectedIds = this.students
+      .filter((s) => s.selected)
+      .map((s) => (s as any)._id)
+      .filter(Boolean);
+
     if (!selectedIds.length) {
       this.msg('Please select at least one student.');
       return;
@@ -113,39 +141,81 @@ export class AttendanceComponent implements OnInit {
       className: form.className,
       teacher: form.teacher,
       username: form.username,
-      date: form.date,
+      date: form.date, // YYYY-MM-DD
       status: this.normalizeStatus(form.status),
     };
 
     this.loading = true;
     this.attendanceService.saveAttendanceBulk(payload).subscribe({
-      next: () => { this.loading = false; this.msg('Attendance saved successfully.'); this.applyFilters(); this.clearSelections(); },
-      error: () => { this.loading = false; this.msg('Failed to save attendance.'); }
+      next: (res) => {
+        this.loading = false;
+        this.msg(`Attendance saved. Created: ${res.created ?? 0}, Updated: ${res.updated ?? 0}`);
+        this.applyFilters();
+        this.clearSelections();
+      },
+      error: () => {
+        this.loading = false;
+        this.msg('Failed to save attendance.');
+      },
     });
   }
 
   clearSelections() {
-    this.students = this.students.map(s => ({ ...s, selected: false }));
+    this.students = this.students.map((s) => ({ ...s, selected: false }));
   }
 
-  // --- Update / Delete
-  updateAttendance(id: string, patch: Partial<Attendance>) {
+  // ---------------- Correct / Update / Delete ----------------
+  /** Inline correction by student + date (uses /attendance/correct) */
+  correctStatus(record: Attendance, newStatus: AttStatus, reason?: string) {
+    const s: any = record?.student;
+    const studentId =
+      (s && (s._id || s.id || s.studentId)) || (typeof record.student === 'string' ? record.student : '');
+
+    const date = this.formatDate(record.date); // ensure YYYY-MM-DD
+
+    this.attendanceService
+      .correctAttendance({
+        studentId,
+        date,
+        newStatus: this.normalizeStatus(newStatus),
+        reason,
+        correctedBy: record.username, // or your current logged-in user
+      })
+      .subscribe({
+        next: () => {
+          this.msg('Attendance corrected successfully.');
+          this.applyFilters();
+        },
+        error: () => this.msg('Failed to correct attendance.'),
+      });
+  }
+
+  /** Patch by record _id (partial) */
+  updateAttendance(id: string, patch: Partial<Attendance> & { reason?: string; correctedBy?: string }) {
     const payload: any = { ...patch };
     if (payload.status) payload.status = this.normalizeStatus(payload.status);
-    this.attendanceService.updateAttendance(id, payload).subscribe({
-      next: () => { this.msg('Attendance updated successfully.'); this.applyFilters(); },
-      error: () => this.msg('Failed to update attendance.')
+    if (payload.date) payload.date = this.formatDate(payload.date);
+
+    this.attendanceService.patchAttendanceById(id, payload).subscribe({
+      next: () => {
+        this.msg('Attendance updated successfully.');
+        this.applyFilters();
+      },
+      error: () => this.msg('Failed to update attendance.'),
     });
   }
 
   deleteAttendance(id: string) {
     this.attendanceService.deleteAttendance(id).subscribe({
-      next: () => { this.msg('Attendance deleted successfully.'); this.applyFilters(); },
-      error: () => this.msg('Failed to delete attendance.')
+      next: () => {
+        this.msg('Attendance deleted successfully.');
+        this.applyFilters();
+      },
+      error: () => this.msg('Failed to delete attendance.'),
     });
   }
 
-  // --- Sorting & Paging
+  // ---------------- Sorting (current page) ----------------
   setSort(key: SortKey) {
     if (this.sortKey === key) {
       this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
@@ -155,51 +225,80 @@ export class AttendanceComponent implements OnInit {
     }
   }
 
+  private sortValue(r: Attendance, key: SortKey): any {
+    if (key === 'student') return this.getStudentName(r) || '';
+    if (key === 'date') return new Date(r.date).getTime() || 0;
+    return (r as any)[key] ?? '';
+  }
+
   get sorted(): Attendance[] {
     const data = [...this.attendances];
     const dir = this.sortDir === 'asc' ? 1 : -1;
-
-    const val = (r: Attendance, key: SortKey) => {
-      if (key === 'student') return r.student?.name || '';
-      return (r as any)[key] ?? '';
-    };
-
     return data.sort((a, b) => {
-      const av = val(a, this.sortKey);
-      const bv = val(b, this.sortKey);
+      const av = this.sortValue(a, this.sortKey);
+      const bv = this.sortValue(b, this.sortKey);
       return av > bv ? dir : av < bv ? -dir : 0;
     });
   }
 
-  get paged(): Attendance[] {
-    const start = (this.page - 1) * this.pageSize;
-    return this.sorted.slice(start, start + this.pageSize);
+  // ---------------- Pagination helpers (server-driven) ----------------
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.totalCount / this.pageSize));
+  }
+  prevPage() {
+    if (this.page > 1) {
+      this.page -= 1;
+      this.applyFilters();
+    }
+  }
+  nextPage() {
+    if (this.page < this.totalPages) {
+      this.page += 1;
+      this.applyFilters();
+    }
+  }
+  changePageSize(n: number) {
+    this.pageSize = Math.max(1, Number(n) || 10);
+    this.page = 1;
+    this.applyFilters();
+  }
+  onPageSizeChange(v: number | string) {
+    const n = Math.max(1, Number(v) || 10);
+    this.changePageSize(n);
   }
 
-  // --- Summary / Dashboard
+  // ---------------- Summary / Dashboard ----------------
   get totals() {
     const total = this.attendances.length;
-    const by: Record<AttStatus, number> = { Present: 0, Absent: 0, Late: 0 };
-    this.attendances.forEach(a => { if (by[a.status as AttStatus] !== undefined) by[a.status as AttStatus]++; });
-    const pct = (n: number) => total ? Math.round((n / total) * 100) : 0;
-    return { total, ...by, pctPresent: pct(by.Present), pctAbsent: pct(by.Absent), pctLate: pct(by.Late) };
+    const by: Record<AttStatus, number> = { Present: 0, Absent: 0, Leave: 0 };
+    this.attendances.forEach((a) => {
+      if (by[a.status as AttStatus] !== undefined) by[a.status as AttStatus]++;
+    });
+    const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
+    return {
+      total,
+      ...by,
+      pctPresent: pct(by.Present),
+      pctAbsent: pct(by.Absent),
+      pctLeave: pct(by.Leave),
+    };
   }
 
-  // --- Export
+  // ---------------- Export ----------------
   exportExcel() {
-    const rows = this.attendances.map(a => ({
-      Student: a.student?.name ?? '',
-      StudentId: a.student?.studentId ?? '',
+    const rows = this.attendances.map((a) => ({
+      Student: this.getStudentName(a),
+      StudentId: this.getStudentId(a),
       Class: a.className,
       Teacher: a.teacher,
       Username: a.username,
-      Date: a.date, // raw, keep as-is for Excel
-      Status: a.status
+      Date: this.formatDate(a.date),
+      Status: a.status,
     }));
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
-    XLSX.writeFile(wb, `attendance_export_${new Date().toISOString().slice(0,10)}.xlsx`);
+    XLSX.writeFile(wb, `attendance_export_${new Date().toISOString().slice(0, 10)}.xlsx`);
   }
 
   exportPDF() {
@@ -207,14 +306,14 @@ export class AttendanceComponent implements OnInit {
     doc.setFontSize(14);
     doc.text('Attendance Report', 14, 16);
 
-    const body = this.attendances.map(a => [
-      a.student?.name ?? '',
-      a.student?.studentId ?? '',
+    const body = this.attendances.map((a) => [
+      this.getStudentName(a),
+      this.getStudentId(a),
       a.className,
       a.teacher,
       a.username,
-      this.formatDate(a.date),   // <-- fixed: formatted date
-      a.status                   // <-- fixed: separate column, not nested array
+      this.formatDate(a.date),
+      a.status,
     ]);
 
     autoTable(doc, {
@@ -222,52 +321,57 @@ export class AttendanceComponent implements OnInit {
       body,
       startY: 22,
       styles: { fontSize: 9 },
-      headStyles: { fillColor: [240, 240, 240] }
+      headStyles: { fillColor: [240, 240, 240] },
     });
 
     const y = (doc as any).lastAutoTable.finalY + 10;
     doc.text(
-      `Total: ${this.totals.total} | Present: ${this.totals.Present} | Absent: ${this.totals.Absent} | Late: ${this.totals.Late}`,
+      `Total: ${this.totals.total} | Present: ${this.totals.Present} | Absent: ${this.totals.Absent} | Leave: ${this.totals.Leave}`,
       14,
       y
     );
 
-    doc.save(`attendance_${new Date().toISOString().slice(0,10)}.pdf`);
+    doc.save(`attendance_${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
-  // --- UI helpers
+  // ---------------- UI helpers / narrowers ----------------
+  getStudentName(r: Attendance): string {
+    const s: any = r?.student;
+    return s && typeof s === 'object' ? (s.name ?? '') : '';
+  }
+  getStudentId(r: Attendance): string | number {
+    const s: any = r?.student;
+    return s && typeof s === 'object' ? (s.studentId ?? '') : '';
+  }
+
   toggleSelectAll(ev: Event) {
-    const checked = (ev.target as HTMLInputElement).checked;
-    this.students = this.students.map(s => ({ ...s, selected: checked }));
+    const checked = (ev.target as HTMLInputElement | null)?.checked ?? false;
+    this.students = this.students.map((s) => ({ ...s, selected: checked }));
   }
 
-  /** Getter used in template: [checked]="allSelected" */
   get allSelected(): boolean {
-    return this.students.length > 0 && this.students.every(s => !!s.selected);
+    return this.students.length > 0 && this.students.every((s) => !!s.selected);
   }
 
-  /** trackBy functions for ngFor */
   trackByStudent = (_: number, s: any) => s?._id ?? s?.id ?? s?.studentId ?? _;
-  trackByRecord  = (_: number, r: any) => r?._id ?? _;
+  trackByRecord = (_: number, r: any) => r?._id ?? _;
 
-  /** Pager helpers used in template (avoid Math.* in HTML) */
-  get totalPages(): number {
-    return Math.max(1, Math.ceil(this.attendances.length / this.pageSize));
-  }
-  prevPage() { this.page = Math.max(1, this.page - 1); }
-  nextPage() { this.page = Math.min(this.totalPages, this.page + 1); }
-
-  /** Safe date formatter */
+  // ---------------- Utils ----------------
+  /** Safe date formatter -> YYYY-MM-DD */
   private formatDate(d: any): string {
     if (!d) return '';
     try {
       const dateObj = new Date(d);
       if (isNaN(dateObj.getTime())) return String(d);
-      return dateObj.toISOString().slice(0, 10);
+      return new Date(dateObj.getTime() - dateObj.getTimezoneOffset() * 60000)
+        .toISOString()
+        .slice(0, 10);
     } catch {
       return String(d);
     }
   }
 
-  private msg(m: string) { this.message = m; }
+  private msg(m: string) {
+    this.message = m;
+  }
 }

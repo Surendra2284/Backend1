@@ -6,7 +6,7 @@
     <div class="card">Total <strong>{{ totals.total }}</strong></div>
     <div class="card">Present <strong>{{ totals.Present }}</strong> ({{ totals.pctPresent }}%)</div>
     <div class="card">Absent <strong>{{ totals.Absent }}</strong> ({{ totals.pctAbsent }}%)</div>
-    <div class="card">Late <strong>{{ totals.Late }}</strong> ({{ totals.pctLate }}%)</div>
+    <div class="card">Leave <strong>{{ totals.Leave }}</strong> ({{ totals.pctLeave }}%)</div>
   </div>
 
   <!-- Filters -->
@@ -20,7 +20,7 @@
       <option value="">Any status</option>
       <option value="Present">Present</option>
       <option value="Absent">Absent</option>
-      <option value="Late">Late</option>
+      <option value="Leave">Leave</option>
     </select>
     <button type="submit">Search</button>
     <button type="button" (click)="clearFilters()">Clear</button>
@@ -41,7 +41,7 @@
     <select id="status" formControlName="status">
       <option value="Present">Present</option>
       <option value="Absent">Absent</option>
-      <option value="Late">Late</option>
+      <option value="Leave">Leave</option>
     </select>
 
     <div class="student-list">
@@ -78,10 +78,15 @@
 
   <!-- Table (sorting + paging) -->
   <h2>Attendance Records</h2>
+
   <div class="table-controls">
     <label>
       Page size:
-      <select [(ngModel)]="pageSize" [ngModelOptions]="{ standalone: true }">
+      <select
+        [ngModel]="pageSize"
+        [ngModelOptions]="{ standalone: true }"
+        (ngModelChange)="onPageSizeChange($event)"
+      >
         <option *ngFor="let s of [5,10,20,50]" [value]="s">{{ s }}</option>
       </select>
     </label>
@@ -99,16 +104,27 @@
         <th>Actions</th>
       </tr>
     </thead>
+
     <tbody>
-      <tr *ngFor="let r of paged; trackBy: trackByRecord">
-        <td>{{ r.student?.name }} ({{ r.student?.studentId }})</td>
+      <!-- Server returns the current page; we sort locally -->
+      <tr *ngFor="let r of sorted; trackBy: trackByRecord">
+        <td>{{ getStudentName(r) }} ({{ getStudentId(r) }})</td>
         <td>{{ r.className }}</td>
         <td>{{ r.teacher }}</td>
         <td>{{ r.username }}</td>
-        <td>{{ r.date | date:'yyyy-MM-dd' }}</td>
-        <td>{{ r.status }}</td>
+        <td>{{ r.date ? (r.date | date:'yyyy-MM-dd') : '' }}</td>
+
         <td>
-          <button (click)="updateAttendance(r._id!, { status: 'Present' })">Mark Present</button>
+          <!-- Inline correction: dropdown pushes to /attendance/correct -->
+          <select [ngModel]="r.status" (ngModelChange)="correctStatus(r, $event)">
+            <option value="Present">Present</option>
+            <option value="Absent">Absent</option>
+            <option value="Leave">Leave</option>
+          </select>
+        </td>
+
+        <td>
+          <button (click)="correctStatus(r, 'Present')">Mark Present</button>
           <button (click)="deleteAttendance(r._id!)">Delete</button>
         </td>
       </tr>
@@ -116,8 +132,8 @@
   </table>
 
   <div class="pager">
-    <button (click)="prevPage()">&laquo; Prev</button>
-    <span>Page {{ page }} / {{ totalPages }}</span>
-    <button (click)="nextPage()">Next &raquo;</button>
+    <button (click)="prevPage()" [disabled]="page <= 1">&laquo; Prev</button>
+    <span>Page {{ page }} / {{ totalPages }} &nbsp; • &nbsp; Total records: {{ totalCount }}</span>
+    <button (click)="nextPage()" [disabled]="page >= totalPages">Next &raquo;</button>
   </div>
 </div>

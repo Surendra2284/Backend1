@@ -167,14 +167,15 @@ export class TeacherloginComponent implements OnInit {
     const className = this.loggedInTeacher?.Assignclass;
     if (!className) return;
 
-    this.attendanceService.getAttendance({ className }).subscribe({
-      next: (records) => {
-        this.attendanceRecords = records || [];
+    // Use the helper that returns just the array to avoid Paginated<T> type issues.
+    this.attendanceService.getAttendanceListOnly({ className, page: 1, limit: 500 }).subscribe({
+      next: (list) => {
+        this.attendanceRecords = list || [];
 
-        // Map latest status by studentId (from populated student)
+        // Build latest status per studentId (records are sorted by date desc in API)
         const latestPerStudent = new Map<number, AttStatus>();
         this.attendanceRecords.forEach(r => {
-          const sid: number | undefined = r.student?.studentId;
+          const sid = this.getStudentIdFromRecord(r);
           if (typeof sid === 'number' && !latestPerStudent.has(sid)) {
             latestPerStudent.set(sid, r.status as AttStatus);
           }
@@ -218,20 +219,22 @@ export class TeacherloginComponent implements OnInit {
 
     const presentIds: string[] = [];
     const absentIds: string[]  = [];
-    const lateIds: string[]    = [];
+    const leaveIds: string[]   = [];
 
     this.students.forEach(s => {
       const sid = s.studentId;
       const oid = idByStudentId.get(sid);
       if (!oid) return;
 
-      const status = this.attendance[sid] || 'Absent';
+      // Normalize in case older UI states used "Late"
+      const status = this.normalizeStatus(this.attendance[sid] || 'Absent');
+
       if (status === 'Present') presentIds.push(oid);
-      else if (status === 'Late') lateIds.push(oid);
+      else if (status === 'Leave') leaveIds.push(oid);
       else absentIds.push(oid);
     });
 
-    if (presentIds.length + absentIds.length + lateIds.length === 0) {
+    if (presentIds.length + absentIds.length + leaveIds.length === 0) {
       alert('No students found to save attendance for.');
       return;
     }
@@ -240,13 +243,19 @@ export class TeacherloginComponent implements OnInit {
 
     const calls = [];
     if (presentIds.length) {
-      calls.push(this.attendanceService.saveAttendanceBulk({ studentIds: presentIds, className, teacher, username, date, status: 'Present' }));
+      calls.push(this.attendanceService.saveAttendanceBulk({
+        studentIds: presentIds, className, teacher, username, date, status: 'Present'
+      }));
     }
     if (absentIds.length) {
-      calls.push(this.attendanceService.saveAttendanceBulk({ studentIds: absentIds, className, teacher, username, date, status: 'Absent' }));
+      calls.push(this.attendanceService.saveAttendanceBulk({
+        studentIds: absentIds, className, teacher, username, date, status: 'Absent'
+      }));
     }
-    if (lateIds.length) {
-      calls.push(this.attendanceService.saveAttendanceBulk({ studentIds: lateIds, className, teacher, username, date, status: 'Late' }));
+    if (leaveIds.length) {
+      calls.push(this.attendanceService.saveAttendanceBulk({
+        studentIds: leaveIds, className, teacher, username, date, status: 'Leave'
+      }));
     }
 
     forkJoin(calls.length ? calls : [of(null)]).subscribe({
@@ -270,6 +279,24 @@ export class TeacherloginComponent implements OnInit {
   }
 
   // ========== Helpers ==========
+  /** Map any legacy string (e.g. "Late") to current AttStatus union. */
+  private normalizeStatus(val: any): AttStatus {
+    const map: Record<string, AttStatus> = {
+      present: 'Present',
+      absent: 'Absent',
+      leave: 'Leave',
+      late: 'Leave', // legacy -> map to Leave
+    };
+    return map[String(val || '').toLowerCase()] ?? 'Present';
+  }
+
+  /** Extract numeric studentId from Attendance.student (which may be a string or Student). */
+  private getStudentIdFromRecord(r: Attendance): number | undefined {
+    const s: any = r?.student;
+    if (s && typeof s === 'object' && typeof s.studentId === 'number') return s.studentId;
+    return undefined;
+  }
+
   private today(): string {
     const d = new Date();
     const localISO = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString();

@@ -6,7 +6,7 @@
   <div class="attendance-actions" *ngIf="students.length">
     <button type="button" class="btn btn-sm" (click)="markAll('Present')">Mark all Present</button>
     <button type="button" class="btn btn-sm" (click)="markAll('Absent')">Mark all Absent</button>
-    <button type="button" class="btn btn-sm" (click)="markAll('Late')">Mark all Late</button>
+    <button type="button" class="btn btn-sm" (click)="markAll('Leave')">Mark all Late</button>
   </div>
 
   <form (ngSubmit)="saveAttendance()">
@@ -29,7 +29,7 @@
             >
               <option value="Present">Present</option>
               <option value="Absent">Absent</option>
-              <option value="Late">Late</option>
+              <option value="Leave">Leave</option>
             </select>
           </td>
         </tr>
