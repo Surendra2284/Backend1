@@ -317,9 +317,13 @@ commitBulk(): void {
       this.bulkPreview = [];
     },
     error: (err) => {
-      console.error(err);
-      alert('Bulk Uimport failed.');
+      const status = err?.status ?? 'n/a';
+      const msg = err?.error?.message || err?.message || 'Unknown error';
+      alert(`Bulk import failed (status ${status}): ${msg}`);
+      if (err?.error?.errors) console.table(err.error.errors);
+      else console.error(err);
     }
   });
 }
+
 }
