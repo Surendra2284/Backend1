@@ -122,7 +122,7 @@ export class StudentService {
   }bulkAddStudents(payload: any[], options?: { upsert?: boolean }) {
     const upsert = options?.upsert ? 'true' : 'false';
     return this.http.post<{ inserted: number; updated: number; skipped: number; errors: any[] }>(
-      `${this.apiUrl}/students/bulk?upsert=${upsert}`,
+      `${this.apiUrl}/bulk?upsert=${upsert}`,
       { students: payload }
     );
     }
