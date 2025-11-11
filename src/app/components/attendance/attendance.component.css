@@ -44,3 +44,75 @@
     padding: 10px;
     border: 1px solid #ddd;
   }
+  :host { display:block; }
+* { box-sizing: border-box; }
+/* ---------- Width control (half width, centered) ---------- */
+.att-wrap.half {
+  max-width: 720px;   /* tweak: 680–840px depending on your preference */
+  margin: 0 auto;
+}
+
+/* ---------- New color palette ---------- */
+/* Primary: Indigo; Present: Teal; Leave: Orange; Absent: Crimson */
+:root {
+  --primary: #5b61f6;
+  --primary-strong: #464bf0;
+  --muted: #6b7280;
+
+  --good-fg: #0f766e;
+  --good-bg: #e6fffb;
+  --good-br: #b6f3ea;
+
+  --warn-fg: #b45309;
+  --warn-bg: #fff4e5;
+  --warn-br: #ffd8a8;
+
+  --bad-fg: #a11a2b;
+  --bad-bg: #fff0f2;
+  --bad-br: #ffc9d2;
+
+  --panel-bg: #ffffff;
+  --panel-br: #eceef3;
+  --thead-bg: #f5f6ff;
+}
+
+/* Panels & cards */
+.card { background: var(--panel-bg); border-color: var(--panel-br); }
+.cards .card.good { background: #f0fffb; border-color: #ccfbf1; }
+.cards .card.warn { background: #fff8ec; border-color: #ffe5c2; }
+.cards .card.bad  { background: #fff4f6; border-color: #ffd1da; }
+
+.card-kpi { color: #111827; }
+.card-label { color: var(--muted); }
+
+/* Buttons */
+.btn.primary { background: var(--primary); border-color: var(--primary); color: #fff; }
+.btn.primary:hover { background: var(--primary-strong); border-color: var(--primary-strong); }
+.btn.ghost { border-color: var(--panel-br); }
+.btn.tiny { padding: 6px 10px; }
+.btn.tiny.danger { color: var(--bad-fg); background: var(--bad-bg); border-color: var(--bad-br); }
+
+/* Pills (status chips) */
+.pill.good { color: var(--good-fg); background: var(--good-bg); border-color: var(--good-br); }
+.pill.warn { color: var(--warn-fg); background: var(--warn-bg); border-color: var(--warn-br); }
+.pill.bad  { color: var(--bad-fg);  background: var(--bad-bg);  border-color: var(--bad-br); }
+
+/* Chips for quick set */
+.chip.good { background: var(--good-bg); border-color: var(--good-br); }
+.chip.warn { background: var(--warn-bg); border-color: var(--warn-br); }
+.chip.bad  { background: var(--bad-bg);  border-color: var(--bad-br); }
+
+/* Table */
+.table-wrap { background: var(--panel-bg); border-color: var(--panel-br); }
+thead th { background: var(--thead-bg); border-bottom-color: var(--panel-br); }
+tbody td { border-bottom-color: #f2f3f7; }
+
+/* Text + accents */
+.muted { color: var(--muted); }
+
+/* Small tweak: student pills accent */
+.student-pill._on { border-color: var(--good-fg); background: #f3fffd; }
+.student-pill .dot.on { background: var(--good-fg); }
+
+/* Loading spinner tint */
+.spinner { border-color: var(--primary); border-top-color: transparent; }

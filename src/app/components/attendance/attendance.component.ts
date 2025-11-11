@@ -10,7 +10,7 @@ import {
 import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
-
+import { forkJoin } from 'rxjs';
 type SortKey = 'student' | 'className' | 'teacher' | 'username' | 'date' | 'status';
 
 @Component({
@@ -53,6 +53,8 @@ export class AttendanceComponent implements OnInit {
       studentId: [''],
       date: [''],
       status: [''],
+      page: [''],
+      limit: [''],
     });
   }
 
@@ -74,6 +76,18 @@ export class AttendanceComponent implements OnInit {
     });
   }
 
+  /** Accepts both Paginated<Attendance> and Attendance[] safely */
+  private handleAttendanceResponse(res: Paginated<Attendance> | Attendance[] | any) {
+    if (Array.isArray(res)) {
+      this.attendances = res;
+      this.totalCount = res.length;
+      return;
+    }
+    // paginated shape { total, page, limit, data }
+    this.attendances = res?.data ?? [];
+    this.totalCount = res?.total ?? this.attendances.length ?? 0;
+  }
+
   applyFilters() {
     const f = this.filterForm.value;
     const query = {
@@ -89,10 +103,9 @@ export class AttendanceComponent implements OnInit {
 
     this.loading = true;
     this.attendanceService.getAttendance(query).subscribe({
-      next: (res: Paginated<Attendance>) => {
+      next: (res) => {
         this.loading = false;
-        this.attendances = res?.data || [];
-        this.totalCount = res?.total || 0;
+        this.handleAttendanceResponse(res);
       },
       error: () => {
         this.loading = false;
@@ -145,12 +158,17 @@ export class AttendanceComponent implements OnInit {
       status: this.normalizeStatus(form.status),
     };
 
+    // ensure we fetch the same class after save
+    if (!this.filterForm.value.className) {
+      this.filterForm.patchValue({ className: form.className });
+    }
+
     this.loading = true;
     this.attendanceService.saveAttendanceBulk(payload).subscribe({
       next: (res) => {
         this.loading = false;
         this.msg(`Attendance saved. Created: ${res.created ?? 0}, Updated: ${res.updated ?? 0}`);
-        this.applyFilters();
+        this.applyFilters(); // refresh
         this.clearSelections();
       },
       error: () => {
@@ -165,7 +183,7 @@ export class AttendanceComponent implements OnInit {
   }
 
   // ---------------- Correct / Update / Delete ----------------
-  /** Inline correction by student + date (uses /attendance/correct) */
+  /** Inline correction by student + date (uses /attendance/attendance/correct in your current setup) */
   correctStatus(record: Attendance, newStatus: AttStatus, reason?: string) {
     const s: any = record?.student;
     const studentId =
@@ -283,6 +301,61 @@ export class AttendanceComponent implements OnInit {
       pctLeave: pct(by.Leave),
     };
   }
+/** Filter a list to only 'Present' records */
+presentOnly(items: Attendance[]): Attendance[] {
+  return (items || []).filter(r => r?.status === 'Present');
+}
+
+/** Build class-wise groups from the current (sorted) page, only 'Present' */
+presentClassGroups(): Array<{ className: string; items: Attendance[] }> {
+  const byClass = new Map<string, Attendance[]>();
+  for (const r of this.sorted) {
+    if (r?.status !== 'Present') continue;
+    const key = r.className || 'Unknown';
+    if (!byClass.has(key)) byClass.set(key, []);
+    byClass.get(key)!.push(r);
+  }
+  return Array.from(byClass.entries()).map(([className, items]) => ({ className, items }));
+}
+
+/** Bulk change status for every record in a class group (used by header buttons) */
+markClassAll(g: { className: string; items: Attendance[] }, newStatus: AttStatus) {
+  if (!g?.items?.length) return;
+  const ok = confirm(`Change ${g.items.length} records in class "${g.className}" to "${newStatus}"?`);
+  if (!ok) return;
+
+  this.loading = true;
+
+  const ops = g.items.map((r) => {
+    const s: any = r?.student;
+    const studentId =
+      (s && (s._id || s.id || s.studentId)) ||
+      (typeof r.student === 'string' ? r.student : '');
+
+    const date = this['formatDate'](r.date);
+    return this.attendanceService.correctAttendance({
+      studentId,
+      date,
+      newStatus,
+      reason: `Class-wise bulk update to ${newStatus}`,
+      correctedBy: (this as any).auth?.getUsername?.() || r.username || 'system',
+    });
+  });
+
+  // If you haven't already:
+  // import { forkJoin } from 'rxjs';
+  forkJoin(ops).subscribe({
+    next: () => {
+      this.msg(`Updated ${g.items.length} record(s) in "${g.className}" to "${newStatus}".`);
+      this.loading = false;
+      this.applyFilters();
+    },
+    error: () => {
+      this.msg('Failed to bulk update class records.');
+      this.loading = false;
+    },
+  });
+}
 
   // ---------------- Export ----------------
   exportExcel() {

@@ -1,139 +1,196 @@
-<div class="container">
-  <h1>Attendance Management</h1>
+<div class="att-wrap" [class.loading]="loading">
+  <!-- Top bar -->
+  <header class="att-bar">
+    <h1>Attendance</h1>
+    <div class="bar-actions">
+      <button class="btn ghost" type="button" (click)="exportExcel()">Export Excel</button>
+      <button class="btn ghost" type="button" (click)="exportPDF()">Export PDF</button>
+    </div>
+  </header>
 
-  <!-- Summary / Dashboard -->
-  <div class="summary">
-    <div class="card">Total <strong>{{ totals.total }}</strong></div>
-    <div class="card">Present <strong>{{ totals.Present }}</strong> ({{ totals.pctPresent }}%)</div>
-    <div class="card">Absent <strong>{{ totals.Absent }}</strong> ({{ totals.pctAbsent }}%)</div>
-    <div class="card">Leave <strong>{{ totals.Leave }}</strong> ({{ totals.pctLeave }}%)</div>
-  </div>
+  <!-- KPIs -->
+  <section class="cards">
+    <div class="card">
+      <div class="card-kpi">{{ totals.total }}</div>
+      <div class="card-label">Total Records (page)</div>
+    </div>
+    <div class="card good">
+      <div class="card-kpi">{{ totals.Present }}</div>
+      <div class="card-label">Present ({{ totals.pctPresent }}%)</div>
+    </div>
+    <div class="card warn">
+      <div class="card-kpi">{{ totals.Leave }}</div>
+      <div class="card-label">Leave ({{ totals.pctLeave }}%)</div>
+    </div>
+    <div class="card bad">
+      <div class="card-kpi">{{ totals.Absent }}</div>
+      <div class="card-label">Absent ({{ totals.pctAbsent }}%)</div>
+    </div>
+  </section>
 
   <!-- Filters -->
-  <form [formGroup]="filterForm" class="filters" (ngSubmit)="applyFilters()">
-    <input type="text" placeholder="Class" formControlName="className" />
-    <input type="text" placeholder="Student name" formControlName="name" />
-    <input type="text" placeholder="Username" formControlName="username" />
-    <input type="text" placeholder="Student ID" formControlName="studentId" />
-    <input type="date" formControlName="date" />
-    <select formControlName="status">
-      <option value="">Any status</option>
-      <option value="Present">Present</option>
-      <option value="Absent">Absent</option>
-      <option value="Leave">Leave</option>
-    </select>
-    <button type="submit">Search</button>
-    <button type="button" (click)="clearFilters()">Clear</button>
-
-    <div class="spacer"></div>
-    <button type="button" (click)="exportExcel()">Export Excel</button>
-    <button type="button" (click)="exportPDF()">Export PDF</button>
+  <form class="filters" [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+    <div class="row">
+      <input type="text" placeholder="Class" formControlName="className" />
+      <input type="text" placeholder="Student name" formControlName="name" />
+      <input type="text" placeholder="Username" formControlName="username" />
+      <input type="text" placeholder="Student ID" formControlName="studentId" />
+      <input type="date" formControlName="date" />
+      <select formControlName="status">
+        <option value="">Any status</option>
+        <option value="Present">Present</option>
+        <option value="Absent">Absent</option>
+        <option value="Leave">Leave</option>
+      </select>
+    </div>
+    <div class="row right">
+      <button class="btn" type="submit">Search</button>
+      <button class="btn ghost" type="button" (click)="clearFilters()">Clear</button>
+    </div>
   </form>
 
-  <!-- Create / Bulk Mark -->
-  <h2>Mark Attendance</h2>
-  <form [formGroup]="attendanceForm" class="create" novalidate>
-    <input id="className" type="text" placeholder="Class" formControlName="className" />
-    <input id="teacher" type="text" placeholder="Teacher" formControlName="teacher" />
-    <input id="username" type="text" placeholder="Username" formControlName="username" />
-    <input id="date" type="date" formControlName="date" />
+  <!-- Bulk Mark -->
+  <section class="bulk">
+    <div class="bulk-head">
+      <h2>Mark Attendance</h2>
+      <div class="hint">Pick students below, choose a status, then save.</div>
+    </div>
 
-    <select id="status" formControlName="status">
-      <option value="Present">Present</option>
-      <option value="Absent">Absent</option>
-      <option value="Leave">Leave</option>
-    </select>
-
-    <div class="student-list">
-      <div class="select-all">
-        <input id="selectAll" type="checkbox" [checked]="allSelected" (change)="toggleSelectAll($event)" />
-        <label for="selectAll">Select all</label>
+    <form class="bulk-form" [formGroup]="attendanceForm" novalidate>
+      <div class="grid">
+        <input id="className" type="text" placeholder="Class" formControlName="className" />
+        <input id="teacher" type="text" placeholder="Teacher" formControlName="teacher" />
+        <input id="username" type="text" placeholder="Username" formControlName="username" />
+        <input id="date" type="date" formControlName="date" />
+        <select id="status" formControlName="status">
+          <option value="Present">Present</option>
+          <option value="Absent">Absent</option>
+          <option value="Leave">Leave</option>
+        </select>
       </div>
 
-      <div class="students">
-        <!-- Use trackBy function; prefer _id, fallback to studentId -->
-        <label
-          class="student"
-          *ngFor="let s of students; trackBy: trackByStudent"
-          [attr.for]="s._id || ('sid_' + s.studentId)"
+      <div class="bulk-toolbar">
+        <label class="chk">
+          <input id="selectAll" type="checkbox" [checked]="allSelected" (change)="toggleSelectAll($event)" />
+          <span>Select all</span>
+        </label>
+
+        <div class="chips">
+          <span class="muted">Quick set:</span>
+          <button type="button" class="chip good" (click)="attendanceForm.patchValue({status:'Present'})">Present</button>
+          <button type="button" class="chip warn" (click)="attendanceForm.patchValue({status:'Leave'})">Leave</button>
+          <button type="button" class="chip bad"  (click)="attendanceForm.patchValue({status:'Absent'})">Absent</button>
+        </div>
+
+        <button
+          class="btn primary"
+          type="button"
+          (click)="saveAttendance()"
+          [disabled]="attendanceForm.invalid || loading"
         >
-          <input
-            type="checkbox"
-            [id]="s._id || ('sid_' + s.studentId)"
-            [(ngModel)]="s.selected"
-            [ngModelOptions]="{ standalone: true }"
-            [name]="'student_' + (s._id || ('sid_' + s.studentId))"
-          />
-          <span>{{ s.name }} ({{ s.class }})</span>
+          {{ loading ? 'Saving…' : 'Save Attendance' }}
+        </button>
+      </div>
+
+      <!-- Select students -->
+      <div class="student-scroller">
+        <div
+          class="student-pill"
+          *ngFor="let s of students; trackBy: trackByStudent"
+          [class._on]="s.selected"
+          (click)="s.selected = !s.selected"
+          [title]="s.name"
+        >
+          <span class="dot" [class.on]="s.selected"></span>
+          <span class="label">{{ s.name }}</span>
+          <span class="sub">{{ s.class }}</span>
+        </div>
+      </div>
+    </form>
+
+    <div class="result" *ngIf="message">{{ message }}</div>
+  </section>
+
+  <!-- Records -->
+  <section class="records">
+    <div class="records-head">
+      <h2>Attendance Records</h2>
+      <div class="table-controls">
+        <label>Page size:
+          <select [ngModel]="pageSize" [ngModelOptions]="{ standalone: true }" (ngModelChange)="onPageSizeChange($event)">
+            <option *ngFor="let s of [5,10,20,50]" [value]="s">{{ s }}</option>
+          </select>
         </label>
       </div>
     </div>
 
-    <button type="button" (click)="saveAttendance()" [disabled]="attendanceForm.invalid || loading">
-      {{ loading ? 'Saving…' : 'Save Attendance' }}
-    </button>
-  </form>
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th (click)="setSort('student')">Student</th>
+            <th (click)="setSort('className')">Class</th>
+            <th (click)="setSort('teacher')">Teacher</th>
+            <th (click)="setSort('username')">Username</th>
+            <th (click)="setSort('date')">Date</th>
+            <th (click)="setSort('status')">Status</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
 
-  <div class="result">{{ message }}</div>
+        <tbody>
+          <tr *ngIf="sorted.length === 0">
+            <td colspan="7" class="empty">No records found. Adjust filters or save attendance above.</td>
+          </tr>
 
-  <!-- Table (sorting + paging) -->
-  <h2>Attendance Records</h2>
+          <tr *ngFor="let r of sorted; trackBy: trackByRecord">
+            <td>
+              <div class="cell-student">
+                <div class="name">{{ getStudentName(r) }}</div>
+                <div class="meta">ID: {{ getStudentId(r) || '—' }}</div>
+              </div>
+            </td>
+            <td>{{ r.className }}</td>
+            <td>{{ r.teacher }}</td>
+            <td>{{ r.username }}</td>
+            <td>{{ r.date ? (r.date | date:'yyyy-MM-dd') : '' }}</td>
 
-  <div class="table-controls">
-    <label>
-      Page size:
-      <select
-        [ngModel]="pageSize"
-        [ngModelOptions]="{ standalone: true }"
-        (ngModelChange)="onPageSizeChange($event)"
-      >
-        <option *ngFor="let s of [5,10,20,50]" [value]="s">{{ s }}</option>
-      </select>
-    </label>
-  </div>
+            <td>
+              <span class="pill"
+                    [class.good]="r.status === 'Present'"
+                    [class.warn]="r.status === 'Leave'"
+                    [class.bad]="r.status === 'Absent'">
+                {{ r.status }}
+              </span>
+              <select class="inline-edit" [ngModel]="r.status" (ngModelChange)="correctStatus(r, $event)">
+                <option value="Present">Present</option>
+                <option value="Leave">Leave</option>
+                <option value="Absent">Absent</option>
+              </select>
+            </td>
 
-  <table>
-    <thead>
-      <tr>
-        <th (click)="setSort('student')">Student</th>
-        <th (click)="setSort('className')">Class</th>
-        <th (click)="setSort('teacher')">Teacher</th>
-        <th (click)="setSort('username')">Username</th>
-        <th (click)="setSort('date')">Date</th>
-        <th (click)="setSort('status')">Status</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
+            <td class="actions">
+              <button class="btn tiny" (click)="correctStatus(r, 'Present')">Mark Present</button>
+              <button class="btn tiny danger" (click)="deleteAttendance(r._id!)">Delete</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
 
-    <tbody>
-      <!-- Server returns the current page; we sort locally -->
-      <tr *ngFor="let r of sorted; trackBy: trackByRecord">
-        <td>{{ getStudentName(r) }} ({{ getStudentId(r) }})</td>
-        <td>{{ r.className }}</td>
-        <td>{{ r.teacher }}</td>
-        <td>{{ r.username }}</td>
-        <td>{{ r.date ? (r.date | date:'yyyy-MM-dd') : '' }}</td>
+    <!-- Pager -->
+    <div class="pager" *ngIf="totalPages > 1">
+      <button class="btn ghost" (click)="prevPage()" [disabled]="page <= 1">&laquo; Prev</button>
+      <span>Page {{ page }} / {{ totalPages }}</span>
+      <button class="btn ghost" (click)="nextPage()" [disabled]="page >= totalPages">Next &raquo;</button>
+      <span class="muted sep">•</span>
+      <span class="muted">Total records: {{ totalCount }}</span>
+    </div>
+  </section>
 
-        <td>
-          <!-- Inline correction: dropdown pushes to /attendance/correct -->
-          <select [ngModel]="r.status" (ngModelChange)="correctStatus(r, $event)">
-            <option value="Present">Present</option>
-            <option value="Absent">Absent</option>
-            <option value="Leave">Leave</option>
-          </select>
-        </td>
-
-        <td>
-          <button (click)="correctStatus(r, 'Present')">Mark Present</button>
-          <button (click)="deleteAttendance(r._id!)">Delete</button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
-
-  <div class="pager">
-    <button (click)="prevPage()" [disabled]="page <= 1">&laquo; Prev</button>
-    <span>Page {{ page }} / {{ totalPages }} &nbsp; • &nbsp; Total records: {{ totalCount }}</span>
-    <button (click)="nextPage()" [disabled]="page >= totalPages">Next &raquo;</button>
+  <!-- Loading overlay -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="spinner"></div>
+    <div>Working…</div>
   </div>
 </div>

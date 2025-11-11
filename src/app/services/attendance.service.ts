@@ -12,7 +12,7 @@ export interface Attendance {
   className: string;
   teacher: string;
   username: string;
-  date: string;              // send as YYYY-MM-DD from UI; backend normalizes to UTC day-start
+  date: string;              // YYYY-MM-DD from UI; backend normalizes to UTC day-start
   status: AttStatus;
   correctionHistory?: Array<{
     changedAt?: string;
@@ -41,7 +41,8 @@ export interface Paginated<T> {
 }
 
 const BASE_URL = (environment.apiUrl || '').replace(/\/+$/, '');
-const ATTENDANCE_PATH = '/attendance';
+// Because app.use('/attendance', attendanceRoutes) AND router has '/attendance' prefixes:
+const ATTENDANCE_BASE = '/attendance/attendance';
 
 @Injectable({ providedIn: 'root' })
 export class AttendanceService {
@@ -73,7 +74,7 @@ export class AttendanceService {
       if (v != null && String(v).trim() !== '') clean[k] = String(v);
     });
     const params = new HttpParams({ fromObject: clean });
-    return this.http.get<Paginated<Attendance>>(`${BASE_URL}${ATTENDANCE_PATH}`, { params })
+    return this.http.get<Paginated<Attendance>>(`${BASE_URL}${ATTENDANCE_BASE}`, { params })
       .pipe(catchError(this.handleError('fetch attendance')));
   }
 
@@ -86,8 +87,10 @@ export class AttendanceService {
     date: string;             // YYYY-MM-DD
     status: AttStatus;
   }): Observable<{ message: string; created: number; updated: number }> {
-    return this.http.post<{ message: string; created: number; updated: number }>(`${BASE_URL}${ATTENDANCE_PATH}`, data)
-      .pipe(catchError(this.handleError('save/upsert bulk attendance')));
+    return this.http.post<{ message: string; created: number; updated: number }>(
+      `${BASE_URL}${ATTENDANCE_BASE}`,
+      data
+    ).pipe(catchError(this.handleError('save/upsert bulk attendance')));
   }
 
   /** ---------- Attendance: Correct by (studentId + date) ---------- */
@@ -99,7 +102,7 @@ export class AttendanceService {
     correctedBy?: string;       // typically current username
   }): Observable<{ message: string; record: Attendance } | { message: string }> {
     return this.http.patch<{ message: string; record: Attendance } | { message: string }>(
-      `${BASE_URL}${ATTENDANCE_PATH}/correct`,
+      `${BASE_URL}${ATTENDANCE_BASE}/correct`,
       payload
     ).pipe(catchError(this.handleError('correct attendance')));
   }
@@ -115,19 +118,19 @@ export class AttendanceService {
     reason: string;
   }>): Observable<{ message: string; record: Attendance }> {
     return this.http.patch<{ message: string; record: Attendance }>(
-      `${BASE_URL}${ATTENDANCE_PATH}/${encodeURIComponent(id)}`,
+      `${BASE_URL}${ATTENDANCE_BASE}/${encodeURIComponent(id)}`,
       data
     ).pipe(catchError(this.handleError('update attendance')));
   }
 
   /** ---------- Attendance: Delete by _id ---------- */
   deleteAttendance(id: string): Observable<{ message: string }> {
-    return this.http.delete<{ message: string }>(`${BASE_URL}${ATTENDANCE_PATH}/${encodeURIComponent(id)}`)
-      .pipe(catchError(this.handleError('delete attendance')));
+    return this.http.delete<{ message: string }>(
+      `${BASE_URL}${ATTENDANCE_BASE}/${encodeURIComponent(id)}`
+    ).pipe(catchError(this.handleError('delete attendance')));
   }
 
   /** ---------- Helpers ---------- */
-  /** Extract only array data if you want convenience for tables: */
   getAttendanceListOnly(filters?: Parameters<AttendanceService['getAttendance']>[0]): Observable<Attendance[]> {
     return this.getAttendance(filters).pipe(map(p => p.data));
   }
