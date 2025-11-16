@@ -1,124 +1,142 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common'; // Required for structural directives like *ngIf and *ngFor
-import { FormsModule } from '@angular/forms'; // Required for Template-Driven Forms
+import { of } from 'rxjs';
+import { catchError, finalize } from 'rxjs/operators';
+
+import { TeacherService } from '../../services/teacher.service';
 import { StudentService } from '../../services/student.service';
-import { UserService } from '../../services/user.service';
+import {
+  AttendanceService,
+  Attendance,
+  WeekAttendance,
+  StudentAttendanceByNameResponse
+} from '../../services/attendance.service';
+import { NoticeService } from '../../services/notice.service';
 
 @Component({
   selector: 'app-stu-dashboard',
-  standalone: true,
-  imports: [CommonModule, FormsModule], // Include CommonModule and FormsModule for standalone component
   templateUrl: './stu-dashboard.component.html',
   styleUrls: ['./stu-dashboard.component.css']
 })
 export class StuDashboardComponent implements OnInit {
-  students: any[] = []; // List of students fetched by class
-  selectedClass: string = ''; // Holds the class for searching students
-  isEditing: boolean = false; // Tracks editing mode
-  currentStudent: Student = this.resetStudent(); // Stores the student being edited or added
-  role1: string = ''; // User role fetched from user service
-  username1: string = ''; // Username fetched from user service
+  student: any = null;
+  attendanceRecords: Attendance[] = []; // fallback flat array if you still need it
+  weeklyAttendance: WeekAttendance[] = []; // grouped by week (from backend)
+  attendanceSummary = '';
+  classTeacherName = '';
+  notices: any[] = [];
 
-  constructor(private studentService: StudentService, private userService: UserService) {}
+  // UX state
+  loadingAttendance = false;
+  attendanceError = '';
+
+  constructor(
+    private teacherService: TeacherService,
+    private studentService: StudentService,
+    private attendanceService: AttendanceService,
+    private noticeService: NoticeService
+  ) {}
 
   ngOnInit(): void {
-    // Fetch user details from the service
-    const userDetails = this.userService.getUserDetails();
-    this.role1 = userDetails.userId; // Assuming userService provides 'roleId'
-    this.username1 = userDetails.username;
-  }
+    const storedName = (localStorage.getItem('username') || '').trim();
 
-  // Search students by class
-  searchByClass(): void {
-    if (!this.selectedClass) {
-      alert('Please enter a class name.');
+    if (!storedName) {
+      console.warn('No student name found in localStorage');
+      this.attendanceError = 'No student name available';
       return;
     }
 
-    
-  }
-
-  // Add a new student
-  addStudent(form: any): void {
-    if (!form.valid) {
-      alert('Please fill all required fields.');
-      return;
-    }
-
-    this.studentService.addStudent(form.value).subscribe(
-      (response) => {
-        alert('Student added successfully!');
-        this.students.push(response.student); // Update local student list
-        this.resetForm(form); // Clear the form
-      },
-      (error) => {
-        console.error('Error adding student:', error);
-        alert('Failed to add student.');
+    // 1) Try to fetch student metadata (optional, non-blocking)
+    this.studentService.searchStudentsByName(storedName).pipe(
+      catchError(err => {
+        console.warn('searchStudentsByName failed (continuing):', err);
+        return of([] as any[]);
+      })
+    ).subscribe((students) => {
+      if (students && students.length > 0) {
+        this.student = students[0];
+        this.classTeacherName = this.student.classteacher ?? '—';
       }
-    );
+      // 2) Load weekly attendance (use backend endpoint that groups by week)
+      this.loadAttendanceByStudentName(storedName, 1);
+      // 3) Fetch notices if class available
+      const studentClass = (this.student?.class ?? '').toString();
+      const studentClassteacher = (this.student?.classteacher ?? '').toString();
+      if (studentClass) {
+        this.noticeService.getNoticesByClassTeacher(studentClassteacher).pipe(
+          catchError(err => {
+            console.error('Error fetching notices by classTeacherName:', err);
+            return of([] as any[]);
+          })
+        ).subscribe((noticesFromApi) => {
+          this.notices = (Array.isArray(noticesFromApi) ? noticesFromApi : []).map((n: any) => ({
+            _id: n._id,
+            Noticeid: n.Noticeid,
+            name: n.name,
+            class: n.class ?? n.className ?? '',
+            role: n.Role ?? n.role ?? '',
+            title: n.title ?? n.Notice ?? n.name ?? 'Notice',
+            message: n.message ?? n.Notice ?? n.description ?? '',
+            classteacher: n.classteacher ?? this.classTeacherName,
+            isApproved: n.isApproved ?? false,
+            createdAt: n.createdAt ?? n.created_at ?? null
+          }));
+        });
+      } else {
+        // If student metadata not present yet, try to fetch notices later when student is set
+      }
+    });
   }
 
-  // Edit an existing student
-  editStudent(student: Student): void {
-    this.isEditing = true;
-    this.currentStudent = { ...student }; // Clone the student object for editing
+  loadAttendanceByStudentName(name: string, weeks: number = 1) {
+    this.loadingAttendance = true;
+    this.attendanceError = '';
+
+    this.attendanceService.getAttendanceByStudentName(name, weeks).pipe(
+      catchError(err => {
+        console.error('Error loading attendance by student name:', err);
+        this.attendanceError = err?.message || 'Failed to load attendance';
+        return of(null as StudentAttendanceByNameResponse | null);
+      }),
+      finalize(() => this.loadingAttendance = false)
+    ).subscribe((resp) => {
+      if (!resp) {
+        this.weeklyAttendance = [];
+        this.student = this.student ?? null;
+        this.attendanceRecords = [];
+        this.attendanceSummary = 'No attendance data';
+        return;
+      }
+
+      // Backend returns student and weeks[]
+      this.student = resp.student ?? this.student;
+      this.weeklyAttendance = resp.weeks ?? [];
+
+      // Flatten into attendanceRecords if you need a flat list
+      this.attendanceRecords = this.weeklyAttendance.flatMap(w => Array.isArray(w.records) ? w.records : []);
+
+      // compute summary across all returned records
+      this.attendanceSummary = this.summarizeAttendance(this.attendanceRecords);
+    });
   }
 
-  // Update the edited student
-  updateStudent(form: any): void {
-    if (!form.valid) {
-      alert('Please fill all required fields.');
-      return;
+  summarizeAttendance(records: Attendance[] | undefined): string {
+    if (!records || !Array.isArray(records) || records.length === 0) {
+      return 'No attendance records';
     }
 
+    const present = records.filter(r => r.status === 'Present').length;
+    const absent = records.filter(r => r.status === 'Absent').length;
+    const leave = records.filter(r => r.status === 'Leave').length;
+
+    return `Present: ${present}, Absent: ${absent}, Leave: ${leave}`;
   }
 
-  // Reset the form
-  resetForm(form: any): void {
-    this.isEditing = false;
-    this.currentStudent = this.resetStudent(); // Reset the current student object
-    form.reset(); // Reset the form controls
+  // helpers for *ngFor trackBy
+  trackByWeek(_: number, item: WeekAttendance) {
+    return (item.weekStart ?? '') + '|' + (item.weekEnd ?? '');
   }
 
-  // Reset currentStudent object to its default state
-  private resetStudent(): Student {
-    return {
-      studentId: 0,
-      name: '',
-      class: '',
-      mobileNo: '',
-      address: '',
-      Role: '',
-      Notice: '',
-      Email: '',
-      attendance: 0,
-      photo: null,
-      classteacher: ''
-    };
+  trackByRecord(_: number, item: any) {
+    return item._id ?? item.date;
   }
-
-  logout(): void {
-    console.log('User logged out.');
-    alert('You have been logged out!');
-  }
-
-  performAction(): void {
-    console.log('Performing an admin action...');
-    // Add custom admin actions here
-  }
-}
-
-// Define the Student interface for type safety
-interface Student {
-  studentId: number;
-  name: string;
-  class: string;
-  mobileNo: string;
-  address: string;
-  Role: string;
-  Notice?: string;
-  Email: string;
-  attendance: number;
-  photo: any;
-  classteacher?: string;
 }

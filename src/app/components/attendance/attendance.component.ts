@@ -11,6 +11,7 @@ import * as XLSX from 'xlsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import { forkJoin } from 'rxjs';
+
 type SortKey = 'student' | 'className' | 'teacher' | 'username' | 'date' | 'status';
 
 @Component({
@@ -63,6 +64,7 @@ export class AttendanceComponent implements OnInit {
     const iso = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
       .toISOString()
       .slice(0, 10);
+
     this.attendanceForm.patchValue({ date: iso });
     this.loadStudents();
     this.applyFilters();
@@ -114,6 +116,19 @@ export class AttendanceComponent implements OnInit {
     });
   }
 
+  getStudentLabel(student: any): string {
+    if (!student) return '';
+    if (typeof student === 'string') return student;
+    return (
+      (student.name as string) ||
+      (student.fullName as string) ||
+      (student.studentName as string) ||
+      (student.studentId as string) ||
+      (student._id as string) ||
+      ''
+    );
+  }
+
   clearFilters() {
     this.filterForm.reset();
     this.page = 1;
@@ -138,19 +153,20 @@ export class AttendanceComponent implements OnInit {
       return;
     }
 
-    const selectedIds = this.students
+    // ✅ send numeric studentIds now (NOT student object)
+    const selectedStudentIds = this.students
       .filter((s) => s.selected)
-      .map((s) => (s as any)._id)
-      .filter(Boolean);
+      .map((s) => s.studentId)
+      .filter((id) => id != null);
 
-    if (!selectedIds.length) {
+    if (!selectedStudentIds.length) {
       this.msg('Please select at least one student.');
       return;
     }
 
     const form = this.attendanceForm.value;
     const payload = {
-      studentIds: selectedIds,
+      studentIds: selectedStudentIds,         // (string | number)[] -> matches service
       className: form.className,
       teacher: form.teacher,
       username: form.username,
@@ -183,13 +199,10 @@ export class AttendanceComponent implements OnInit {
   }
 
   // ---------------- Correct / Update / Delete ----------------
-  /** Inline correction by student + date (uses /attendance/attendance/correct in your current setup) */
+  /** Inline correction by studentId + date */
   correctStatus(record: Attendance, newStatus: AttStatus, reason?: string) {
-    const s: any = record?.student;
-    const studentId =
-      (s && (s._id || s.id || s.studentId)) || (typeof record.student === 'string' ? record.student : '');
-
-    const date = this.formatDate(record.date); // ensure YYYY-MM-DD
+    const studentId = record.studentId;              // ✅ directly from Attendance
+    const date = this.formatDate(record.date);       // ensure YYYY-MM-DD
 
     this.attendanceService
       .correctAttendance({
@@ -197,7 +210,8 @@ export class AttendanceComponent implements OnInit {
         date,
         newStatus: this.normalizeStatus(newStatus),
         reason,
-        correctedBy: record.username, // or your current logged-in user
+        // if you have auth service, you can inject and use logged-in username here
+        correctedBy: record.username,
       })
       .subscribe({
         next: () => {
@@ -244,7 +258,7 @@ export class AttendanceComponent implements OnInit {
   }
 
   private sortValue(r: Attendance, key: SortKey): any {
-    if (key === 'student') return this.getStudentName(r) || '';
+    if (key === 'student') return this.getStudentName(r) || '';  // ✅ uses helper, not r.student
     if (key === 'date') return new Date(r.date).getTime() || 0;
     return (r as any)[key] ?? '';
   }
@@ -301,61 +315,56 @@ export class AttendanceComponent implements OnInit {
       pctLeave: pct(by.Leave),
     };
   }
-/** Filter a list to only 'Present' records */
-presentOnly(items: Attendance[]): Attendance[] {
-  return (items || []).filter(r => r?.status === 'Present');
-}
 
-/** Build class-wise groups from the current (sorted) page, only 'Present' */
-presentClassGroups(): Array<{ className: string; items: Attendance[] }> {
-  const byClass = new Map<string, Attendance[]>();
-  for (const r of this.sorted) {
-    if (r?.status !== 'Present') continue;
-    const key = r.className || 'Unknown';
-    if (!byClass.has(key)) byClass.set(key, []);
-    byClass.get(key)!.push(r);
+  /** Filter a list to only 'Present' records */
+  presentOnly(items: Attendance[]): Attendance[] {
+    return (items || []).filter(r => r?.status === 'Present');
   }
-  return Array.from(byClass.entries()).map(([className, items]) => ({ className, items }));
-}
 
-/** Bulk change status for every record in a class group (used by header buttons) */
-markClassAll(g: { className: string; items: Attendance[] }, newStatus: AttStatus) {
-  if (!g?.items?.length) return;
-  const ok = confirm(`Change ${g.items.length} records in class "${g.className}" to "${newStatus}"?`);
-  if (!ok) return;
+  /** Build class-wise groups from the current (sorted) page, only 'Present' */
+  presentClassGroups(): Array<{ className: string; items: Attendance[] }> {
+    const byClass = new Map<string, Attendance[]>();
+    for (const r of this.sorted) {
+      if (r?.status !== 'Present') continue;
+      const key = r.className || 'Unknown';
+      if (!byClass.has(key)) byClass.set(key, []);
+      byClass.get(key)!.push(r);
+    }
+    return Array.from(byClass.entries()).map(([className, items]) => ({ className, items }));
+  }
 
-  this.loading = true;
+  /** Bulk change status for every record in a class group (used by header buttons) */
+  markClassAll(g: { className: string; items: Attendance[] }, newStatus: AttStatus) {
+    if (!g?.items?.length) return;
+    const ok = confirm(`Change ${g.items.length} records in class "${g.className}" to "${newStatus}"?`);
+    if (!ok) return;
 
-  const ops = g.items.map((r) => {
-    const s: any = r?.student;
-    const studentId =
-      (s && (s._id || s.id || s.studentId)) ||
-      (typeof r.student === 'string' ? r.student : '');
+    this.loading = true;
 
-    const date = this['formatDate'](r.date);
-    return this.attendanceService.correctAttendance({
-      studentId,
-      date,
-      newStatus,
-      reason: `Class-wise bulk update to ${newStatus}`,
-      correctedBy: (this as any).auth?.getUsername?.() || r.username || 'system',
+    const ops = g.items.map((r) => {
+      const studentId = r.studentId;                      // ✅ use numeric id directly
+      const date = this.formatDate(r.date);
+      return this.attendanceService.correctAttendance({
+        studentId,
+        date,
+        newStatus,
+        reason: `Class-wise bulk update to ${newStatus}`,
+        correctedBy: r.username || 'system',
+      });
     });
-  });
 
-  // If you haven't already:
-  // import { forkJoin } from 'rxjs';
-  forkJoin(ops).subscribe({
-    next: () => {
-      this.msg(`Updated ${g.items.length} record(s) in "${g.className}" to "${newStatus}".`);
-      this.loading = false;
-      this.applyFilters();
-    },
-    error: () => {
-      this.msg('Failed to bulk update class records.');
-      this.loading = false;
-    },
-  });
-}
+    forkJoin(ops).subscribe({
+      next: () => {
+        this.msg(`Updated ${g.items.length} record(s) in "${g.className}" to "${newStatus}".`);
+        this.loading = false;
+        this.applyFilters();
+      },
+      error: () => {
+        this.msg('Failed to bulk update class records.');
+        this.loading = false;
+      },
+    });
+  }
 
   // ---------------- Export ----------------
   exportExcel() {
@@ -408,13 +417,14 @@ markClassAll(g: { className: string; items: Attendance[] }, newStatus: AttStatus
   }
 
   // ---------------- UI helpers / narrowers ----------------
+  /** Resolve student name from studentId using loaded students[] list */
   getStudentName(r: Attendance): string {
-    const s: any = r?.student;
-    return s && typeof s === 'object' ? (s.name ?? '') : '';
+    const stu = this.students.find(s => s.studentId === r.studentId);
+    return stu?.name ?? '';
   }
+
   getStudentId(r: Attendance): string | number {
-    const s: any = r?.student;
-    return s && typeof s === 'object' ? (s.studentId ?? '') : '';
+    return r.studentId ?? '';
   }
 
   toggleSelectAll(ev: Event) {
@@ -431,7 +441,7 @@ markClassAll(g: { className: string; items: Attendance[] }, newStatus: AttStatus
 
   // ---------------- Utils ----------------
   /** Safe date formatter -> YYYY-MM-DD */
-  private formatDate(d: any): string {
+  public formatDate(d: any): string {
     if (!d) return '';
     try {
       const dateObj = new Date(d);

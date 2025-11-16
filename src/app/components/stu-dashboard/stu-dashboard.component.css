@@ -178,3 +178,87 @@ tbody tr:hover {
     width: 100%;
   }
 }
+.dashboard {
+  max-width: 900px;
+  margin: 2rem auto;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.profile-card {
+  display: flex;
+  align-items: center;
+  background: #f8f9fa;
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 2rem;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+}
+
+.profile-photo {
+  height: 100px;
+  width: 100px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin-right: 1rem;
+  border: 2px solid #ccc;
+}
+
+.profile-info h2 {
+  margin: 0;
+  color: #007bff;
+}
+
+.attendance-section {
+  margin-bottom: 2rem;
+}
+
+.attendance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.attendance-table th,
+.attendance-table td {
+  border: 1px solid #ddd;
+  padding: 0.5rem;
+  text-align: center;
+}
+
+.attendance-table th {
+  background: #007bff;
+  color: #fff;
+}
+
+.attendance-table td.present {
+  background: #d4edda;
+  color: #155724;
+}
+
+.attendance-table td.absent {
+  background: #f8d7da;
+  color: #721c24;
+}
+
+.attendance-table td.leave {
+  background: #fff3cd;
+  color: #856404;
+}
+
+.notices-section .notice-card {
+  background: #f1f1f1;
+  padding: 1rem;
+  margin-bottom: 1rem;
+  border-left: 4px solid #007bff;
+  border-radius: 4px;
+}
+
+.notices-section h4 {
+  margin: 0 0 0.5rem;
+  color: #007bff;
+}
+
+.empty {
+  color: #888;
+  font-style: italic;
+}

@@ -1,81 +1,148 @@
+/* ===== Container ===== */
 .teacher-container {
   max-width: 1200px;
+  margin: 0 auto;
+  padding: 16px;
 }
 
-/* Card styling */
+/* ===== Cards ===== */
 .card {
   border-radius: 12px;
   background-color: #ffffff;
+  border: 1px solid #e9ecef;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.06);
 }
 
-/* Headings */
-h2,
-h3 {
-  font-family: 'Segoe UI', sans-serif;
+/* ===== Headings ===== */
+h2, h3 {
+  font-family: "Segoe UI", Roboto, Arial, sans-serif;
+  font-weight: 600;
+  color: #212529;
+  margin-bottom: 10px;
 }
 
-/* Table styling */
+/* ===== Tables ===== */
 .table {
   border-radius: 12px;
   background-color: #f8f9fa;
+  overflow: hidden;                 /* ensure rounded corners clip children */
 }
 
-.table th {
+.table thead th {
+  position: sticky;
+  top: 0;
+  z-index: 2;
   background-color: #007bff !important;
-  color: white;
+  color: #fff;
   font-weight: 600;
+  border-bottom: none;
 }
 
-.table td {
+.table tbody tr + tr td {
+  border-top: 1px solid #e9ecef;
+}
+
+.table td, .table th {
   vertical-align: middle;
+  padding: 0.75rem;
 }
 
-/* Hover effect */
-.table-row:hover {
+/* Zebra rows for readability */
+.table tbody tr:nth-child(odd) {
+  background-color: #fdfdff;
+}
+
+/* Row hover */
+.table-row:hover,
+.table tbody tr:hover {
   background-color: #e9f5ff !important;
-  transition: 0.3s ease;
+  transition: background-color 0.25s ease;
 }
 
-/* Buttons */
+/* ===== Buttons ===== */
 .btn {
   font-weight: 500;
   border-radius: 8px;
+  transition: transform 0.08s ease, box-shadow 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
 }
 
-/* Toast Notification */
+.btn:active {
+  transform: translateY(1px);
+}
+
+.btn:focus-visible {
+  outline: 2px solid #80bdff;
+  outline-offset: 2px;
+}
+
+/* Subtle variants if you use outline buttons */
+.btn-outline-primary:hover,
+.btn-outline-danger:hover,
+.btn-outline-secondary:hover {
+  box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+}
+
+/* ===== Forms / Inputs ===== */
+.form-control,
+.form-select {
+  border-radius: 8px !important;
+  border-color: #ced4da;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: #86b7fe;
+  box-shadow: 0 0 0 0.2rem rgba(13,110,253,0.15);
+}
+
+/* ===== Toast Notification ===== */
 .toast-message {
   position: fixed;
   top: 20px;
   right: 20px;
+  max-width: min(420px, 90vw);
   padding: 14px 20px;
-  border-radius: 6px;
-  color: white;
-  font-weight: 500;
+  border-radius: 10px;
+  color: #fff;
+  font-weight: 600;
   z-index: 2000;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  animation: fadeInOut 3s ease forwards;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
+  animation: toastFade 3s ease forwards;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.toast-message.success {
-  background-color: #28a745;
-}
+.toast-message.success { background-color: #2fbf71; }
+.toast-message.error   { background-color: #e55353; }
 
-.toast-message.error {
-  background-color: #dc3545;
-}
-
-@keyframes fadeInOut {
-  0% {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
+/* Toast entrance/exit */
+@keyframes toastFade {
+  0%   { opacity: 0; transform: translateY(-8px); }
   10%,
-  90% {
-    opacity: 1;
-    transform: translateY(0);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(-10px);
-  }
+  90%  { opacity: 1; transform: translateY(0); }
+  100% { opacity: 0; transform: translateY(-8px); }
+}
+
+/* ===== Images (teacher avatars) ===== */
+.img-thumbnail {
+  border-radius: 12px;
+}
+
+/* ===== Utilities ===== */
+.text-muted { color: #6c757d !important; }
+.badge.bg-primary-subtle { background-color: #e7f0ff; color: #0d6efd; }
+.badge.bg-success-subtle { background-color: #e9f7ef; color: #198754; }
+
+/* ===== Responsive ===== */
+@media (max-width: 992px) {
+  .teacher-container { padding: 12px; }
+  .table { font-size: 0.95rem; }
+}
+
+@media (max-width: 576px) {
+  h2, h3 { font-size: 1.05rem; }
+  .btn { padding: 0.425rem 0.7rem; }
+  .table td, .table th { padding: 0.6rem; }
+  .toast-message { right: 12px; left: 12px; max-width: unset; }
 }

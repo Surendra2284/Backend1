@@ -1,13 +1,13 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
+
 import { TeacherService } from '../../services/teacher.service';
 import { Teacher } from '../models/Teacher';
 import { AuthService } from '../../shared/auth-service';
 import { Router } from '@angular/router';
-import { environment } from '../../../environments/environment';
 
-const TeacherUrl = `${environment.apiUrl}/teachers`;
+type SortKey = 'name' | 'subject' | 'Assignclass' | 'Email';
 
 @Component({
   selector: 'app-teacher',
@@ -15,18 +15,33 @@ const TeacherUrl = `${environment.apiUrl}/teachers`;
   styleUrls: ['./teacher.component.css'],
 })
 export class TeacherComponent implements OnInit, OnDestroy {
+  // ---- Form / data ----
   teacherForm: FormGroup;
   teachers: Teacher[] = [];
-  isEdit = false;
-  errorMessage = '';
-  currentTeacherId: string | null = null;
-  userAuthenticated = false;
-  authenticatedSub: Subscription = new Subscription();
 
-  // ✅ Toast variables
+  isEdit = false;
+  currentTeacherId: string | null = null;
+
+  // ---- Auth ----
+  userAuthenticated = false;
+  private authenticatedSub?: Subscription;
+
+  // ---- Toast ----
   showToast = false;
   toastMessage = '';
   toastType: 'success' | 'error' = 'success';
+
+  // ---- UI state ----
+  loading = false;
+  errorMessage = '';
+  viewMode: 'grid' | 'table' = 'table';
+
+  // search + sorting + pagination (client-side)
+  query = '';
+  sortKey: SortKey = 'name';
+  sortDir: 'asc' | 'desc' = 'asc';
+  page = 1;
+  pageSize = 8;
 
   constructor(
     private fb: FormBuilder,
@@ -51,16 +66,14 @@ export class TeacherComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ---------- Lifecycle ----------
   ngOnInit(): void {
     this.checkAuthentication();
-    this.teacherService.getTeachers().subscribe({
-      next: (res) => (this.teachers = res),
-      error: (err) => console.error('Error fetching teachers:', err),
-    });
+    this.loadTeachers();
   }
 
   ngOnDestroy(): void {
-    this.authenticatedSub.unsubscribe();
+    this.authenticatedSub?.unsubscribe();
   }
 
   private checkAuthentication(): void {
@@ -74,50 +87,67 @@ export class TeacherComponent implements OnInit, OnDestroy {
     });
   }
 
-  /** ✅ Toast helper */
+  // ---------- Toast ----------
   private showToastMessage(message: string, type: 'success' | 'error' = 'success') {
     this.toastMessage = message;
     this.toastType = type;
     this.showToast = true;
-    setTimeout(() => (this.showToast = false), 3000);
+    setTimeout(() => (this.showToast = false), 2500);
   }
 
+  // ---------- Data ----------
   loadTeachers(): void {
+    this.loading = true;
     this.teacherService.getTeachers().subscribe({
-      next: (data) => (this.teachers = data),
-      error: (error) => (this.errorMessage = error.message),
+      next: (data) => {
+        this.loading = false;
+        this.teachers = data || [];
+        // reset pager if needed
+        this.page = 1;
+      },
+      error: (error) => {
+        this.loading = false;
+        this.errorMessage = error.message || 'Failed to load teachers';
+      },
     });
   }
 
+  // ---------- Submit (Add / Edit) ----------
   onSubmit(): void {
     if (this.teacherForm.invalid) {
-      this.showToastMessage('⚠️ Please fill all required fields correctly.', 'error');
       this.teacherForm.markAllAsTouched();
+      this.showToastMessage('⚠️ Please fill all required fields correctly.', 'error');
       return;
     }
 
     const teacherData: Teacher = this.teacherForm.value;
 
     if (this.isEdit && this.currentTeacherId) {
+      this.loading = true;
       this.teacherService.editTeacher(this.currentTeacherId, teacherData).subscribe({
         next: () => {
+          this.loading = false;
           this.loadTeachers();
           this.resetForm();
           this.showToastMessage('✅ Teacher updated successfully!');
         },
         error: (error) => {
+          this.loading = false;
           console.error('Error updating teacher:', error);
           this.showToastMessage('❌ Error updating teacher.', 'error');
         },
       });
     } else {
+      this.loading = true;
       this.teacherService.addTeacher(teacherData).subscribe({
         next: () => {
+          this.loading = false;
           this.loadTeachers();
           this.resetForm();
           this.showToastMessage('✅ Teacher added successfully!');
         },
         error: (error) => {
+          this.loading = false;
           console.error('Error adding teacher:', error);
           this.showToastMessage('❌ Error adding teacher.', 'error');
         },
@@ -125,29 +155,60 @@ export class TeacherComponent implements OnInit, OnDestroy {
     }
   }
 
+  // ---------- Row Actions ----------
   editTeacher(teacher: Teacher): void {
     this.isEdit = true;
-    this.currentTeacherId = teacher.teacherid;
-    this.teacherForm.patchValue(teacher);
+    const idForEdit = (teacher as any)._id ?? teacher.teacherid;
+    this.currentTeacherId = idForEdit ? String(idForEdit) : null;
+
+    const photoVal = teacher.photo
+      ? (String(teacher.photo).startsWith('data:image') ? teacher.photo : `data:image/jpeg;base64,${teacher.photo}`)
+      : null;
+
+    this.teacherForm.patchValue({
+      teacherid: teacher.teacherid ?? (teacher as any)._id ?? '',
+      name: teacher.name ?? '',
+      Assignclass: teacher.Assignclass ?? '',
+      mobileNo: teacher.mobileNo ?? '',
+      address: teacher.address ?? '',
+      Role: teacher.Role ?? '',
+      Notice: teacher.Notice ?? '',
+      Email: teacher.Email ?? '',
+      subject: teacher.subject ?? '',
+      attendance: teacher.attendance ?? 0,
+      photo: photoVal,
+      classteacher: teacher.classteacher ?? '',
+      experience: teacher.experience ?? 0,
+    });
+
+    // Scroll to form for visibility
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
   deleteTeacher(teacher: Teacher): void {
-    if (!teacher.teacherid) return;
-
-    if (confirm('Are you sure you want to delete this teacher?')) {
-      this.teacherService.deleteTeacher(teacher.teacherid).subscribe({
-        next: () => {
-          this.loadTeachers();
-          this.showToastMessage('🗑️ Teacher deleted successfully!');
-        },
-        error: (error) => {
-          console.error('Error deleting teacher:', error);
-          this.showToastMessage('❌ Error deleting teacher.', 'error');
-        },
-      });
+    const idForDelete = (teacher as any)._id ?? teacher.teacherid;
+    if (!idForDelete) {
+      this.showToastMessage('❌ Missing teacher id.', 'error');
+      return;
     }
+    if (!confirm('Are you sure you want to delete this teacher?')) return;
+
+    this.loading = true;
+    this.teacherService.deleteTeacher(String(idForDelete)).subscribe({
+      next: () => {
+        this.loading = false;
+        this.loadTeachers();
+        this.showToastMessage('🗑️ Teacher deleted successfully!');
+      },
+      error: (error) => {
+        this.loading = false;
+        console.error('Error deleting teacher:', error);
+        this.showToastMessage('❌ Error deleting teacher.', 'error');
+      },
+    });
   }
 
+  // ---------- Helpers ----------
   resetForm(): void {
     this.teacherForm.reset();
     this.isEdit = false;
@@ -156,19 +217,80 @@ export class TeacherComponent implements OnInit, OnDestroy {
 
   onPhotoUpload(event: Event): void {
     const file = (event.target as HTMLInputElement).files?.[0];
-    const maxSize = 0.5 * 1024 * 1024;
+    const maxSize = 0.5 * 1024 * 1024; // 0.5 MB
+    if (!file) return;
 
-    if (file) {
-      if (file.size > maxSize) {
-        this.showToastMessage('⚠️ File too large (max 0.5 MB)', 'error');
-        this.teacherForm.get('photo')?.setErrors({ maxSizeExceeded: true });
-        return;
-      }
-      const reader = new FileReader();
-      reader.onload = () => {
-        this.teacherForm.patchValue({ photo: reader.result });
-      };
-      reader.readAsDataURL(file);
+    if (file.size > maxSize) {
+      this.showToastMessage('⚠️ File too large (max 0.5 MB)', 'error');
+      this.teacherForm.get('photo')?.setErrors({ maxSizeExceeded: true });
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = () => {
+      this.teacherForm.patchValue({ photo: reader.result }); // data URL
+    };
+    reader.readAsDataURL(file);
+  }
+
+  formatPhoto(photo: any): string {
+    if (!photo) return 'assets/default-user.png';
+    const s = String(photo);
+    if (s.startsWith('data:image')) return s;
+    return 'data:image/jpeg;base64,' + s;
+  }
+
+  // ---------- List UX helpers (search/sort/paginate) ----------
+  get filtered(): Teacher[] {
+    const q = this.query.trim().toLowerCase();
+    if (!q) return this.teachers;
+    return this.teachers.filter((t) => {
+      const hay = [
+        t.name,
+        t.subject,
+        t.Assignclass,
+        t.Email,
+        t.mobileNo,
+        t.classteacher,
+        t.teacherid
+      ].map(v => (v == null ? '' : String(v).toLowerCase()));
+      return hay.some(x => x.includes(q));
+    });
+  }
+
+  get sorted(): Teacher[] {
+    const arr = [...this.filtered];
+    const key = this.sortKey;
+    const dir = this.sortDir === 'asc' ? 1 : -1;
+    return arr.sort((a: any, b: any) => {
+      const av = (a?.[key] ?? '').toString().toLowerCase();
+      const bv = (b?.[key] ?? '').toString().toLowerCase();
+      return av > bv ? dir : av < bv ? -dir : 0;
+    });
+  }
+
+  get totalPages(): number {
+    return Math.max(1, Math.ceil(this.sorted.length / this.pageSize));
+  }
+
+  get paged(): Teacher[] {
+    const start = (this.page - 1) * this.pageSize;
+    return this.sorted.slice(start, start + this.pageSize);
+  }
+
+  changeSort(k: SortKey) {
+    if (this.sortKey === k) {
+      this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortKey = k;
+      this.sortDir = 'asc';
     }
   }
+
+  setView(mode: 'grid' | 'table') { this.viewMode = mode; }
+  setPageSize(n: number) { this.pageSize = Math.max(1, Number(n) || 8); this.page = 1; }
+  prevPage() { this.page = Math.max(1, this.page - 1); }
+  nextPage() { this.page = Math.min(this.totalPages, this.page + 1); }
+
+  trackById = (_: number, t: any) => t?._id ?? t?.teacherid ?? _;
 }

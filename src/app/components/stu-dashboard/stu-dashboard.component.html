@@ -1,158 +1,47 @@
-<div class="stu-dashboard-container">
-  <!-- Header -->
-  <div class="header">
-    <h1>🎓 Student Dashboard</h1>
-    <p>Manage student details, attendance, and more with ease.</p>
-  </div>
-
-  <!-- Search Students by Class -->
-  <div class="search-section">
-    <label for="classInput">Search Students by Class:</label>
-    <div class="search-bar">
-      <input
-        type="text"
-        [(ngModel)]="selectedClass"
-        name="selectedClass"
-        placeholder="Enter Class Name"
-        required
-      />
-      <button (click)="searchByClass()">🔍 Search</button>
+<div class="dashboard">
+  <!-- Profile -->
+  <section class="profile-card" *ngIf="student">
+    <img [src]="student.photo" alt="Student Photo" class="profile-photo" />
+    <div class="profile-info">
+      <h2>{{ student.name }}</h2>
+      <p><strong>ID:</strong> {{ student.studentId }}</p>
+      <p><strong>Class:</strong> {{ student.class }}</p>
+      <p><strong>Class Teacher:</strong> {{ student.classteacher }}</p>
+      <p><strong>Attendance Summary:</strong> {{ attendanceSummary }}</p>
     </div>
-  </div>
+  </section>
 
-  <!-- Form for Adding and Editing Students -->
-  <form
-    #studentForm="ngForm"
-    (ngSubmit)="isEditing ? updateStudent(studentForm) : addStudent(studentForm)"
-    class="student-form"
-  >
-    <div class="form-grid">
-      <div class="form-field">
-        <label>Student ID:</label>
-        <input
-          type="text"
-          [(ngModel)]="currentStudent.studentId"
-          name="studentId"
-          disabled
-        />
-      </div>
-
-      <div class="form-field">
-        <label>Name:</label>
-        <input
-          type="text"
-          [(ngModel)]="currentStudent.name"
-          name="name"
-          required
-        />
-      </div>
-
-      <div class="form-field">
-        <label>Class:</label>
-        <input
-          type="text"
-          [(ngModel)]="currentStudent.class"
-          name="class"
-          required
-        />
-      </div>
-
-      <div class="form-field">
-        <label>Mobile No:</label>
-        <input
-          type="text"
-          [(ngModel)]="currentStudent.mobileNo"
-          name="mobileNo"
-          pattern="^[6-9]\d{9}$"
-          required
-        />
-      </div>
-
-      <div class="form-field">
-        <label>Address:</label>
-        <input
-          type="text"
-          [(ngModel)]="currentStudent.address"
-          name="address"
-          required
-        />
-      </div>
-
-      <div class="form-field">
-        <label>Role:</label>
-        <input
-          type="text"
-          [(ngModel)]="currentStudent.Role"
-          name="Role"
-          required
-        />
-      </div>
-
-      <div class="form-field">
-        <label>Email:</label>
-        <input
-          type="email"
-          [(ngModel)]="currentStudent.Email"
-          name="Email"
-          required
-        />
-      </div>
-
-      <div class="form-field">
-        <label>Attendance (%):</label>
-        <input
-          type="number"
-          [(ngModel)]="currentStudent.attendance"
-          name="attendance"
-          min="0"
-          max="100"
-          required
-        />
-      </div>
-
-      <div class="form-field">
-        <label>Photo:</label>
-        <input
-          type="file"
-          [(ngModel)]="currentStudent.photo"
-          name="photo"
-          required
-        />
-      </div>
-    </div>
-
-    <div class="form-actions">
-      <button type="submit" class="btn-primary">
-        {{ isEditing ? 'Update Student' : 'Add Student' }}
-      </button>
-      <button type="button" class="btn-secondary" (click)="resetForm(studentForm)">
-        Reset
-      </button>
-    </div>
-  </form>
-
-  <!-- Display Students -->
-  <h3 class="table-title">Students</h3>
-  <div class="table-container">
-    <table>
+  <!-- Attendance -->
+  <section class="attendance-section">
+    <h3>Attendance Records</h3>
+    <table class="attendance-table">
       <thead>
         <tr>
-          <th>ID</th>
-          <th>Name</th>
-          <th>Class</th>
-          <th>Actions</th>
+          <th>Date</th>
+          <th>Status</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let student of students">
-          <td>{{ student.studentId }}</td>
-          <td>{{ student.name }}</td>
-          <td>{{ student.class }}</td>
-          <td>
-            <button class="btn-edit" (click)="editStudent(student)">Edit</button>
-          </td>
+        <tr *ngFor="let record of attendanceRecords">
+          <td>{{ record.date }}</td>
+          <td class="status-{{ record.status | lowercase }}">{{ record.status }}</td>
         </tr>
       </tbody>
     </table>
-  </div>
+  </section>
+
+  <!-- Notices -->
+  <section class="notices-section">
+    <h3>Class Notices</h3>
+    <div *ngIf="notices.length; else noNotices">
+      <div class="notice-card" *ngFor="let notice of notices">
+        <h4>{{ notice.title }}</h4>
+        <p>{{ notice.message }}</p>
+        <small>By {{ notice.name }}</small>
+      </div>
+    </div>
+    <ng-template #noNotices>
+      <p class="empty">No notices posted yet.</p>
+    </ng-template>
+  </section>
 </div>

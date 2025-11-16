@@ -1,45 +1,442 @@
-<!-- Attendance Tab -->
-<div class="tab-content" *ngIf="activeTab === 'attendance'">
-  <h2>📅 Attendance for {{ loggedInTeacher.Assignclass || '—' }}</h2>
+<div class="dash-wrap" [class.loading]="loading">
+  <!-- Header -->
+  <header class="dash-bar" role="banner">
+    <div class="title" style="flex:1; text-align:center;">
+      <!-- centered main title -->
+      <h3 style="margin:0; font-size:28px; font-weight:700;">Teacher Dashboard</h3>
+      <div class="sub" style="margin-top:6px; color:#0b5ed7;">
+        Welcome, <strong>{{ displayName || 'Teacher' }}</strong>
+        <span class="sep">•</span>
+        Class: <strong>{{ loggedInTeacher?.Assignclass || '—' }}</strong>
+      </div>
+    </div>
 
-  <!-- Quick actions -->
-  <div class="attendance-actions" *ngIf="students.length">
-    <button type="button" class="btn btn-sm" (click)="markAll('Present')">Mark all Present</button>
-    <button type="button" class="btn btn-sm" (click)="markAll('Absent')">Mark all Absent</button>
-    <button type="button" class="btn btn-sm" (click)="markAll('Leave')">Mark all Late</button>
+    <!-- Tabs with counters (kept visually with separated sections) -->
+    <nav class="tabs" role="tablist" aria-label="Teacher sections" style="margin-left:16px;">
+      <button
+        class="tab"
+        role="tab"
+        [attr.aria-selected]="activeTab==='students'"
+        [class._on]="activeTab==='students'"
+        (click)="selectTab('students')"
+        style="font-weight:700; color:#0b5ed7; border-color:transparent;"
+      >
+        <strong>Students</strong>
+        <span class="pill ghost" aria-hidden="true">{{ students.length }}</span>
+      </button>
+
+      <button
+        class="tab"
+        role="tab"
+        [attr.aria-selected]="activeTab==='attendance'"
+        [class._on]="activeTab==='attendance'"
+        (click)="selectTab('attendance')"
+        style="font-weight:700; color:#0b5ed7; border-color:transparent;"
+      >
+        <strong>Attendance</strong>
+        <span class="pill ghost" aria-hidden="true">{{ students.length || 0 }}</span>
+      </button>
+
+      <button
+        class="tab"
+        role="tab"
+        [attr.aria-selected]="activeTab==='notices'"
+        [class._on]="activeTab==='notices'"
+        (click)="selectTab('notices')"
+        style="font-weight:700; color:#0b5ed7; border-color:transparent;"
+      >
+        <strong>Notices</strong>
+        <span class="pill ghost" aria-hidden="true">{{ teacherNotices.length }}</span>
+      </button>
+     <button
+    class="tab"
+    role="tab"
+    [attr.aria-selected]="activeTab==='progress'"
+    [class._on]="activeTab==='progress'"
+    (click)="selectTab('progress')"
+    style="font-weight:700; color:#0b5ed7; border-color:transparent;"
+  >
+    <strong>Homework / Progress</strong>
+    <span class="pill ghost" aria-hidden="false">{{ classProgressList.length || 0 }}</span>
+  </button>
+
+    </nav>
+  </header>
+
+  <hr style="border:0; border-top:1px solid var(--border); margin:18px 0;">
+
+  <!-- STUDENTS TAB -->
+  <section *ngIf="activeTab==='students'" class="panel section-block" role="tabpanel" aria-label="Students">
+    <div class="panel-head">
+      <h2 style="display:flex; align-items:center; gap:10px;">
+        <span>Students</span>
+        <span class="pill ghost" style="font-weight:700;">{{ students.length }}</span>
+      </h2>
+      <div class="muted">Class: {{ loggedInTeacher?.Assignclass || '—' }}</div>
+    </div>
+
+    <div class="section-divider" style="height:10px;"></div>
+
+    <div class="students-grid" *ngIf="students.length; else noStudents">
+      <div class="student-card" *ngFor="let s of students">
+        <div class="row1">
+          <div class="name">{{ s.name }}</div>
+          <div class="id">ID: {{ s.studentId }}</div>
+        </div>
+        <div class="row2">
+          <div class="meta">Class: <strong>{{ s.class }}</strong></div>
+        </div>
+        <div class="row3 actions">
+          <button
+            class="btn tiny"
+            (click)="editStudent(s)"
+            style="background:#0b5ed7; color:#fff; font-weight:700; border-radius:8px;"
+            title="Edit student"
+          >
+            Edit
+          </button>
+
+          <button
+            class="btn tiny danger"
+            (click)="deleteStudent(s.studentId)"
+            style="background:#0b5ed7; color:#fff; font-weight:700; border-radius:8px;"
+            title="Delete student"
+          >
+            Delete
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noStudents>
+      <div class="empty">No students found for your assigned class.</div>
+    </ng-template>
+  </section>
+
+  <hr style="border:0; border-top:1px dashed var(--border-2); margin:18px 0;">
+
+  <!-- ATTENDANCE TAB -->
+  <section *ngIf="activeTab==='attendance'" class="panel section-block" role="tabpanel" aria-label="Attendance">
+    <div class="panel-head">
+      <h2>Attendance — <strong>{{ loggedInTeacher?.Assignclass || 'Class not set' }}</strong></h2>
+      <div class="muted">Mark each student’s status, or use the bulk controls below.</div>
+    </div>
+
+    <div class="section-divider" style="height:10px;"></div>
+
+    <!-- Bulk controls -->
+    <div class="bulk-bar" style="display:flex; justify-content:space-between; gap:12px; align-items:center;">
+      <div class="left" style="display:flex; gap:8px; align-items:center;">
+        <button
+          class="chip"
+          type="button"
+          (click)="markAll('Present')"
+          title="Mark all as Present"
+          style="background:#0b5ed7; color:#fff; font-weight:700; border-radius:8px; padding:8px 12px;"
+        >
+          All Present
+        </button>
+
+        <button
+          class="chip"
+          type="button"
+          (click)="markAll('Leave')"
+          title="Mark all as Leave"
+          style="background:#0b5ed7; color:#fff; font-weight:700; border-radius:8px; padding:8px 12px;"
+        >
+          All Leave
+        </button>
+
+        <button
+          class="chip"
+          type="button"
+          (click)="markAll('Absent')"
+          title="Mark all as Absent"
+          style="background:#0b5ed7; color:#fff; font-weight:700; border-radius:8px; padding:8px 12px;"
+        >
+          All Absent
+        </button>
+      </div>
+
+      <div class="right">
+        <button
+          class="btn primary"
+          type="button"
+          (click)="saveAttendance()"
+          [disabled]="loading || !students.length"
+          style="background:#0b5ed7; color:#fff; font-weight:800; border-radius:10px; padding:10px 14px;"
+          title="Save attendance for selected class"
+        >
+          {{ loading ? 'Saving…' : 'Save Attendance' }}
+        </button>
+      </div>
+    </div>
+
+    <div class="section-divider" style="height:14px;"></div>
+
+    <!-- Attendance table -->
+    <div class="table-wrap" style="border:1px solid var(--border); border-radius:10px; overflow:hidden;">
+      <table>
+        <thead>
+          <tr>
+            <th>Student</th>
+            <th>Student ID</th>
+            <th class="fit">Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngIf="!students.length">
+            <td colspan="3" class="empty">No students to display.</td>
+          </tr>
+
+          <tr *ngFor="let s of students">
+            <td>
+              <div class="cell-stu">
+                <div class="nm">{{ s.name }}</div>
+                <div class="meta">Class: {{ s.class }}</div>
+              </div>
+            </td>
+            <td>{{ s.studentId }}</td>
+            <td class="fit">
+              <select
+                [(ngModel)]="attendance[s.studentId]"
+                [name]="'att_' + s.studentId"
+                class="status-select"
+                [attr.aria-label]="'Status for ' + s.name"
+                style="font-weight:700; color:#0b5ed7; border-radius:8px; padding:6px 8px; border:1px solid var(--border-2);"
+              >
+                <option value="Present">Present</option>
+                <option value="Leave">Leave</option>
+                <option value="Absent">Absent</option>
+              </select>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Inline message -->
+    <div class="result" *ngIf="message" style="margin-top:12px; font-weight:600;">{{ message }}</div>
+  </section>
+
+  <hr style="border:0; border-top:1px dashed var(--border-2); margin:18px 0;">
+
+  <!-- NOTICES TAB -->
+  <section *ngIf="activeTab==='notices'" class="panel section-block" role="tabpanel" aria-label="Notices">
+    <div class="panel-head">
+      <h2>Notices <span class="pill ghost">{{ teacherNotices.length }}</span></h2>
+      <div class="muted">Post updates for your class: {{ loggedInTeacher?.Assignclass || '—' }}</div>
+    </div>
+
+    <div class="section-divider" style="height:10px;"></div>
+
+    <!-- Add notice -->
+    <div class="notice-add" style="border:1px solid var(--border); border-radius:8px; padding:12px;">
+      <textarea
+        [(ngModel)]="newNotice.Notice"
+        name="new_notice"
+        rows="3"
+        placeholder="Type a notice to share with your class…"
+        aria-label="New notice"
+        style="width:100%; border-radius:8px; padding:8px; border:1px solid var(--border-2);"
+      ></textarea>
+
+      <div class="actions" style="margin-top:8px; display:flex; justify-content:flex-end;">
+        <!-- Avoid optional chaining warning -->
+        <button
+          class="btn primary"
+          type="button"
+          (click)="addNotice()"
+          [disabled]="!(newNotice.Notice || '').trim()"
+          style="background:#0b5ed7; color:#fff; font-weight:800; border-radius:10px; padding:8px 12px;"
+          title="Add notice"
+        >
+          Add Notice
+        </button>
+      </div>
+    </div>
+
+    <div class="section-divider" style="height:12px;"></div>
+
+    <!-- List notices -->
+    <div class="notice-list" *ngIf="teacherNotices.length; else noNotices">
+      <div class="notice-item" *ngFor="let n of teacherNotices" style="border:1px solid var(--border-2); border-radius:8px; padding:10px; margin-bottom:10px;">
+        <div class="n-head">
+          <div class="n-title" style="font-weight:700;">{{ n.Notice }}</div>
+          <div class="n-meta" style="margin-top:6px;">
+            <span class="pill good" *ngIf="n.class" style="margin-right:6px;">Class {{ n.class }}</span>
+            <span class="pill ghost">By {{ n.name }}</span>
+          </div>
+        </div>
+
+        <div class="n-actions" style="margin-top:8px; display:flex; gap:8px; justify-content:flex-end;">
+          <button class="btn tiny" (click)="editNotice(n)" style="background:#0b5ed7; color:#fff; font-weight:700; border-radius:8px;">Edit</button>
+          <button class="btn tiny danger" (click)="deleteNotice(n._id!)" style="background:#0b5ed7; color:#fff; font-weight:700; border-radius:8px;">Delete</button>
+        </div>
+      </div>
+    </div>
+
+    <ng-template #noNotices>
+      <div class="empty">No notices posted yet.</div>
+    </ng-template>
+  </section>
+<!-- ==================== HOMEWORK / PROGRESS TAB ==================== -->
+<section *ngIf="activeTab==='progress'" class="panel section-block" role="tabpanel" aria-label="Homework & Progress">
+
+  <!-- Header -->
+  <div class="panel-head">
+    <h2>📘 Homework & Student Progress</h2>
+    <div class="muted">
+      Class: <strong>{{ loggedInTeacher?.Assignclass }}</strong>
+      <span class="sep">•</span>
+      Teacher: <strong>{{ displayName }}</strong>
+    </div>
   </div>
 
-  <form (ngSubmit)="saveAttendance()">
-    <table class="attendance-table">
+  <div class="section-divider" style="height:10px;"></div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar" style="display:flex; gap:12px; align-items:center; flex-wrap:wrap;">
+    
+    <div>
+      <label>Date:</label>
+      <input type="date"
+             [(ngModel)]="progressDate"
+             (change)="loadClassProgress()"
+             style="padding:6px 8px; border-radius:6px; border:1px solid var(--border-2);">
+    </div>
+
+    <div>
+      <label>Subject:</label>
+      <input type="text"
+             placeholder="e.g. Math, English"
+             [(ngModel)]="progressSubject"
+             (blur)="loadClassProgress()"
+             style="padding:6px 8px; border-radius:6px; border:1px solid var(--border-2); width:150px;">
+    </div>
+
+  </div>
+
+  <div class="section-divider" style="height:10px;"></div>
+
+  <!-- Homework Box -->
+  <div class="homework-box" style="border:1px solid var(--border-2); padding:12px; border-radius:8px;">
+    <label><strong>Homework:</strong></label>
+    <textarea rows="3"
+              [(ngModel)]="homeworkText"
+              placeholder="Enter homework assigned for this day…"
+              style="width:100%; border-radius:8px; padding:8px; border:1px solid var(--border-2);"></textarea>
+  </div>
+
+  <div class="section-divider" style="height:12px;"></div>
+
+  <!-- Bulk Controls -->
+  <div style="display:flex; justify-content:flex-start; gap:10px;">
+
+    <button class="chip"
+            style="background:#0b5ed7; color:white; border-radius:8px; padding:8px 12px; font-weight:700;"
+            (click)="markAllProgress('Not Started')">
+      All Not Started
+    </button>
+
+    <button class="chip"
+            style="background:#0b5ed7; color:white; border-radius:8px; padding:8px 12px; font-weight:700;"
+            (click)="markAllProgress('In Progress')">
+      All In Progress
+    </button>
+
+    <button class="chip"
+            style="background:#0b5ed7; color:white; border-radius:8px; padding:8px 12px; font-weight:700;"
+            (click)="markAllProgress('Completed')">
+      All Completed
+    </button>
+
+  </div>
+
+  <div class="section-divider" style="height:14px;"></div>
+
+  <!-- Student Progress Table -->
+  <div class="table-wrap" style="border:1px solid var(--border); border-radius:10px; overflow:hidden;">
+    <table>
       <thead>
         <tr>
-          <th>Roll No</th>
-          <th>Name</th>
+          <th>Student</th>
           <th>Status</th>
+          <th>Note</th>
+          <th>Score</th>
+          <th class="fit">Delete</th>
         </tr>
       </thead>
       <tbody>
-        <tr *ngFor="let student of students">
-          <td>{{ student.studentId }}</td>
-          <td>{{ student.name }}</td>
+
+        <tr *ngIf="students.length===0">
+          <td colspan="5" class="empty">No students in this class.</td>
+        </tr>
+
+        <tr *ngFor="let s of students">
           <td>
-            <select
-              [(ngModel)]="attendance[student.studentId]"
-              [name]="'att_' + student.studentId"
-            >
-              <option value="Present">Present</option>
-              <option value="Absent">Absent</option>
-              <option value="Leave">Leave</option>
+            <strong>{{ s.name }}</strong>
+            <div class="meta">ID: {{ s.studentId }}</div>
+          </td>
+
+          <!-- Status -->
+          <td>
+            <select [(ngModel)]="progressMap[s.studentId].status"
+                    style="padding:6px; border-radius:6px; border:1px solid var(--border-2); font-weight:600;">
+              <option value="Not Started">Not Started</option>
+              <option value="In Progress">In Progress</option>
+              <option value="Completed">Completed</option>
+              <option value="Needs Attention">Needs Attention</option>
             </select>
           </td>
+
+          <!-- Progress Note -->
+          <td>
+            <input type="text"
+                   [(ngModel)]="progressMap[s.studentId].progressNote"
+                   placeholder="Note…"
+                   style="width:100%; padding:6px; border-radius:6px; border:1px solid var(--border-2);">
+          </td>
+
+          <!-- Score -->
+          <td style="width:100px;">
+            <input type="number"
+                   [(ngModel)]="progressMap[s.studentId].score"
+                   placeholder="0-100"
+                   style="width:80px; padding:6px; border-radius:6px; border:1px solid var(--border-2);">
+          </td>
+
+          <!-- Delete existing -->
+          <td class="fit">
+            <button *ngIf="progressMap[s.studentId]._id"
+                    class="btn tiny danger"
+                    (click)="deleteProgressRecord(progressMap[s.studentId]._id)"
+
+                    style="background:#d9534f; color:white; border-radius:6px;">
+              ✖
+            </button>
+          </td>
         </tr>
+
       </tbody>
     </table>
+  </div>
 
-    <button type="submit" class="btn btn-primary" [disabled]="loading">
-      {{ loading ? 'Saving…' : 'Save Attendance' }}
+  <div class="section-divider" style="height:14px;"></div>
+
+  <!-- Save Progress -->
+  <div style="display:flex; justify-content:flex-end;">
+    <button class="btn primary"
+            (click)="saveClassProgress()"
+            style="background:#0b5ed7; color:white; padding:10px 16px; border-radius:10px; font-weight:800;">
+      Save Homework & Progress
     </button>
-  </form>
+  </div>
+</section>
 
-  <p *ngIf="students.length === 0" class="no-data">No students available for attendance.</p>
+  <!-- Loading overlay -->
+  <div class="loading-overlay" *ngIf="loading" aria-live="polite" aria-busy="true">
+    <div class="spinner"></div>
+    <div>Working…</div>
+  </div>
 </div>

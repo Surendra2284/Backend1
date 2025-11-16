@@ -17,25 +17,27 @@ export class StudentComponent implements OnInit {
   isEditing: boolean = false;
   searchQuery: string = '';
   searchBy: string = 'class';
-bulkPreview: any[] = [];
-bulkErrors: string[] = [];
-upsertMode = true; 
+  bulkPreview: any[] = [];
+  bulkErrors: string[] = [];
+  upsertMode = true; 
+
   // Sorting state
   sortColumn: string = '';
   sortDirection: 'asc' | 'desc' = 'asc';
-private headerMap: Record<string, string> = {
-  'studentid': 'studentId',
-  'name': 'name',
-  'class': 'class',
-  'mobileno': 'mobileNo',
-  'address': 'address',
-  'role': 'Role',
-  'email': 'Email',
-  'attendance': 'attendance',
-  'classteacher': 'classteacher',
-  // optional: 'photo' as base64 or URL (we’ll accept but warn if too large)
-  'photo': 'photo'
-};
+
+  private headerMap: Record<string, string> = {
+    'studentid': 'studentId',
+    'name': 'name',
+    'class': 'class',
+    'mobileno': 'mobileNo',
+    'address': 'address',
+    'role': 'Role',
+    'email': 'Email',
+    'attendance': 'attendance',
+    'classteacher': 'classteacher',
+    'photo': 'photo'
+  };
+
   // Filters
   filters: any = {
     studentId: '',
@@ -47,6 +49,10 @@ private headerMap: Record<string, string> = {
     attendance: '',
     classteacher: ''
   };
+
+  // Pagination
+  page = 1;
+  pageSize = 10;
 
   constructor(private studentService: StudentService) {}
 
@@ -93,11 +99,7 @@ private headerMap: Record<string, string> = {
 
   saveStudent(form: NgForm): void {
     console.log('Form valid?', form.valid, form.value);
-
-    
-
-  console.log('Save Student triggered', this.currentStudent);
-  
+    console.log('Save Student triggered', this.currentStudent);
 
     if (this.isEditing) {
       this.studentService
@@ -109,7 +111,8 @@ private headerMap: Record<string, string> = {
           },
           (error) => console.error('Error updating student:', error)
         );
-    } else { console.log('Save Student triggered', this.currentStudent);
+    } else {
+      console.log('Save Student triggered', this.currentStudent);
       this.studentService.addStudent(this.currentStudent).subscribe(
         () => {
           this.getStudents();
@@ -133,6 +136,10 @@ private headerMap: Record<string, string> = {
   }
 
   searchStudents(): void {
+    if (!this.searchQuery?.trim()) {
+      this.getStudents();
+      return;
+    }
     if (this.searchBy === 'class') {
       this.studentService.searchStudentsByClass(this.searchQuery).subscribe(
         (data) => (this.students = data),
@@ -200,130 +207,216 @@ private headerMap: Record<string, string> = {
       attendance: '',
       classteacher: ''
     };
-  }downloadTemplate(): void {
-  const rows = [
-    {
-      StudentId: 1001,
-      Name: 'Aarav Kumar',
-      Class: '10-A',
-      MobileNo: '9876543210',
-      Address: 'City',
-      Role: 'Student',
-      Email: 'aarav@example.com',
-      Attendance: 0,
-      ClassTeacher: 'Mrs. Sharma',
-      Photo: '' // optional base64 or URL
+  }
+
+  downloadTemplate(): void {
+    const rows = [
+      {
+        StudentId: 1001,
+        Name: 'Aarav Kumar',
+        Class: '10-A',
+        MobileNo: '9876543210',
+        Address: 'City',
+        Role: 'Student',
+        Email: 'aarav@example.com',
+        Attendance: 0,
+        ClassTeacher: 'Mrs. Sharma',
+        Photo: '' // optional base64 or URL
+      }
+    ];
+    const ws = XLSX.utils.json_to_sheet(rows);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, 'Students');
+    XLSX.writeFile(wb, 'students_template.xlsx');
+  }
+
+  async onExcelSelected(event: Event): Promise<void> {
+    this.bulkPreview = [];
+    this.bulkErrors = [];
+
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+
+    try {
+      const data = await file.arrayBuffer();
+      const wb = XLSX.read(data, { type: 'array' });
+      const sheet = wb.SheetNames[0];
+      const json = XLSX.utils.sheet_to_json<any>(wb.Sheets[sheet], { defval: '' });
+
+      if (!json.length) {
+        this.bulkErrors.push('Excel sheet is empty.');
+        return;
+      }
+
+      // Normalize headers and map to API fields
+      const mapped = json.map((row: any, idx: number) => this.normalizeRow(row, idx + 2)); // +2 -> excel row numbers (1 is header)
+
+      // basic validation pass
+      const MOBILE_RE = /^[6-9]\d{9}$/;
+      const seen = new Set<number>();
+      mapped.forEach((s, i) => {
+        const rowNum = i + 2;
+
+        if (s.studentId == null || s.studentId === '') {
+          this.bulkErrors.push(`Row ${rowNum}: StudentId is required`);
+        } else {
+          s.studentId = Number(s.studentId);
+          if (Number.isNaN(s.studentId)) this.bulkErrors.push(`Row ${rowNum}: StudentId must be a number`);
+        }
+
+        if (!s.name) this.bulkErrors.push(`Row ${rowNum}: Name is required`);
+        if (!s.class) this.bulkErrors.push(`Row ${rowNum}: Class is required`);
+        if (!s.Email) this.bulkErrors.push(`Row ${rowNum}: Email is required`);
+        if (!s.mobileNo || !MOBILE_RE.test(String(s.mobileNo))) {
+          this.bulkErrors.push(`Row ${rowNum}: MobileNo must be a valid 10-digit Indian number`);
+        }
+
+        if (seen.has(s.studentId)) this.bulkErrors.push(`Row ${rowNum}: Duplicate StudentId in the file (${s.studentId})`);
+        else seen.add(s.studentId);
+
+        // attendance numeric fallback
+        if (s.attendance != null && s.attendance !== '') {
+          s.attendance = Number(s.attendance);
+          if (Number.isNaN(s.attendance)) s.attendance = 0;
+        } else {
+          s.attendance = 0;
+        }
+      });
+
+      this.bulkPreview = mapped;
+    } catch (e) {
+      console.error(e);
+      this.bulkErrors.push('Failed to read Excel. Ensure it is .xlsx and the first sheet contains data.');
     }
-  ];
-  const ws = XLSX.utils.json_to_sheet(rows);
-  const wb = XLSX.utils.book_new();
-  XLSX.utils.book_append_sheet(wb, ws, 'Students');
-  XLSX.writeFile(wb, 'students_template.xlsx');
-}async onExcelSelected(event: Event): Promise<void> {
-  this.bulkPreview = [];
-  this.bulkErrors = [];
+  }
 
-  const input = event.target as HTMLInputElement;
-  const file = input.files?.[0];
-  if (!file) return;
+  private normalizeRow(row: any, rowNum: number) {
+    const normalized: any = {};
+    Object.keys(row).forEach((key: string) => {
+      const apiKey = this.headerMap[key.trim().toLowerCase()];
+      if (apiKey) normalized[apiKey] = row[key];
+    });
 
-  try {
-    const data = await file.arrayBuffer();
-    const wb = XLSX.read(data, { type: 'array' });
-    const sheet = wb.SheetNames[0];
-    const json = XLSX.utils.sheet_to_json<any>(wb.Sheets[sheet], { defval: '' });
+    // ensure all known fields exist
+    for (const k of Object.values(this.headerMap)) {
+      if (!(k in normalized)) normalized[k] = '';
+    }
+    return normalized;
+  }
 
-    if (!json.length) {
-      this.bulkErrors.push('Excel sheet is empty.');
+  // Commit to backend
+  commitBulk(): void {
+    if (!this.bulkPreview.length) {
+      alert('No rows to import. Please select an Excel file first.');
+      return;
+    }
+    if (this.bulkErrors.length) {
+      alert('Please fix the errors before importing.');
       return;
     }
 
-    // Normalize headers and map to API fields
-    const mapped = json.map((row: any, idx: number) => this.normalizeRow(row, idx + 2)); // +2 -> excel row numbers (1 is header)
-
-    // basic validation pass
-    const MOBILE_RE = /^[6-9]\d{9}$/;
-    const seen = new Set<number>();
-    mapped.forEach((s, i) => {
-      const rowNum = i + 2;
-
-      if (s.studentId == null || s.studentId === '') {
-        this.bulkErrors.push(`Row ${rowNum}: StudentId is required`);
-      } else {
-        s.studentId = Number(s.studentId);
-        if (Number.isNaN(s.studentId)) this.bulkErrors.push(`Row ${rowNum}: StudentId must be a number`);
-      }
-
-      if (!s.name) this.bulkErrors.push(`Row ${rowNum}: Name is required`);
-      if (!s.class) this.bulkErrors.push(`Row ${rowNum}: Class is required`);
-      if (!s.Email) this.bulkErrors.push(`Row ${rowNum}: Email is required`);
-      if (!s.mobileNo || !MOBILE_RE.test(String(s.mobileNo))) {
-        this.bulkErrors.push(`Row ${rowNum}: MobileNo must be a valid 10-digit Indian number`);
-      }
-
-      if (seen.has(s.studentId)) this.bulkErrors.push(`Row ${rowNum}: Duplicate StudentId in the file (${s.studentId})`);
-      else seen.add(s.studentId);
-
-      // attendance numeric fallback
-      if (s.attendance != null && s.attendance !== '') {
-        s.attendance = Number(s.attendance);
-        if (Number.isNaN(s.attendance)) s.attendance = 0;
-      } else {
-        s.attendance = 0;
+    this.studentService.bulkAddStudents(this.bulkPreview, { upsert: this.upsertMode }).subscribe({
+      next: (res) => {
+        const msg =
+          `Imported successfully.\n` +
+          `Inserted: ${res.inserted}, Updated: ${res.updated}, Skipped: ${res.skipped}\n` +
+          (res.errors?.length ? `Errors: ${res.errors.length} (see console)` : '');
+        alert(msg);
+        if (res.errors?.length) console.table(res.errors);
+        this.getStudents();
+        this.bulkPreview = [];
+      },
+      error: (err) => {
+        const status = err?.status ?? 'n/a';
+        const msg = err?.error?.message || err?.message || 'Unknown error';
+        alert(`Bulk import failed (status ${status}): ${msg}`);
+        if (err?.error?.errors) console.table(err.error.errors);
+        else console.error(err);
       }
     });
-
-    this.bulkPreview = mapped;
-  } catch (e) {
-    console.error(e);
-    this.bulkErrors.push('Failed to read Excel. Ensure it is .xlsx and the first sheet contains data.');
-  }
-}
-
-private normalizeRow(row: any, rowNum: number) {
-  const normalized: any = {};
-  Object.keys(row).forEach((key: string) => {
-    const apiKey = this.headerMap[key.trim().toLowerCase()];
-    if (apiKey) normalized[apiKey] = row[key];
-  });
-
-  // ensure all known fields exist
-  for (const k of Object.values(this.headerMap)) {
-    if (!(k in normalized)) normalized[k] = '';
-  }
-  return normalized;
-}
-
-// Commit to backend
-commitBulk(): void {
-  if (!this.bulkPreview.length) {
-    alert('No rows to import. Please select an Excel file first.');
-    return;
-  }
-  if (this.bulkErrors.length) {
-    alert('Please fix the errors before importing.');
-    return;
   }
 
-  this.studentService.bulkAddStudents(this.bulkPreview, { upsert: this.upsertMode }).subscribe({
-    next: (res) => {
-      const msg =
-        `Imported successfully.\n` +
-        `Inserted: ${res.inserted}, Updated: ${res.updated}, Skipped: ${res.skipped}\n` +
-        (res.errors?.length ? `Errors: ${res.errors.length} (see console)` : '');
-      alert(msg);
-      if (res.errors?.length) console.table(res.errors);
-      this.getStudents();
-      this.bulkPreview = [];
-    },
-    error: (err) => {
-      const status = err?.status ?? 'n/a';
-      const msg = err?.error?.message || err?.message || 'Unknown error';
-      alert(`Bulk import failed (status ${status}): ${msg}`);
-      if (err?.error?.errors) console.table(err.error.errors);
-      else console.error(err);
+  // ---------------- Pagination helpers ----------------
+  get totalPages(): number {
+    const total = this.getFilteredAndSortedStudents().length;
+    return Math.max(1, Math.ceil(total / this.pageSize));
+  }
+
+  // Returns the currently visible page of students (after filters & sorting)
+  get paginatedStudents(): any[] {
+    const all = this.getFilteredAndSortedStudents();
+    const start = (this.page - 1) * this.pageSize;
+    return all.slice(start, start + this.pageSize);
+  }
+
+  prevPage() {
+    if (this.page > 1) this.page--;
+  }
+
+  nextPage() {
+    if (this.page < this.totalPages) this.page++;
+  }
+
+  goToPage(n: number) {
+    if (n >= 1 && n <= this.totalPages) this.page = n;
+  }
+
+  onPageSizeChange(v: string | number) {
+    const n = Number(v) || 10;
+    this.pageSize = Math.max(1, n);
+    this.page = 1; // reset to first page
+  }
+
+  // ---------------- Report helpers ----------------
+  /**
+   * Build a simple class-wise report from currently filtered students
+   * Returns array of { className, count, avgAttendance }
+   */
+  getClassReport(): Array<{ className: string; count: number; avgAttendance: number }> {
+    const list = this.getFilteredAndSortedStudents();
+    const map = new Map<string, { count: number; sumAttendance: number }>();
+    for (const s of list) {
+      const key = (s.class ?? 'Unknown').toString();
+      const att = Number(s.attendance ?? 0) || 0;
+      if (!map.has(key)) map.set(key, { count: 0, sumAttendance: 0 });
+      const cur = map.get(key)!;
+      cur.count++;
+      cur.sumAttendance += att;
     }
-  });
+    const out: Array<{ className: string; count: number; avgAttendance: number }> = [];
+    for (const [k, v] of map.entries()) {
+      out.push({ className: k, count: v.count, avgAttendance: v.count ? Math.round((v.sumAttendance / v.count) * 100) / 100 : 0 });
+    }
+    // sort by className
+    out.sort((a, b) => a.className.localeCompare(b.className));
+    return out;
+  }
+/**
+ * Export the current class report to an XLSX file (client-side).
+ * Uses getClassReport() to build rows and XLSX to write file.
+ */
+exportClassReport(): void {
+  const report = this.getClassReport(); // [{className, count, avgAttendance}, ...]
+  if (!report.length) {
+    alert('No report data to export.');
+    return;
+  }
+
+  const rows = report.map(r => ({
+    Class: r.className,
+    Students: r.count,
+    AvgAttendance: r.avgAttendance
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(rows);
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'ClassReport');
+  const filename = `class_report_${new Date().toISOString().slice(0,10)}.xlsx`;
+  XLSX.writeFile(wb, filename);
 }
+
+  // Small helper for table trackBy
+  trackByStudent = (_: number, s: any) => s?.studentId ?? s?._id ?? _;
 
 }
