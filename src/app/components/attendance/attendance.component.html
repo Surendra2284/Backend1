@@ -1,57 +1,108 @@
 <div class="attendance-page container">
 
-  <!-- Top header / actions -->
-  <div class="header d-flex align-items-center justify-content-between mb-3">
-    <h3>Attendance</h3>
-    <div class="actions">
-      <button type="button" class="btn btn-sm btn-primary me-2" (click)="exportExcel()" [disabled]="loading">Export Excel</button>
-      <button type="button" class="btn btn-sm btn-secondary" (click)="exportPDF()" [disabled]="loading">Export PDF</button>
+  <!-- Header -->
+  <div class="att-header">
+    <div>
+      <h3>Attendance Reports & Marking</h3>
+      <p class="subtitle">
+        Select class and date range to generate report. You can also add new attendance
+        for the selected class & date.
+      </p>
     </div>
   </div>
 
   <!-- Message / toast -->
-  <div *ngIf="message" class="alert alert-info py-2">
+  <div *ngIf="message" class="alert alert-info py-2 mt-2">
     {{ message }}
   </div>
 
-  <div class="row">
-    <!-- Left column: mark attendance -->
-    <div class="col-md-5">
-      <div class="card mb-3">
+  <div class="row mt-3">
+    <!-- LEFT: Add Attendance -->
+    <div class="col-md-4">
+      <div class="card att-card">
         <div class="card-body">
-          <h5 class="card-title mb-3">Mark Attendance</h5>
+          <h5 class="card-title mb-3">Add / Mark Attendance</h5>
 
           <form [formGroup]="attendanceForm" (ngSubmit)="saveAttendance()">
+            <!-- Class -->
             <div class="mb-2">
               <label class="form-label">Class</label>
-              <input formControlName="className" class="form-control" placeholder="Class name" />
-              <div *ngIf="attendanceForm.controls['className'].touched && attendanceForm.controls['className'].invalid"
-                   class="text-danger small">Required</div>
+              <input
+                formControlName="className"
+                class="form-control"
+                placeholder="Class name (e.g. 6A)"
+                (blur)="onClassChange()"
+              />
+              <div
+                *ngIf="
+                  attendanceForm.controls['className'].touched &&
+                  attendanceForm.controls['className'].invalid
+                "
+                class="text-danger small"
+              >
+                Required
+              </div>
             </div>
 
+            <!-- Teacher -->
             <div class="mb-2">
               <label class="form-label">Teacher</label>
-              <input formControlName="teacher" class="form-control" placeholder="Teacher name" />
-              <div *ngIf="attendanceForm.controls['teacher'].touched && attendanceForm.controls['teacher'].invalid"
-                   class="text-danger small">Required</div>
+              <input
+                formControlName="teacher"
+                class="form-control"
+                placeholder="Teacher name"
+              />
+              <div
+                *ngIf="
+                  attendanceForm.controls['teacher'].touched &&
+                  attendanceForm.controls['teacher'].invalid
+                "
+                class="text-danger small"
+              >
+                Required
+              </div>
             </div>
 
+            <!-- Marked by username -->
             <div class="mb-2">
               <label class="form-label">Marked By (username)</label>
-              <input formControlName="username" class="form-control" placeholder="Your username" />
-              <div *ngIf="attendanceForm.controls['username'].touched && attendanceForm.controls['username'].invalid"
-                   class="text-danger small">Required</div>
+              <input
+                formControlName="username"
+                class="form-control"
+                placeholder="Your username"
+              />
+              <div
+                *ngIf="
+                  attendanceForm.controls['username'].touched &&
+                  attendanceForm.controls['username'].invalid
+                "
+                class="text-danger small"
+              >
+                Required
+              </div>
             </div>
 
-            <div class="mb-2 row">
+            <!-- Date + Status -->
+            <div class="row mb-2">
               <div class="col-6">
                 <label class="form-label">Date</label>
-                <input formControlName="date" type="date" class="form-control" />
-                <div *ngIf="attendanceForm.controls['date'].touched && attendanceForm.controls['date'].invalid"
-                     class="text-danger small">Required</div>
+                <input
+                  formControlName="date"
+                  type="date"
+                  class="form-control"
+                />
+                <div
+                  *ngIf="
+                    attendanceForm.controls['date'].touched &&
+                    attendanceForm.controls['date'].invalid
+                  "
+                  class="text-danger small"
+                >
+                  Required
+                </div>
               </div>
               <div class="col-6">
-                <label class="form-label">Status</label>
+                <label class="form-label">Status (default for selected)</label>
                 <select formControlName="status" class="form-select">
                   <option>Present</option>
                   <option>Absent</option>
@@ -62,131 +113,207 @@
 
             <hr />
 
+            <!-- Students list with checkboxes -->
             <div class="mb-2">
               <div class="d-flex align-items-center justify-content-between mb-1">
-                <strong>Students</strong>
+                <strong>Students of selected class</strong>
                 <div>
-                  <input id="selectAllStudents" type="checkbox" (change)="toggleSelectAll($event)" [checked]="allSelected" />
-                  <label for="selectAllStudents" class="small ms-1">Select all</label>
+                  <input
+                    id="selectAllStudents"
+                    type="checkbox"
+                    (change)="toggleSelectAll($event)"
+                    [checked]="allSelected"
+                  />
+                  <label for="selectAllStudents" class="small ms-1"
+                    >Select all</label
+                  >
                 </div>
               </div>
 
-              <div class="students-list" style="max-height:260px; overflow:auto; border:1px solid #eee; padding:8px;">
-                <div *ngIf="!students.length" class="small text-muted">No students loaded.</div>
+              <div class="students-list">
+                <div *ngIf="!students.length" class="small text-muted">
+                  No students loaded. Enter class name above and move focus out.
+                </div>
 
-                <div *ngFor="let s of students; let i = index" class="form-check d-flex align-items-center">
-                  <!-- Standalone ngModel so it doesn't register with the parent FormGroup -->
+                <div
+                  *ngFor="let s of students; let i = index"
+                  class="form-check d-flex align-items-center student-row"
+                >
+                  <!-- Standalone ngModel -->
                   <input
                     class="form-check-input me-2"
                     type="checkbox"
                     [(ngModel)]="s.selected"
                     [ngModelOptions]="{ standalone: true }"
-                    name="studentCheckbox{{i}}"
-                    [id]="'student_'+i" />
+                    name="studentCheckbox{{ i }}"
+                    [id]="'student_' + i"
+                  />
 
-                  <label class="form-check-label flex-grow-1" [for]="'student_'+i">
-                    <div>{{ getStudentLabel(s) || 'Unnamed' }}</div>
-                    <small class="text-muted">{{ s.studentId || s._id || '-' }}</small>
+                  <label class="form-check-label flex-grow-1" [for]="'student_' + i">
+                    <div class="stu-name">
+                      {{ getStudentLabel(s) || 'Unnamed' }}
+                    </div>
+                    <small class="text-muted">
+                      ID: {{ s.studentId || s._id || '-' }}
+                    </small>
                   </label>
                 </div>
               </div>
             </div>
 
             <div class="d-flex gap-2 mt-3">
-              <button type="submit" class="btn btn-success" [disabled]="loading">Save Attendance</button>
-              <button type="button" class="btn btn-outline-secondary" (click)="clearSelections()" [disabled]="loading">Clear Selection</button>
+              <button
+                type="submit"
+                class="btn btn-success flex-grow-1"
+                [disabled]="loading"
+              >
+                Save Attendance
+              </button>
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                (click)="clearSelections()"
+                [disabled]="loading"
+              >
+                Clear
+              </button>
             </div>
           </form>
         </div>
       </div>
-
-      <!-- Totals card -->
-      <div class="card">
-        <div class="card-body">
-          <h6>Page Totals</h6>
-          <div class="d-flex justify-content-between flex-wrap gap-2">
-            <div>Total records: <strong>{{ totals.total }}</strong></div>
-            <div>Present: <strong>{{ totals.Present }}</strong> ({{ totals.pctPresent }}%)</div>
-            <div>Absent: <strong>{{ totals.Absent }}</strong> ({{ totals.pctAbsent }}%)</div>
-            <div>Leave: <strong>{{ totals.Leave }}</strong> ({{ totals.pctLeave }}%)</div>
-          </div>
-        </div>
-      </div>
     </div>
 
-    <!-- Right column: filters + table + reports -->
-    <div class="col-md-7">
+    <!-- RIGHT: Filters, History, Matrix, Absent List, Export -->
+    <div class="col-md-8">
       <!-- Filters -->
-      <div class="card mb-3">
+      <div class="card att-card mb-3">
         <div class="card-body">
-          <h5 class="card-title mb-3">Filters</h5>
+          <h5 class="card-title mb-3">Report Filters</h5>
+
           <form [formGroup]="filterForm" (ngSubmit)="applyFilters()">
             <div class="row g-2">
               <div class="col-md-4">
-                <input formControlName="className" class="form-control" placeholder="Class" />
+                <input
+                  formControlName="className"
+                  class="form-control"
+                  placeholder="Class (e.g. 6A)"
+                />
               </div>
               <div class="col-md-4">
-                <input formControlName="name" class="form-control" placeholder="Student name" />
+                <input
+                  formControlName="studentName"
+                  class="form-control"
+                  placeholder="Student name"
+                />
               </div>
               <div class="col-md-4">
-                <input formControlName="username" class="form-control" placeholder="Marked by" />
+                <input
+                  formControlName="studentId"
+                  class="form-control"
+                  placeholder="Student ID"
+                />
               </div>
             </div>
 
             <div class="row g-2 mt-2">
               <div class="col-md-4">
-                <input formControlName="studentId" class="form-control" placeholder="Student ID" />
+                <input
+                  formControlName="username"
+                  class="form-control"
+                  placeholder="Marked by username"
+                />
               </div>
               <div class="col-md-4">
-                <input formControlName="date" type="date" class="form-control" />
+                <input
+                  formControlName="fromDate"
+                  type="date"
+                  class="form-control"
+                  placeholder="From date"
+                />
               </div>
               <div class="col-md-4">
-                <select formControlName="status" class="form-select">
-                  <option value="">All statuses</option>
-                  <option>Present</option>
-                  <option>Absent</option>
-                  <option>Leave</option>
-                </select>
+                <input
+                  formControlName="toDate"
+                  type="date"
+                  class="form-control"
+                  placeholder="To date"
+                />
               </div>
             </div>
 
-            <div class="d-flex gap-2 mt-3">
-              <button type="submit" class="btn btn-primary btn-sm" [disabled]="loading">Apply</button>
-              <button type="button" class="btn btn-outline-secondary btn-sm" (click)="clearFilters()">Clear</button>
+            <div class="row g-2 mt-2">
+              <div class="col-md-4">
+                <select formControlName="status" class="form-select">
+                  <option value="">All statuses</option>
+                  <option value="Present">Present</option>
+                  <option value="Absent">Absent</option>
+                  <option value="Leave">Leave</option>
+                </select>
+              </div>
+
+              <div class="col-md-8 d-flex gap-2 justify-content-end mt-2 mt-md-0">
+                <button
+                  type="submit"
+                  class="btn btn-primary btn-sm"
+                  [disabled]="loading"
+                >
+                  Apply Filters
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-secondary btn-sm"
+                  (click)="clearFilters()"
+                >
+                  Clear
+                </button>
+                <button
+                  type="button"
+                  class="btn btn-outline-danger btn-sm"
+                  (click)="deleteAllInCurrentFilter()"
+                  [disabled]="loading || !attendances.length"
+                >
+                  Delete All (current filter)
+                </button>
+              </div>
             </div>
           </form>
         </div>
       </div>
 
-      <!-- Attendance table -->
-      <div class="card mb-3">
+      <!-- History Table -->
+      <div class="card att-card mb-3">
         <div class="card-body p-0">
           <div class="table-responsive">
-            <table class="table table-striped table-hover mb-0">
+            <table class="table table-striped table-hover mb-0 history-table">
               <thead class="table-light">
                 <tr>
-                  <th (click)="setSort('student')" style="cursor:pointer">Student
+                  <th (click)="setSort('student')" class="sortable">
+                    Student
                     <small *ngIf="sortKey === 'student'">({{ sortDir }})</small>
                   </th>
-                  <th (click)="setSort('date')" style="cursor:pointer">Date
+                  <th (click)="setSort('date')" class="sortable">
+                    Date
                     <small *ngIf="sortKey === 'date'">({{ sortDir }})</small>
                   </th>
-                  <th (click)="setSort('className')" style="cursor:pointer">Class
+                  <th (click)="setSort('className')" class="sortable">
+                    Class
                     <small *ngIf="sortKey === 'className'">({{ sortDir }})</small>
                   </th>
-                  <th (click)="setSort('teacher')" style="cursor:pointer">Teacher
+                  <th (click)="setSort('teacher')" class="sortable">
+                    Teacher
                     <small *ngIf="sortKey === 'teacher'">({{ sortDir }})</small>
                   </th>
-                  <th (click)="setSort('username')" style="cursor:pointer">By
+                  <th (click)="setSort('username')" class="sortable">
+                    By
                     <small *ngIf="sortKey === 'username'">({{ sortDir }})</small>
                   </th>
-                  <th (click)="setSort('status')" style="cursor:pointer">Status</th>
-                  <th class="text-end">Actions</th>
+                  <th>Status</th>
+                  <th class="text-end">Delete</th>
                 </tr>
               </thead>
 
               <tbody>
-                <tr *ngFor="let a of sorted; trackBy: trackByRecord">
+                <tr *ngFor="let a of sortedHistory; trackBy: trackByRecord">
                   <td>
                     <div>{{ getStudentName(a) || '—' }}</div>
                     <small class="text-muted">{{ getStudentId(a) }}</small>
@@ -196,26 +323,31 @@
                   <td>{{ a.teacher || '—' }}</td>
                   <td>{{ a.username || '—' }}</td>
                   <td>
-                    <span class="badge"
-                          [ngClass]="{
-                            'bg-success text-white': a.status === 'Present',
-                            'bg-danger text-white': a.status === 'Absent',
-                            'bg-warning text-dark': a.status === 'Leave'
-                          }">{{ a.status }}</span>
+                    <span
+                      class="badge"
+                      [ngClass]="{
+                        'bg-success text-white': a.status === 'Present',
+                        'bg-danger text-white': a.status === 'Absent',
+                        'bg-warning text-dark': a.status === 'Leave'
+                      }"
+                    >
+                      {{ a.status }}
+                    </span>
                   </td>
                   <td class="text-end">
-                    <div class="btn-group btn-group-sm" role="group">
-                      <button class="btn btn-outline-primary" (click)="correctStatus(a, 'Present')">Mark Present</button>
-                      <button class="btn btn-outline-danger" (click)="correctStatus(a, 'Absent')">Mark Absent</button>
-                      <button class="btn btn-outline-warning" (click)="correctStatus(a, 'Leave')">Mark Leave</button>
-                      <button class="btn btn-outline-secondary" (click)="updateAttendance(a._id || '', { status: a.status })">Update</button>
-                      <button class="btn btn-outline-danger" (click)="deleteAttendance(a._id || '')">Delete</button>
-                    </div>
+                    <button
+                      class="btn btn-outline-danger btn-sm"
+                      (click)="deleteAttendance(a._id || '')"
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
 
                 <tr *ngIf="!attendances.length">
-                  <td colspan="7" class="text-center small text-muted py-3">No attendance records found.</td>
+                  <td colspan="7" class="text-center small text-muted py-3">
+                    No attendance records for current filter.
+                  </td>
                 </tr>
               </tbody>
             </table>
@@ -223,45 +355,117 @@
         </div>
       </div>
 
-      <!-- Class-wise Present Groups + Bulk ops (cached) -->
-      <ng-container *ngIf="presentClassGroups() as groups">
-        <div *ngIf="groups.length" class="card mb-3">
-          <div class="card-body">
-            <h6>Class-wise Present Groups</h6>
-            <div *ngFor="let g of groups" class="mb-2 d-flex align-items-start justify-content-between">
+      <!-- Matrix View (monthly grid) -->
+      <div class="card att-card mb-3">
+        <div class="card-body">
+          <h6 class="mb-2">Monthly Matrix View</h6>
+          <p class="small text-muted">
+            Each row is a student. Columns show attendance status for each date in
+            the selected range.
+          </p>
+
+          <div class="table-responsive matrix-wrap">
+            <table class="table table-bordered table-sm matrix-table">
+              <thead>
+                <tr>
+                  <th class="sticky-col">Student</th>
+                  <th class="sticky-col">ID</th>
+                  <th *ngFor="let d of matrixDates">
+                    {{ d | date: 'dd' }}
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr *ngIf="!matrixRows.length">
+                  <td 
+  [attr.colspan]="2 + matrixDates.length"
+  class="text-center small text-muted py-2"
+>
+  No data for matrix view.
+</td>
+
+                </tr>
+
+                <tr *ngFor="let row of matrixRows">
+                  <td class="sticky-col">{{ row.name }}</td>
+                  <td class="sticky-col">{{ row.studentId }}</td>
+                  <td *ngFor="let d of matrixDates">
+                    <span
+                      [ngClass]="{
+                        'm-present': row.perDate[d] === 'Present',
+                        'm-absent': row.perDate[d] === 'Absent',
+                        'm-leave': row.perDate[d] === 'Leave'
+                      }"
+                    >
+                      {{
+                        row.perDate[d] === 'Present'
+                          ? 'P'
+                          : row.perDate[d] === 'Absent'
+                          ? 'A'
+                          : row.perDate[d] === 'Leave'
+                          ? 'L'
+                          : ''
+                      }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+
+      <!-- Absent List -->
+      <div class="card att-card mb-3">
+        <div class="card-body">
+          <h6 class="mb-2">Absent List (for SMS / Notices)</h6>
+          <p class="small text-muted">
+            Students with at least one Absent record in the current filter range.
+          </p>
+
+          <div *ngIf="!absentList.length" class="small text-muted">
+            No absent records for current filter.
+          </div>
+
+          <div
+            *ngFor="let a of absentList"
+            class="absent-row d-flex justify-content-between align-items-start"
+          >
+            <div>
+              <strong>{{ a.name }}</strong>
+              <div class="small text-muted">ID: {{ a.studentId }}</div>
+            </div>
+            <div class="small text-muted text-end">
+              <div>Absent on:</div>
               <div>
-                <strong>{{ g.className }}</strong>
-                <div class="small text-muted">{{ g.items.length }} student(s)</div>
-              </div>
-              <div class="btn-group btn-group-sm">
-                <button class="btn btn-sm btn-outline-danger" (click)="markClassAll(g, 'Absent')">Mark All Absent</button>
-                <button class="btn btn-sm btn-outline-warning" (click)="markClassAll(g, 'Leave')">Mark All Leave</button>
-                <button class="btn btn-sm btn-outline-success" (click)="markClassAll(g, 'Present')">Mark All Present</button>
+                <span *ngFor="let d of a.dates; let last = last">
+                  {{ d | date: 'dd MMM' }}<span *ngIf="!last">, </span>
+                </span>
               </div>
             </div>
           </div>
         </div>
-      </ng-container>
-
-      <!-- Pagination -->
-      <div class="d-flex align-items-center justify-content-between mt-2">
-        <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-sm btn-outline-secondary" (click)="prevPage()" [disabled]="page <= 1">Prev</button>
-          <span>Page <strong>{{ page }}</strong> of <strong>{{ totalPages }}</strong></span>
-          <button class="btn btn-sm btn-outline-secondary" (click)="nextPage()" [disabled]="page >= totalPages">Next</button>
-        </div>
-
-        <div class="d-flex align-items-center gap-2">
-          <label class="small mb-0">Page size</label>
-          <select #pageSizeSelect class="form-select form-select-sm" [value]="pageSize" (change)="onPageSizeChange(pageSizeSelect.value)">
-            <option [value]="5">5</option>
-            <option [value]="10">10</option>
-            <option [value]="25">25</option>
-            <option [value]="50">50</option>
-          </select>
-        </div>
       </div>
 
+      <!-- Export buttons at bottom -->
+      <div class="export-bar d-flex justify-content-end gap-2 mt-2">
+        <button
+          type="button"
+          class="btn btn-sm btn-primary"
+          (click)="exportExcel()"
+          [disabled]="loading || !attendances.length"
+        >
+          Export to Excel
+        </button>
+        <button
+          type="button"
+          class="btn btn-sm btn-secondary"
+          (click)="exportPDF()"
+          [disabled]="loading || !attendances.length"
+        >
+          Export to PDF
+        </button>
+      </div>
     </div>
   </div>
 </div>

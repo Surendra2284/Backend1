@@ -51,3 +51,200 @@
   table th {
     background-color: #f2f2f2;
   }
+  /* =========================================================
+   GLOBAL PAGE LAYOUT
+   ========================================================= */
+.student-page {
+  animation: fadeIn 0.4s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(4px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+
+/* =========================================================
+   CARDS
+   ========================================================= */
+.card {
+  border: none;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+
+.shadow-sm {
+  box-shadow: 0 3px 6px rgba(0,0,0,0.08);
+}
+
+.card h5, .card h6 {
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   TABLES
+   ========================================================= */
+
+.table th {
+  font-weight: 700;
+  background: #f8f9fc !important;
+  user-select: none;
+}
+
+.table-hover tbody tr:hover {
+  background-color: #f0f6ff !important;
+}
+
+.table td, .table th {
+  vertical-align: middle;
+}
+
+.sortable {
+  cursor: pointer;
+  transition: color 0.2s, background 0.2s;
+}
+
+.sortable:hover {
+  color: #0b5ed7;
+  background: #eef4ff;
+}
+
+
+/* =========================================================
+   BULK PREVIEW SECTION
+   ========================================================= */
+.bulk-preview-table {
+  max-height: 250px;
+  overflow-y: auto;
+  border-radius: 4px;
+  border: 1px solid #e5e5e5;
+}
+
+.bulk-preview-table::-webkit-scrollbar {
+  width: 6px;
+}
+
+.bulk-preview-table::-webkit-scrollbar-thumb {
+  background: #cbd5e1;
+  border-radius: 4px;
+}
+
+
+/* =========================================================
+   PHOTO UPLOAD PREVIEW
+   ========================================================= */
+.student-photo-preview {
+  max-width: 100%;
+  max-height: 200px;
+  border-radius: 6px;
+  object-fit: cover;
+  border: 1px solid #ddd;
+}
+
+
+/* =========================================================
+   BUTTONS
+   ========================================================= */
+.btn {
+  font-weight: 600;
+  border-radius: 8px !important;
+}
+
+.btn-outline-primary,
+.btn-outline-secondary {
+  border-width: 2px !important;
+}
+
+.btn-primary {
+  background: #0b5ed7 !important;
+  border-color: #0b5ed7 !important;
+}
+
+.btn-primary:hover {
+  background: #084db6 !important;
+}
+
+.btn-outline-danger:hover {
+  color: white !important;
+}
+
+
+/* =========================================================
+   PAGINATION
+   ========================================================= */
+.btn-group .btn {
+  min-width: 38px;
+}
+
+.btn-group .btn-primary {
+  border-radius: 6px !important;
+}
+
+.btn-group .btn-outline-secondary {
+  border-radius: 6px !important;
+}
+
+
+/* =========================================================
+   FILTER AREA
+   ========================================================= */
+input.form-control-sm,
+select.form-select-sm {
+  border-radius: 6px;
+}
+
+input.form-control-sm:focus,
+select.form-select-sm:focus {
+  border-color: #0b5ed7;
+  box-shadow: 0 0 0 0.15rem rgba(11, 94, 215, 0.25);
+}
+
+
+/* =========================================================
+   REPORT TABLE
+   ========================================================= */
+table.table-bordered {
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+table.table-bordered th {
+  background: #f3f7ff !important;
+  font-weight: 700;
+}
+
+
+/* =========================================================
+   EMPTY STATES
+   ========================================================= */
+.text-muted.small {
+  padding: 6px 0;
+  font-style: italic;
+}
+
+
+/* =========================================================
+   IMAGE COLUMN
+   ========================================================= */
+td img {
+  border-radius: 6px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+
+/* =========================================================
+   ANIMATIONS
+   ========================================================= */
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+.card {
+  animation: slideDown 0.3s ease;
+}

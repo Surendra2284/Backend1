@@ -1,57 +1,71 @@
 <div class="login-container">
-  <!-- Animated Heading -->
-  <h2 class="moving-heading">✨ Existing User? Login Below | New User? Please Sign Up ✨</h2>
+
+  <h3 class="moving-heading">✨ Existing User? Login Below | New User? Please Sign Up ✨</h3>
 
   <form (ngSubmit)="onSubmit()" [formGroup]="loginForm" class="login-form">
+
     <!-- Username -->
     <div class="form-group">
-      <label for="username" class="form-label">Username</label>
+      <label class="form-label">Username</label>
       <input
-        class="form-control"
-        id="username"
-        formControlName="username"
-        type="text"
-        autocomplete="username"
-        placeholder="Enter your username"
-      />
+  id="username"
+  [type]=''
+  formControlName="username"
+  class="form-control"
+  placeholder="Enter your username"
+  autocomplete="username"
+/>
+      <small class="text-danger" *ngIf="loginForm.get('username')?.touched && loginForm.get('username')?.invalid">
+        Username is required.
+      </small>
     </div>
 
     <!-- Password -->
     <div class="form-group password-container">
-      <label for="password" class="form-label">Password</label>
+      <label class="form-label">Password</label>
       <input
-        id="password"
-        [type]="passwordVisible ? 'text' : 'password'"
-        formControlName="password"
-        class="form-control"
-        placeholder="Enter your password"
-      />
+  id="password"
+  [type]="passwordVisible ? 'text' : 'password'"
+  formControlName="password"
+  class="form-control"
+  placeholder="Enter your password"
+  autocomplete="current-password"
+/>
+
+
       <span
         class="toggle-icon"
         (click)="togglePasswordVisibility()"
         [innerHTML]="passwordVisible ? '&#128065;' : '&#128274;'"
-        title="Toggle Password Visibility"
       ></span>
+
+      <small class="text-danger" *ngIf="loginForm.get('password')?.touched && loginForm.get('password')?.invalid">
+        Password is required.
+      </small>
     </div>
 
     <!-- Role -->
     <div class="form-group">
-      <label for="role" class="form-label">Role</label>
-      <select
-        class="form-control"
-        id="role"
-        formControlName="role"
-        autocomplete="current-role"
-      >
+      <label class="form-label">Role</label>
+      <select class="form-control" formControlName="role">
+        <option value="">Select role</option>
         <option value="Admin">Admin</option>
         <option value="Student">Student</option>
         <option value="Teacher">Teacher</option>
       </select>
+      <small class="text-danger" *ngIf="loginForm.get('role')?.touched && loginForm.get('role')?.invalid">
+        Role is required.
+      </small>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="isError" class="alert alert-danger mt-2">
+      {{ serverMessage }}
     </div>
 
     <!-- Submit -->
     <button
-      [disabled]="!loginForm.valid"
+      [disabled]="loginForm.invalid"
       type="submit"
       class="btn btn-success login-btn"
     >
@@ -59,7 +73,6 @@
     </button>
   </form>
 
-  <!-- Signup Prompt -->
   <div class="signup-prompt">
     <p>🌟 New here? <a routerLink="/signup">Click here to Sign Up</a></p>
   </div>

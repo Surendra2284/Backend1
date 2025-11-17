@@ -1,77 +1,93 @@
-<div class="student-page container py-3">
+<div class="student-page container-fluid py-3">
 
-  <!-- Header -->
-  <div class="d-flex align-items-center justify-content-between mb-3">
-    <h3 class="mb-0">Students</h3>
-    <div class="d-flex gap-2 align-items-center">
-      <button class="btn btn-sm btn-outline-secondary" (click)="downloadTemplate()">Download Template</button>
-      <label class="btn btn-sm btn-outline-primary mb-0">
-        Import Excel
+  <!-- ====================== PAGE HEADER ====================== -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold mb-1">🎓 Student Management</h2>
+      <div class="text-muted">Manage all students, bulk import, filters & reports</div>
+    </div>
+
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary btn-sm" (click)="downloadTemplate()">
+        <i class="bi bi-download me-1"></i> Template
+      </button>
+
+      <label class="btn btn-primary btn-sm mb-0">
+        <i class="bi bi-file-earmark-spreadsheet me-1"></i> Import Excel
         <input type="file" accept=".xlsx,.xls" (change)="onExcelSelected($event)" hidden>
       </label>
     </div>
   </div>
 
-  <div class="row g-3">
-    <!-- Left: Add / Edit student form + bulk preview -->
+  <div class="row g-4">
+
+    <!-- ========================================================= -->
+    <!-- LEFT SIDE : Add/Edit Student + Bulk Import Preview        -->
+    <!-- ========================================================= -->
     <div class="col-lg-4">
-      <div class="card">
+
+      <!-- ====================== ADD / EDIT FORM ====================== -->
+      <div class="card shadow-sm mb-4">
         <div class="card-body">
-          <h5 class="card-title">{{ isEditing ? 'Edit Student' : 'Add Student' }}</h5>
+          <h5 class="fw-bold">{{ isEditing ? '✏️ Edit Student' : '➕ Add Student' }}</h5>
 
-          <form #studentForm="ngForm" (ngSubmit)="saveStudent(studentForm)" novalidate>
-            <div class="mb-2">
+          <form #studentForm="ngForm" (ngSubmit)="saveStudent(studentForm)" novalidate class="mt-3">
+
+            <div class="mb-3">
               <label class="form-label">Student ID</label>
-              <input name="studentId" [(ngModel)]="currentStudent.studentId" class="form-control" required />
+              <input name="studentId" class="form-control" required [(ngModel)]="currentStudent.studentId">
             </div>
 
-            <div class="mb-2">
-              <label class="form-label">Name</label>
-              <input name="name" [(ngModel)]="currentStudent.name" class="form-control" required />
+            <div class="mb-3">
+              <label class="form-label">Full Name</label>
+              <input name="name" class="form-control" required [(ngModel)]="currentStudent.name">
             </div>
 
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label">Class</label>
-              <input name="class" [(ngModel)]="currentStudent.class" class="form-control" required />
+              <input name="class" class="form-control" required [(ngModel)]="currentStudent.class">
             </div>
 
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label">Mobile No</label>
-              <input name="mobileNo" [(ngModel)]="currentStudent.mobileNo" class="form-control" />
+              <input name="mobileNo" class="form-control" [(ngModel)]="currentStudent.mobileNo">
             </div>
 
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label">Email</label>
-              <input name="Email" [(ngModel)]="currentStudent.Email" class="form-control" type="email" />
+              <input name="Email" class="form-control" type="email" [(ngModel)]="currentStudent.Email">
             </div>
 
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label">Role</label>
-              <input name="Role" [(ngModel)]="currentStudent.Role" class="form-control" />
+              <input name="Role" class="form-control" [(ngModel)]="currentStudent.Role">
             </div>
 
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label">Class Teacher</label>
-              <input name="classteacher" [(ngModel)]="currentStudent.classteacher" class="form-control" />
+              <input name="classteacher" class="form-control" [(ngModel)]="currentStudent.classteacher">
             </div>
 
-            <div class="mb-2">
+            <div class="mb-3">
               <label class="form-label">Address</label>
-              <textarea name="address" [(ngModel)]="currentStudent.address" class="form-control" rows="2"></textarea>
+              <textarea name="address" rows="2" class="form-control" [(ngModel)]="currentStudent.address"></textarea>
             </div>
 
-            <!-- Photo upload + preview -->
+            <!-- Photo Upload -->
             <div class="mb-3">
               <label class="form-label">Photo (optional)</label>
-              <input type="file" accept="image/*" (change)="onFileSelected($event)" class="form-control" />
-              <div *ngIf="currentStudent.photo" class="mt-2">
-                <div class="small text-muted">Preview:</div>
-                <img [src]="currentStudent.photo" alt="photo" style="max-width: 100%; max-height: 180px; object-fit: contain; border:1px solid #eee; padding:4px;">
+              <input type="file" accept="image/*" (change)="onFileSelected($event)" class="form-control">
+
+              <div *ngIf="currentStudent.photo" class="mt-2 text-center">
+                <small class="text-muted d-block">Preview:</small>
+                <img [src]="currentStudent.photo"
+                     class="rounded shadow-sm border"
+                     style="max-width: 100%; max-height: 200px; object-fit: cover;">
               </div>
             </div>
 
-            <div class="d-flex gap-2">
-              <button type="submit" class="btn btn-primary" [disabled]="studentForm.invalid">
+            <div class="d-flex gap-2 mt-3">
+              <button class="btn btn-success w-100" [disabled]="studentForm.invalid">
                 {{ isEditing ? 'Update' : 'Add' }}
               </button>
               <button type="button" class="btn btn-outline-secondary" (click)="resetForm(studentForm)">Reset</button>
@@ -80,29 +96,36 @@
         </div>
       </div>
 
-      <!-- Bulk preview / errors -->
-      <div class="card mt-3">
+      <!-- ====================== BULK PREVIEW ====================== -->
+      <div class="card shadow-sm">
         <div class="card-body">
-          <h6 class="card-title">Bulk Import Preview</h6>
 
-          <div *ngIf="bulkErrors.length" class="alert alert-danger p-2">
-            <strong>Errors:</strong>
+          <h6 class="fw-bold mb-2">📄 Bulk Import Preview</h6>
+
+          <div *ngIf="bulkErrors.length" class="alert alert-danger p-2 small">
+            <strong>Errors found:</strong>
             <ul class="mb-0">
               <li *ngFor="let e of bulkErrors">{{ e }}</li>
             </ul>
           </div>
 
-          <div *ngIf="!bulkPreview.length && !bulkErrors.length" class="text-muted small">No file loaded.</div>
+          <div *ngIf="!bulkPreview.length && !bulkErrors.length" class="text-muted small">
+            No file loaded yet.
+          </div>
 
-          <div *ngIf="bulkPreview.length" style="max-height:220px; overflow:auto;">
-            <table class="table table-sm table-bordered mb-2">
+          <div *ngIf="bulkPreview.length" style="max-height: 240px; overflow-y: auto;">
+            <table class="table table-sm table-bordered">
               <thead class="table-light">
                 <tr>
-                  <th>StudentId</th><th>Name</th><th>Class</th><th>Mobile</th><th>Email</th>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Class</th>
+                  <th>Mobile</th>
+                  <th>Email</th>
                 </tr>
               </thead>
               <tbody>
-                <tr *ngFor="let r of bulkPreview; let i = index">
+                <tr *ngFor="let r of bulkPreview">
                   <td>{{ r.studentId }}</td>
                   <td>{{ r.name }}</td>
                   <td>{{ r.class }}</td>
@@ -112,81 +135,85 @@
               </tbody>
             </table>
 
-            <div class="d-flex gap-2">
-              <button class="btn btn-sm btn-success" (click)="commitBulk()">Import</button>
-              <button class="btn btn-sm btn-outline-secondary" (click)="bulkPreview = []; bulkErrors = []">Clear</button>
+            <div class="d-flex gap-2 mt-2">
+              <button class="btn btn-primary btn-sm w-100" (click)="commitBulk()">
+                Import Data
+              </button>
+              <button class="btn btn-outline-secondary btn-sm" (click)="bulkPreview=[]; bulkErrors=[]">
+                Clear
+              </button>
             </div>
           </div>
+
         </div>
       </div>
+
     </div>
 
-    <!-- Right: Search / Filters / Student table + Reports -->
+    <!-- ========================================================= -->
+    <!-- RIGHT SIDE : Search / Filters / Student Table / Report    -->
+    <!-- ========================================================= -->
     <div class="col-lg-8">
-      <div class="card mb-3">
+
+      <!-- ====================== SEARCH + FILTERS ====================== -->
+      <div class="card shadow-sm mb-4">
         <div class="card-body">
-          <div class="row g-2 align-items-center">
-            <div class="col-md-6">
+
+          <div class="row g-2">
+            <div class="col-md-7">
               <div class="input-group">
-                <input class="form-control" [(ngModel)]="searchQuery" placeholder="Search..." name="globalSearch">
-                <select class="form-select" [(ngModel)]="searchBy" name="searchBy">
-                  <option value="class">By class</option>
-                  <option value="name">By name</option>
+                <input class="form-control" placeholder="Search students..." [(ngModel)]="searchQuery">
+                <select class="form-select" [(ngModel)]="searchBy">
+                  <option value="class">By Class</option>
+                  <option value="name">By Name</option>
                 </select>
-                <button class="btn btn-outline-primary" (click)="searchStudents()">Search</button>
+                <button class="btn btn-primary" (click)="searchStudents()">
+                  Search
+                </button>
               </div>
             </div>
 
-            <div class="col-md-6 text-end">
-              <button class="btn btn-sm btn-outline-secondary me-2" (click)="clearFilters()">Clear Filters</button>
-              <div class="btn-group" role="group" aria-label="sort">
-                <button class="btn btn-sm btn-outline-secondary" [class.active]="sortColumn==='studentId'" (click)="sortData('studentId')">Sort ID</button>
-                <button class="btn btn-sm btn-outline-secondary" [class.active]="sortColumn==='name'" (click)="sortData('name')">Sort Name</button>
-                <button class="btn btn-sm btn-outline-secondary" [class.active]="sortColumn==='class'" (click)="sortData('class')">Sort Class</button>
-              </div>
+            <div class="col-md-5 text-end">
+              <button class="btn btn-outline-secondary btn-sm" (click)="clearFilters()">Reset Filters</button>
             </div>
           </div>
 
-          <!-- Quick filter row -->
-          <div class="row g-2 mt-3">
-            <div class="col-sm-3">
-              <input class="form-control form-control-sm" placeholder="Filter StudentId" [(ngModel)]="filters.studentId" name="f_studentId">
-            </div>
-            <div class="col-sm-3">
-              <input class="form-control form-control-sm" placeholder="Filter Name" [(ngModel)]="filters.name" name="f_name">
-            </div>
-            <div class="col-sm-3">
-              <input class="form-control form-control-sm" placeholder="Filter Class" [(ngModel)]="filters.class" name="f_class">
-            </div>
-            <div class="col-sm-3">
-              <input class="form-control form-control-sm" placeholder="Filter Mobile" [(ngModel)]="filters.mobileNo" name="f_mobile">
-            </div>
+          <!-- Filter Row -->
+          <div class="row g-2 mt-3 small">
+            <div class="col-3"><input class="form-control form-control-sm" placeholder="ID" [(ngModel)]="filters.studentId"></div>
+            <div class="col-3"><input class="form-control form-control-sm" placeholder="Name" [(ngModel)]="filters.name"></div>
+            <div class="col-3"><input class="form-control form-control-sm" placeholder="Class" [(ngModel)]="filters.class"></div>
+            <div class="col-3"><input class="form-control form-control-sm" placeholder="Mobile" [(ngModel)]="filters.mobileNo"></div>
           </div>
+
         </div>
       </div>
 
-      <!-- Students table -->
-      <div class="card mb-2">
+      <!-- ====================== STUDENT TABLE ====================== -->
+      <div class="card shadow-sm mb-4">
         <div class="card-body p-0">
+
           <div class="table-responsive">
-            <table class="table table-hover table-sm mb-0">
+            <table class="table table-hover align-middle mb-0">
               <thead class="table-light">
                 <tr>
-                  <th style="width:64px; max-width:64px;">Photo</th>
-                  <th (click)="sortData('studentId')" style="cursor:pointer">StudentId</th>
-                  <th (click)="sortData('name')" style="cursor:pointer">Name</th>
-                  <th (click)="sortData('class')" style="cursor:pointer">Class</th>
+                  <th>Photo</th>
+                  <th (click)="sortData('studentId')" class="sortable">ID</th>
+                  <th (click)="sortData('name')" class="sortable">Name</th>
+                  <th (click)="sortData('class')" class="sortable">Class</th>
                   <th>Mobile</th>
                   <th>Email</th>
                   <th>Role</th>
-                  <th>ClassTeacher</th>
+                  <th>Class Teacher</th>
                   <th class="text-end">Actions</th>
                 </tr>
               </thead>
+
               <tbody>
                 <tr *ngFor="let s of paginatedStudents; trackBy: trackByStudent">
                   <td>
-                    <img *ngIf="s.photo" [src]="s.photo" alt="photo" style="width:48px; height:48px; object-fit:cover; border-radius:4px;">
+                    <img [src]="s.photo" *ngIf="s.photo"
+                         style="width:45px;height:45px;border-radius:6px;object-fit:cover;">
                   </td>
                   <td>{{ s.studentId }}</td>
                   <td>{{ s.name }}</td>
@@ -196,75 +223,90 @@
                   <td>{{ s.Role }}</td>
                   <td>{{ s.classteacher }}</td>
                   <td class="text-end">
-                    <div class="btn-group btn-group-sm">
-                      <button class="btn btn-sm btn-outline-primary" (click)="editStudent(s)">Edit</button>
-                      <button class="btn btn-sm btn-outline-danger" (click)="deleteStudent(s.studentId)">Delete</button>
-                    </div>
+                    <button class="btn btn-sm btn-outline-primary" (click)="editStudent(s)">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger ms-1" (click)="deleteStudent(s.studentId)">Delete</button>
                   </td>
                 </tr>
+
                 <tr *ngIf="!paginatedStudents.length">
-                  <td colspan="9" class="text-center small text-muted py-3">No students found.</td>
+                  <td colspan="9" class="text-center text-muted py-3">
+                    No students found.
+                  </td>
                 </tr>
+
               </tbody>
             </table>
           </div>
+
         </div>
       </div>
 
-      <!-- Pagination controls -->
-      <div class="d-flex align-items-center justify-content-between mb-3">
-        <div class="d-flex align-items-center gap-2">
-          <button class="btn btn-sm btn-outline-secondary" (click)="prevPage()" [disabled]="page<=1">Prev</button>
+      <!-- ====================== PAGINATION ====================== -->
+      <div class="d-flex justify-content-between align-items-center mb-4">
 
-          <ng-container *ngFor="let p of [].constructor(totalPages); let i = index">
+        <div class="btn-group">
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="page<=1" (click)="prevPage()">Prev</button>
+
+          <ng-container *ngFor="let p of [].constructor(totalPages); let i = index;">
             <button class="btn btn-sm"
-                    [ngClass]="{'btn-primary': page === (i+1), 'btn-outline-secondary': page !== (i+1)}"
-                    (click)="goToPage(i+1)">{{ i+1 }}</button>
+              [ngClass]="page===i+1 ? 'btn-primary' : 'btn-outline-secondary'"
+              (click)="goToPage(i+1)">
+              {{ i+1 }}
+            </button>
           </ng-container>
 
-          <button class="btn btn-sm btn-outline-secondary" (click)="nextPage()" [disabled]="page>=totalPages">Next</button>
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="page>=totalPages" (click)="nextPage()">Next</button>
         </div>
 
         <div class="d-flex align-items-center gap-2">
-          <label class="small mb-0">Page size</label>
-          <!-- use template ref to avoid EventTarget typing issues -->
-          <select #pageSizeSelect class="form-select form-select-sm" [value]="pageSize" (change)="onPageSizeChange(pageSizeSelect.value)">
-            <option [value]="5">5</option>
-            <option [value]="10">10</option>
-            <option [value]="25">25</option>
-            <option [value]="50">50</option>
-          </select>
+          <small>Rows per page:</small>
+          <select #pageSizeSelect class="form-select form-select-sm"
+        [value]="pageSize"
+        (change)="onPageSizeChange(pageSizeSelect.value)">
+    <option [value]="5">5</option>
+    <option [value]="10">10</option>
+    <option [value]="25">25</option>
+    <option [value]="50">50</option>
+</select>
+
         </div>
+
       </div>
 
-      <!-- Reports panel -->
-      <div class="card">
+      <!-- ====================== REPORT SECTION ====================== -->
+      <div class="card shadow-sm">
         <div class="card-body">
-          <div class="d-flex justify-content-between align-items-center mb-2">
-            <h6 class="mb-0">Class-wise Report (based on current filters)</h6>
+
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h5 class="fw-bold mb-0">📊 Class-wise Report</h5>
             <div>
-              <button class="btn btn-sm btn-outline-secondary" (click)="downloadTemplate()">Export Template</button>
-              <button class="btn btn-sm btn-sm btn-outline-primary" (click)="exportClassReport()">Export Report</button>
+              <button class="btn btn-sm btn-outline-primary" (click)="exportClassReport()">
+                Export Report
+              </button>
             </div>
           </div>
 
-          <div *ngIf="getClassReport().length; else noReport">
-            <table class="table table-sm mb-0">
-              <thead class="table-light">
-                <tr><th>Class</th><th>Students</th><th>Avg Attendance</th></tr>
-              </thead>
-              <tbody>
-                <tr *ngFor="let r of getClassReport()">
-                  <td>{{ r.className }}</td>
-                  <td>{{ r.count }}</td>
-                  <td>{{ r.avgAttendance }}%</td>
-                </tr>
-              </tbody>
-            </table>
-          </div>
+          <table class="table table-sm table-bordered" *ngIf="getClassReport().length; else noReport">
+            <thead class="table-light">
+              <tr>
+                <th>Class</th>
+                <th>Students</th>
+                <th>Avg Attendance (%)</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let r of getClassReport()">
+                <td>{{ r.className }}</td>
+                <td>{{ r.count }}</td>
+                <td>{{ r.avgAttendance }}</td>
+              </tr>
+            </tbody>
+          </table>
+
           <ng-template #noReport>
-            <div class="small text-muted">No data for report (adjust filters or import students).</div>
+            <div class="text-muted small">No report data available.</div>
           </ng-template>
+
         </div>
       </div>
 

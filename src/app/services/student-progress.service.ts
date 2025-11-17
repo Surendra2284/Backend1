@@ -4,16 +4,26 @@ import { HttpClient, HttpParams } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 
-const baseUrl1 = `${environment.apiUrl}/StudentProgress`;
+const processUrl = `${environment.apiUrl}/StudentProgress`;
+
 export type ProgressStatus =
   | 'Not Started'
   | 'In Progress'
   | 'Completed'
   | 'Needs Attention';
 
+export interface PopulatedStudentRef {
+  _id?: string;
+  name?: string;
+  rollNo?: string;
+  studentId?: number;
+}
+
 export interface StudentProgress {
   _id?: string;
-  student?: string; // Mongo ObjectId
+
+  // Student can be a Mongo ObjectId string OR populated object
+  student?: string | PopulatedStudentRef;
   studentId: number;
 
   className: string;
@@ -28,6 +38,10 @@ export interface StudentProgress {
   progressNote?: string;
   status?: ProgressStatus;
   score?: number;
+
+  // ✅ NEW: student remark fields
+  studentRemark?: string;
+  studentRemarkDate?: string;
 
   createdAt?: string;
   updatedAt?: string;
@@ -55,50 +69,25 @@ export interface BulkProgressPayload {
   providedIn: 'root',
 })
 export class StudentProgressService {
-  // adjust to your backend base URL if needed
-  private baseUrl = baseUrl1
+  private baseUrl = processUrl;
 
   constructor(private http: HttpClient) {}
-
-  /** ADD / UPSERT single progress record */
-  createProgress(data: {
-    studentId: number;
-    className?: string;
-    section?: string;
-    subject: string;
-    date: string;
-    homework: string;
-    teacher: string;
-    username: string;
-    progressNote?: string;
-    status?: ProgressStatus;
-    score?: number;
-  }): Observable<{ message: string; data: StudentProgress }> {
-    return this.http.post<{ message: string; data: StudentProgress }>(
-      `${this.baseUrl}`,
-      data
-    );
-  }
 
   /** Bulk upsert for a whole class */
   saveBulkProgress(payload: BulkProgressPayload): Observable<any> {
     return this.http.post<any>(`${this.baseUrl}/bulk`, payload);
   }
 
-  /** Get progress list for a class (optionally filtered by date & subject) */
+  /** Get progress list for a class (admin / teacher) */
   getProgressByClass(params: {
-    className: string;
+    className?: string;
     date?: string;
     subject?: string;
   }): Observable<StudentProgress[]> {
-    let httpParams = new HttpParams().set('className', params.className);
-
-    if (params.date) {
-      httpParams = httpParams.set('date', params.date);
-    }
-    if (params.subject) {
-      httpParams = httpParams.set('subject', params.subject);
-    }
+    let httpParams = new HttpParams();
+    if (params.className) httpParams = httpParams.set('className', params.className);
+    if (params.date) httpParams = httpParams.set('date', params.date);
+    if (params.subject) httpParams = httpParams.set('subject', params.subject);
 
     return this.http.get<StudentProgress[]>(`${this.baseUrl}/class`, {
       params: httpParams,
@@ -111,20 +100,16 @@ export class StudentProgressService {
     options?: { fromDate?: string; toDate?: string }
   ): Observable<StudentProgress[]> {
     let httpParams = new HttpParams();
-    if (options?.fromDate) {
-      httpParams = httpParams.set('fromDate', options.fromDate);
-    }
-    if (options?.toDate) {
-      httpParams = httpParams.set('toDate', options.toDate);
-    }
+    if (options?.fromDate) httpParams = httpParams.set('fromDate', options.fromDate);
+    if (options?.toDate) httpParams = httpParams.set('toDate', options.toDate);
 
     return this.http.get<StudentProgress[]>(
-      `${environment.apiUrl}/student/${studentId}`,
+      `${this.baseUrl}/student/${studentId}`,
       { params: httpParams }
     );
   }
 
-  /** Update single progress record */
+  /** Update single progress record (teacher OR student) */
   updateProgress(
     id: string,
     data: Partial<StudentProgress>
@@ -132,7 +117,7 @@ export class StudentProgressService {
     return this.http.put<StudentProgress>(`${this.baseUrl}/${id}`, data);
   }
 
-  /** Delete single progress record */
+  /** Delete single progress record (admin / teacher) */
   deleteProgress(id: string): Observable<{ message: string }> {
     return this.http.delete<{ message: string }>(`${this.baseUrl}/${id}`);
   }

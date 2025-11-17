@@ -1,77 +1,60 @@
-/* === Login Container === */
+/* --- PAGE WRAPPER --- */
 .login-container {
-  max-width: 360px;
-  margin: 60px auto;
-  padding: 30px 25px;
-  background: rgba(255, 255, 255, 0.9);
-  border-radius: 16px;
-  box-shadow: 0 8px 28px rgba(0, 0, 0, 0.15);
-  text-align: center;
-  backdrop-filter: blur(10px);
-  animation: fadeIn 0.8s ease;
+  max-width: 430px;
+  margin: 50px auto;
+  padding: 25px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0px 6px 20px rgba(0, 0, 0, 0.15);
+  animation: fadeIn 0.5s ease-in-out;
 }
 
-/* === Moving Heading === */
+/* --- MOVING HEADING --- */
 .moving-heading {
-  font-size: 1.3rem;
-  font-weight: 700;
-  background: linear-gradient(90deg, #007bff, #00b4d8, #00e1ff);
-  background-clip: text;
-  -webkit-background-clip: text;
-  color: transparent;
-  white-space: nowrap;
-  overflow: hidden;
-  box-sizing: border-box;
-  animation: moveHeading 8s linear infinite;
-  text-shadow: 0 0 10px rgba(0, 180, 255, 0.3);
-  margin-bottom: 25px;
+  text-align: center;
+  font-size: 18px;
+  color: #0077cc;
+  margin-bottom: 20px;
+  font-weight: bold;
+  animation: headingMove 4s linear infinite;
 }
 
-@keyframes moveHeading {
-  0% {
-    transform: translateX(-100%);
-  }
-  100% {
-    transform: translateX(100%);
-  }
+@keyframes headingMove {
+  0% { transform: translateX(0); }
+  50% { transform: translateX(8px); }
+  100% { transform: translateX(0); }
 }
 
-/* === Form Fields === */
-.form-group {
+/* --- FORM STRUCTURE --- */
+.login-form .form-group {
   margin-bottom: 18px;
-  position: relative;
-  text-align: left;
 }
 
+/* --- LABELS --- */
 .form-label {
+  display: block;
   font-weight: 600;
   margin-bottom: 6px;
-  display: block;
   color: #333;
-  letter-spacing: 0.3px;
-  font-size: 0.95rem;
 }
 
-/* === Input Fields === */
+/* --- INPUTS --- */
 .form-control {
   width: 100%;
-  height: 44px;
-  padding: 10px 14px;
+  padding: 10px;
+  font-size: 15px;
   border-radius: 8px;
   border: 1px solid #ccc;
-  font-size: 0.95rem;
-  transition: all 0.3s ease;
-  background: rgba(255, 255, 255, 0.9);
-  outline: none;
+  transition: all 0.25s ease;
 }
 
 .form-control:focus {
-  border-color: #007bff;
-  box-shadow: 0 0 8px rgba(0, 123, 255, 0.3);
-  background: #f9fbff;
+  border-color: #28a745;
+  box-shadow: 0px 0px 6px rgba(40, 167, 69, 0.4);
+  outline: none;
 }
 
-/* === Password Visibility Icon === */
+/* --- PASSWORD TOGGLE ICON --- */
 .password-container {
   position: relative;
 }
@@ -79,85 +62,79 @@
 .toggle-icon {
   position: absolute;
   right: 12px;
-  top: 50%;
-  transform: translateY(-10%);
+  top: 42px;
+  font-size: 20px;
   cursor: pointer;
-  font-size: 1.2rem;
-  color: #007bff;
-  transition: color 0.3s ease, transform 0.3s ease;
+  user-select: none;
+  transition: 0.2s ease;
 }
 
 .toggle-icon:hover {
-  color: #0056b3;
   transform: scale(1.1);
+  color: #28a745;
 }
 
-/* === Login Button === */
+/* --- ERROR TEXT --- */
+.text-danger {
+  font-size: 13px;
+  margin-top: 2px;
+}
+
+/* --- ERROR BOX --- */
+.alert-danger {
+  margin-top: 10px;
+  padding: 10px;
+  font-size: 14px;
+  border-radius: 6px;
+}
+
+/* --- BUTTON --- */
 .login-btn {
   width: 100%;
-  padding: 12px;
-  font-size: 1rem;
-  font-weight: 600;
-  border: none;
+  padding: 10px;
+  font-size: 16px;
   border-radius: 8px;
-  margin-top: 10px;
-  background: linear-gradient(90deg, #007bff, #00b4d8);
-  color: white;
-  cursor: pointer;
-  transition: all 0.3s ease;
-  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
 }
 
-.login-btn:hover {
-  background: linear-gradient(90deg, #0056b3, #0096c7);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 123, 255, 0.4);
-}
-
-/* === Signup Prompt === */
+/* --- SIGNUP PROMPT --- */
 .signup-prompt {
-  margin-top: 20px;
-  font-size: 0.9rem;
-  color: #555;
+  text-align: center;
+  margin-top: 18px;
 }
 
 .signup-prompt a {
-  color: #28a745;
-  font-weight: 700;
-  text-decoration: none;
-  transition: color 0.3s ease, text-shadow 0.3s ease;
+  color: #007bff;
+  font-weight: 600;
 }
 
 .signup-prompt a:hover {
-  color: #1e7e34;
-  text-shadow: 0 0 6px rgba(40, 167, 69, 0.4);
+  text-decoration: underline;
 }
 
-/* === Animation === */
+/* --- FADE IN ANIMATION --- */
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(15px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+  from { opacity: 0; transform: translateY(12px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
-/* === Responsive Design === */
+
+/* --- RESPONSIVE (MOBILE FRIENDLY) --- */
 @media (max-width: 480px) {
   .login-container {
-    padding: 25px 18px;
-    margin: 40px 15px;
+    margin: 20px;
+    padding: 18px;
   }
+
   .moving-heading {
-    font-size: 1.1rem;
+    font-size: 16px;
   }
+
   .form-control {
-    font-size: 0.9rem;
+    padding: 9px;
+    font-size: 14px;
   }
-  .login-btn {
-    font-size: 0.95rem;
+
+  .toggle-icon {
+    top: 40px;
   }
 }

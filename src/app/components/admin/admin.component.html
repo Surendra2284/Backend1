@@ -187,9 +187,11 @@
         <li (click)="selectTab('attendance')" [class.active]="activeTab === 'attendance'">Attendance</li>
         <li (click)="selectTab('photo')" [class.active]="activeTab === 'photo'">Photo</li>
         <li (click)="selectTab('users')" [class.active]="activeTab === 'users'">users</li>
+        <li (click)="selectTab('Homework')" [class.active]="activeTab === 'Homework'">Homework</li>
       </ul>
 
       <div class="tab-content" *ngIf="activeTab === 'student'">
+        
         <h2>Student</h2>
         <app-student></app-student>
       </div>
@@ -220,6 +222,88 @@
         <app-user></app-user>
         
       </div>
+      <div class="tab-content" *ngIf="activeTab === 'Homework'">
+  <h2>Homework / Student Progress</h2>
+
+  <div class="panel-head">
+    <h3>Student Progress Records</h3>
+    <div class="muted">Admin can view and delete progress entries</div>
+  </div>
+
+  <!-- Filters -->
+  <div style="display:flex; gap:10px; margin:15px 0;">
+    <input 
+      type="text" 
+      placeholder="Class (e.g., 10A)" 
+      [(ngModel)]="progressFilterClass"
+      style="padding:8px; border-radius:6px; border:1px solid #ccc;"
+    >
+
+    <input 
+      type="date" 
+      [(ngModel)]="progressFilterDate"
+      style="padding:8px; border-radius:6px; border:1px solid #ccc;"
+    >
+
+    <input 
+      type="text" 
+      placeholder="Subject (e.g., Math)" 
+      [(ngModel)]="progressFilterSubject"
+      style="padding:8px; border-radius:6px; border:1px solid #ccc;"
+    >
+
+    <button 
+      class="btn btn-primary" 
+      style="padding:8px 14px;"
+      (click)="loadAllProgress()">
+      Search
+    </button>
+  </div>
+
+  <!-- Progress Table -->
+  <table class="table" style="width:100%; border-collapse:collapse;">
+    <thead>
+      <tr style="background:#e6f0ff;">
+        <th style="padding:10px; border:1px solid #ccc;">Date</th>
+        <th style="padding:10px; border:1px solid #ccc;">Student</th>
+        <th style="padding:10px; border:1px solid #ccc;">Class</th>
+        <th style="padding:10px; border:1px solid #ccc;">Subject</th>
+        <th style="padding:10px; border:1px solid #ccc;">Status</th>
+        <th style="padding:10px; border:1px solid #ccc;">Score</th>
+        <th style="padding:10px; border:1px solid #ccc;">Homework</th>
+        <th style="padding:10px; border:1px solid #ccc;">Action</th>
+      </tr>
+    </thead>
+
+    <tbody>
+      <tr *ngFor="let p of adminProgressList">
+        <td style="padding:8px; border:1px solid #ccc;">{{ p.date }}</td>
+        <td style="padding:8px; border:1px solid #ccc;">{{ p.student?<div class="_id"></div> || '-' }}</td>
+        <td style="padding:8px; border:1px solid #ccc;">{{ p.className }}</td>
+        <td style="padding:8px; border:1px solid #ccc;">{{ p.subject }}</td>
+        <td style="padding:8px; border:1px solid #ccc;">{{ p.status }}</td>
+        <td style="padding:8px; border:1px solid #ccc;">{{ p.score || '-' }}</td>
+        <td style="padding:8px; border:1px solid #ccc;">{{ p.homework }}</td>
+        <td style="padding:8px; border:1px solid #ccc;">
+          <button 
+            class="btn btn-danger" 
+            style="padding:5px 10px;"
+            (click)="deleteProgress(p._id!)">
+            Delete
+          </button>
+        </td>
+      </tr>
+
+      <!-- Empty state -->
+      <tr *ngIf="adminProgressList.length === 0">
+        <td colspan="8" style="padding:12px; text-align:center; border:1px solid #ccc;">
+          No progress records found.
+        </td>
+      </tr>
+    </tbody>
+  </table>
+</div>
+
     </div>
   
 

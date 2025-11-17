@@ -2,7 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../services/user.service';
 import { AdminService } from '../../services/admin.service';
 import { NoticeService } from '../../services/notice.service';
-
+import { StudentProgress, StudentProgressService } from '../../services/student-progress.service';
 @Component({
   selector: 'app-admin',
   templateUrl: './admin.component.html',
@@ -15,11 +15,16 @@ export class AdminComponent implements OnInit {
   unapprovedUsers: any[] = [];
   pendingNotices: any[] = [];   // <-- store pending notices
   message: string = '';
+adminProgressList: StudentProgress[] = [];
+progressFilterClass: string = '';
+progressFilterDate: string = '';
+progressFilterSubject: string = '';
 
   constructor(
     private userService: UserService,
     private adminService: AdminService,
-    private noticeService: NoticeService
+    private noticeService: NoticeService,
+    private studentProgressService: StudentProgressService
   ) {}
 
   ngOnInit(): void {
@@ -56,6 +61,20 @@ export class AdminComponent implements OnInit {
       error: (err) => console.error('Failed to load unapproved users', err),
     });
   }
+deleteProgress(id: string) {
+  if (!confirm("Are you sure you want to delete this record?")) return;
+
+  this.studentProgressService.deleteProgress(id).subscribe({
+    next: () => {
+      alert("Deleted successfully.");
+      this.loadAllProgress();
+    },
+    error: (err) => {
+      console.error("Error deleting:", err);
+      alert("Failed to delete.");
+    }
+  });
+}
 
   // Approve a user
   approveUser(userId: string): void {
@@ -70,6 +89,21 @@ export class AdminComponent implements OnInit {
       },
     });
   }
+loadAllProgress() {
+  let params: any = {};
+  if (this.progressFilterClass) params.className = this.progressFilterClass;
+  if (this.progressFilterDate) params.date = this.progressFilterDate;
+  if (this.progressFilterSubject) params.subject = this.progressFilterSubject;
+
+  this.studentProgressService.getProgressByClass(params).subscribe({
+    next: (res) => {
+      this.adminProgressList = res || [];
+    },
+    error: (err) => {
+      console.error("Error loading admin progress:", err);
+    }
+  });
+}
 
   // Load pending notices
   loadPendingNotices(): void {

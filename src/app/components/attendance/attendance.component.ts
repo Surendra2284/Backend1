@@ -14,6 +14,18 @@ import { forkJoin } from 'rxjs';
 
 type SortKey = 'student' | 'className' | 'teacher' | 'username' | 'date' | 'status';
 
+interface MatrixRow {
+  studentId: string | number;
+  name: string;
+  perDate: { [date: string]: AttStatus | '' };
+}
+
+interface AbsentEntry {
+  studentId: string | number;
+  name: string;
+  dates: string[]; // YYYY-MM-DD where absent
+}
+
 @Component({
   selector: 'app-attendance',
   templateUrl: './attendance.component.html',
@@ -23,97 +35,98 @@ export class AttendanceComponent implements OnInit {
   attendanceForm: FormGroup;
   filterForm: FormGroup;
 
+  // All students (from backend)
+  allStudents: Student[] = [];
+  // Students of selected class (used for marking)
   students: Array<Student & { selected?: boolean }> = [];
+
+  // Raw attendance records (for history / export)
   attendances: Attendance[] = [];
 
-  // server pagination
-  page = 1;
-  pageSize = 10;
-  totalCount = 0;
-
-  // sorting (current page only)
+  // Sorting (for history table only)
   sortKey: SortKey = 'date';
   sortDir: 'asc' | 'desc' = 'desc';
 
   message = '';
   loading = false;
 
-  constructor(private fb: FormBuilder, private attendanceService: AttendanceService) {
+  // ------------- Matrix view (monthly style) -------------
+  matrixDates: string[] = [];      // YYYY-MM-DD list for header
+  matrixRows: MatrixRow[] = [];    // each row per student
+
+  // ------------- Absent List -------------
+  absentList: AbsentEntry[] = [];
+
+  constructor(
+    private fb: FormBuilder,
+    private attendanceService: AttendanceService
+  ) {
+    // Add-attendance form (left card)
     this.attendanceForm = this.fb.group({
       className: ['', Validators.required],
       teacher: ['', Validators.required],
       username: ['', Validators.required],
       date: ['', Validators.required],
-      status: ['Present', Validators.required], // Present | Absent | Leave
+      status: ['Present', Validators.required], // default for chosen students
     });
 
+    // Filter form (right card – *independent* from attendanceForm)
     this.filterForm = this.fb.group({
       className: [''],
-      name: [''],
-      username: [''],
+      studentName: [''],
       studentId: [''],
-      date: [''],
-      status: [''],
-      page: [''],
-      limit: [''],
+      username: [''],
+      status: [''],         // Present | Absent | Leave | ''
+      fromDate: [''],       // YYYY-MM-DD
+      toDate: [''],         // YYYY-MM-DD
     });
   }
 
+  // ---------------------------------------------------------------------------
+  //  Lifecycle
+  // ---------------------------------------------------------------------------
   ngOnInit(): void {
-    const today = new Date();
-    const iso = new Date(today.getTime() - today.getTimezoneOffset() * 60000)
-      .toISOString()
-      .slice(0, 10);
+    const today = this.formatDate(new Date());
+    this.attendanceForm.patchValue({ date: today });
 
-    this.attendanceForm.patchValue({ date: iso });
-    this.loadStudents();
-    this.applyFilters();
+    this.loadAllStudents();
   }
 
-  // ---------------- Data loading ----------------
-  loadStudents() {
+  // ---------------------------------------------------------------------------
+  //  Students
+  // ---------------------------------------------------------------------------
+
+  /** Load all students once; we filter by class on client side */
+  loadAllStudents() {
     this.attendanceService.getStudents().subscribe({
-      next: (data) => (this.students = (data || []).map((s) => ({ ...s, selected: false }))),
+      next: (data) => {
+        this.allStudents = data || [];
+        // When component loads, no class selected yet → students empty
+        this.students = [];
+      },
       error: () => this.msg('Failed to load students.'),
     });
   }
 
-  /** Accepts both Paginated<Attendance> and Attendance[] safely */
-  private handleAttendanceResponse(res: Paginated<Attendance> | Attendance[] | any) {
-    if (Array.isArray(res)) {
-      this.attendances = res;
-      this.totalCount = res.length;
-      return;
-    }
-    // paginated shape { total, page, limit, data }
-    this.attendances = res?.data ?? [];
-    this.totalCount = res?.total ?? this.attendances.length ?? 0;
+  /** Called when user changes class in the Add Attendance form */
+  onClassChange() {
+    const className: string = (this.attendanceForm.value.className || '').trim();
+    this.filterStudentsByClass(className);
   }
 
-  applyFilters() {
-    const f = this.filterForm.value;
-    const query = {
-      className: f.className || undefined,
-      name: f.name || undefined,
-      username: f.username || undefined,
-      studentId: f.studentId || undefined,
-      date: f.date || undefined,
-      status: f.status || undefined,
-      page: String(this.page),
-      limit: String(this.pageSize),
-    };
+  /** Filter allStudents into students by className (for marking attendance) */
+  private filterStudentsByClass(className: string) {
+    if (!className) {
+      this.students = [];
+      return;
+    }
 
-    this.loading = true;
-    this.attendanceService.getAttendance(query).subscribe({
-      next: (res) => {
-        this.loading = false;
-        this.handleAttendanceResponse(res);
-      },
-      error: () => {
-        this.loading = false;
-        this.msg('Failed to load attendance records.');
-      },
-    });
+    this.students = this.allStudents
+      .filter((s) => {
+        const c = (s.class as any) ?? (s as any).className ?? '';
+        return String(c).trim().toLowerCase() === className.trim().toLowerCase();
+      })
+      .map((s) => ({ ...s, selected: false }));
   }
 
   getStudentLabel(student: any): string {
@@ -129,13 +142,10 @@ export class AttendanceComponent implements OnInit {
     );
   }
 
-  clearFilters() {
-    this.filterForm.reset();
-    this.page = 1;
-    this.applyFilters();
-  }
+  // ---------------------------------------------------------------------------
+  //  Add Attendance (bulk for selected students)
+  // ---------------------------------------------------------------------------
 
-  // ---------------- Create (bulk) ----------------
   private normalizeStatus(val: any): AttStatus {
     const map: Record<string, AttStatus> = {
       present: 'Present',
@@ -147,13 +157,13 @@ export class AttendanceComponent implements OnInit {
 
   saveAttendance() {
     this.message = '';
+
     if (this.attendanceForm.invalid) {
       this.attendanceForm.markAllAsTouched();
-      this.msg('Please fill all required fields.');
+      this.msg('Please fill all required fields in Add Attendance.');
       return;
     }
 
-    // ✅ send numeric studentIds now (NOT student object)
     const selectedStudentIds = this.students
       .filter((s) => s.selected)
       .map((s) => s.studentId)
@@ -166,7 +176,7 @@ export class AttendanceComponent implements OnInit {
 
     const form = this.attendanceForm.value;
     const payload = {
-      studentIds: selectedStudentIds,         // (string | number)[] -> matches service
+      studentIds: selectedStudentIds, // (string | number)[]
       className: form.className,
       teacher: form.teacher,
       username: form.username,
@@ -174,17 +184,21 @@ export class AttendanceComponent implements OnInit {
       status: this.normalizeStatus(form.status),
     };
 
-    // ensure we fetch the same class after save
-    if (!this.filterForm.value.className) {
-      this.filterForm.patchValue({ className: form.className });
-    }
-
     this.loading = true;
     this.attendanceService.saveAttendanceBulk(payload).subscribe({
       next: (res) => {
         this.loading = false;
-        this.msg(`Attendance saved. Created: ${res.created ?? 0}, Updated: ${res.updated ?? 0}`);
-        this.applyFilters(); // refresh
+        this.msg(
+          `Attendance saved. Created: ${res.created ?? 0}, Updated: ${res.updated ?? 0}`
+        );
+        // After save, refresh report for same class + date
+        const fClass = this.filterForm.value.className || form.className;
+        this.filterForm.patchValue({
+          className: fClass,
+          fromDate: form.date,
+          toDate: form.date,
+        });
+        this.applyFilters();
         this.clearSelections();
       },
       error: () => {
@@ -198,56 +212,161 @@ export class AttendanceComponent implements OnInit {
     this.students = this.students.map((s) => ({ ...s, selected: false }));
   }
 
-  // ---------------- Correct / Update / Delete ----------------
-  /** Inline correction by studentId + date */
-  correctStatus(record: Attendance, newStatus: AttStatus, reason?: string) {
-    const studentId = record.studentId;              // ✅ directly from Attendance
-    const date = this.formatDate(record.date);       // ensure YYYY-MM-DD
-
-    this.attendanceService
-      .correctAttendance({
-        studentId,
-        date,
-        newStatus: this.normalizeStatus(newStatus),
-        reason,
-        // if you have auth service, you can inject and use logged-in username here
-        correctedBy: record.username,
-      })
-      .subscribe({
-        next: () => {
-          this.msg('Attendance corrected successfully.');
-          this.applyFilters();
-        },
-        error: () => this.msg('Failed to correct attendance.'),
-      });
+  // Checkbox helpers for "select all"
+  toggleSelectAll(ev: Event) {
+    const checked = (ev.target as HTMLInputElement | null)?.checked ?? false;
+    this.students = this.students.map((s) => ({ ...s, selected: checked }));
   }
 
-  /** Patch by record _id (partial) */
-  updateAttendance(id: string, patch: Partial<Attendance> & { reason?: string; correctedBy?: string }) {
-    const payload: any = { ...patch };
-    if (payload.status) payload.status = this.normalizeStatus(payload.status);
-    if (payload.date) payload.date = this.formatDate(payload.date);
+  get allSelected(): boolean {
+    return this.students.length > 0 && this.students.every((s) => !!s.selected);
+  }
 
-    this.attendanceService.patchAttendanceById(id, payload).subscribe({
-      next: () => {
-        this.msg('Attendance updated successfully.');
-        this.applyFilters();
+  // ---------------------------------------------------------------------------
+  //  Filters & History Load
+  // ---------------------------------------------------------------------------
+
+  applyFilters() {
+    const f = this.filterForm.value;
+
+    // Build query independently from Add Attendance form
+    const query: any = {
+      className: f.className || undefined,
+      name: f.studentName || undefined,
+      username: f.username || undefined,
+      studentId: f.studentId || undefined,
+      status: f.status || undefined,
+      fromDate: f.fromDate || undefined,
+      toDate: f.toDate || undefined,
+      // ask backend for many records at once (report usage)
+      page: '1',
+      limit: '1000',
+    };
+
+    this.loading = true;
+    this.attendanceService.getAttendance(query).subscribe({
+      next: (res) => {
+        this.loading = false;
+        this.handleAttendanceResponse(res);
+        this.buildMatrixAndAbsentLists();
       },
-      error: () => this.msg('Failed to update attendance.'),
-    });
-  }
-
-  deleteAttendance(id: string) {
-    this.attendanceService.deleteAttendance(id).subscribe({
-      next: () => {
-        this.msg('Attendance deleted successfully.');
-        this.applyFilters();
+      error: () => {
+        this.loading = false;
+        this.msg('Failed to load attendance records.');
       },
-      error: () => this.msg('Failed to delete attendance.'),
     });
+
+    // If a class is chosen in filter and not in Add Attendance, sync students list
+    if (f.className && !this.attendanceForm.value.className) {
+      this.attendanceForm.patchValue({ className: f.className });
+      this.filterStudentsByClass(f.className);
+    }
   }
 
-  // ---------------- Sorting (current page) ----------------
+  clearFilters() {
+    this.filterForm.reset();
+    this.attendances = [];
+    this.matrixDates = [];
+    this.matrixRows = [];
+    this.absentList = [];
+  }
+
+  /** Accept Paginated<Attendance> or Attendance[] */
+  private handleAttendanceResponse(res: Paginated<Attendance> | Attendance[] | any) {
+    if (Array.isArray(res)) {
+      this.attendances = res;
+      return;
+    }
+    this.attendances = res?.data ?? [];
+  }
+
+  // ---------------------------------------------------------------------------
+  //  Matrix & Absent List
+  // ---------------------------------------------------------------------------
+
+  private buildMatrixAndAbsentLists() {
+    this.matrixDates = [];
+    this.matrixRows = [];
+    this.absentList = [];
+
+    if (!this.attendances.length) return;
+
+    // Determine date range: from filter if set; else from min/max in data
+    const f = this.filterForm.value;
+    let from = f.fromDate ? this.formatDate(f.fromDate) : '';
+    let to = f.toDate ? this.formatDate(f.toDate) : '';
+
+    if (!from || !to) {
+      const sorted = [...this.attendances].sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+      );
+      from = from || this.formatDate(sorted[0].date);
+      to = to || this.formatDate(sorted[sorted.length - 1].date);
+    }
+
+    const allDates: string[] = [];
+    let cursor = new Date(from);
+    const end = new Date(to);
+
+    while (cursor.getTime() <= end.getTime()) {
+      const dStr = this.formatDate(cursor);
+      allDates.push(dStr);
+      cursor.setDate(cursor.getDate() + 1);
+    }
+    this.matrixDates = allDates;
+
+    // Group by studentId
+    const byStudent = new Map<string | number, MatrixRow>();
+    const absentByStudent = new Map<string | number, AbsentEntry>();
+
+    for (const a of this.attendances) {
+      const sid = (a.studentId as any) ?? 'unknown';
+      const name = this.getStudentName(a) || (a as any).studentName || '';
+
+      if (!byStudent.has(sid)) {
+        byStudent.set(sid, {
+          studentId: sid,
+          name,
+          perDate: {},
+        });
+      }
+
+      const row = byStudent.get(sid)!;
+      const dateKey = this.formatDate(a.date);
+      if (allDates.includes(dateKey)) {
+        row.perDate[dateKey] = a.status as AttStatus;
+      }
+
+      if ((a.status as AttStatus) === 'Absent') {
+        if (!absentByStudent.has(sid)) {
+          absentByStudent.set(sid, {
+            studentId: sid,
+            name,
+            dates: [],
+          });
+        }
+        const entry = absentByStudent.get(sid)!;
+        if (!entry.dates.includes(dateKey)) {
+          entry.dates.push(dateKey);
+        }
+      }
+    }
+
+    this.matrixRows = Array.from(byStudent.values()).sort((a, b) =>
+      a.name.localeCompare(b.name)
+    );
+
+    // Sort each absent dates array
+    this.absentList = Array.from(absentByStudent.values()).map((e) => ({
+      ...e,
+      dates: e.dates.sort(),
+    }));
+  }
+
+  // ---------------------------------------------------------------------------
+  //  History table & delete
+  // ---------------------------------------------------------------------------
+
   setSort(key: SortKey) {
     if (this.sortKey === key) {
       this.sortDir = this.sortDir === 'asc' ? 'desc' : 'asc';
@@ -258,12 +377,12 @@ export class AttendanceComponent implements OnInit {
   }
 
   private sortValue(r: Attendance, key: SortKey): any {
-    if (key === 'student') return this.getStudentName(r) || '';  // ✅ uses helper, not r.student
+    if (key === 'student') return this.getStudentName(r) || '';
     if (key === 'date') return new Date(r.date).getTime() || 0;
     return (r as any)[key] ?? '';
   }
 
-  get sorted(): Attendance[] {
+  get sortedHistory(): Attendance[] {
     const data = [...this.attendances];
     const dir = this.sortDir === 'asc' ? 1 : -1;
     return data.sort((a, b) => {
@@ -273,102 +392,59 @@ export class AttendanceComponent implements OnInit {
     });
   }
 
-  // ---------------- Pagination helpers (server-driven) ----------------
-  get totalPages(): number {
-    return Math.max(1, Math.ceil(this.totalCount / this.pageSize));
-  }
-  prevPage() {
-    if (this.page > 1) {
-      this.page -= 1;
-      this.applyFilters();
-    }
-  }
-  nextPage() {
-    if (this.page < this.totalPages) {
-      this.page += 1;
-      this.applyFilters();
-    }
-  }
-  changePageSize(n: number) {
-    this.pageSize = Math.max(1, Number(n) || 10);
-    this.page = 1;
-    this.applyFilters();
-  }
-  onPageSizeChange(v: number | string) {
-    const n = Math.max(1, Number(v) || 10);
-    this.changePageSize(n);
-  }
-
-  // ---------------- Summary / Dashboard ----------------
-  get totals() {
-    const total = this.attendances.length;
-    const by: Record<AttStatus, number> = { Present: 0, Absent: 0, Leave: 0 };
-    this.attendances.forEach((a) => {
-      if (by[a.status as AttStatus] !== undefined) by[a.status as AttStatus]++;
+  deleteAttendance(id: string) {
+    if (!id) return;
+    if (!confirm('Delete this attendance record?')) return;
+    this.attendanceService.deleteAttendance(id).subscribe({
+      next: () => {
+        this.msg('Attendance deleted successfully.');
+        this.applyFilters();
+      },
+      error: () => this.msg('Failed to delete attendance.'),
     });
-    const pct = (n: number) => (total ? Math.round((n / total) * 100) : 0);
-    return {
-      total,
-      ...by,
-      pctPresent: pct(by.Present),
-      pctAbsent: pct(by.Absent),
-      pctLeave: pct(by.Leave),
-    };
   }
 
-  /** Filter a list to only 'Present' records */
-  presentOnly(items: Attendance[]): Attendance[] {
-    return (items || []).filter(r => r?.status === 'Present');
-  }
-
-  /** Build class-wise groups from the current (sorted) page, only 'Present' */
-  presentClassGroups(): Array<{ className: string; items: Attendance[] }> {
-    const byClass = new Map<string, Attendance[]>();
-    for (const r of this.sorted) {
-      if (r?.status !== 'Present') continue;
-      const key = r.className || 'Unknown';
-      if (!byClass.has(key)) byClass.set(key, []);
-      byClass.get(key)!.push(r);
+  /** Delete all records in the current filter result (frontend loop, backend unchanged) */
+  deleteAllInCurrentFilter() {
+    if (!this.attendances.length) {
+      alert('No records to delete for current filter.');
+      return;
     }
-    return Array.from(byClass.entries()).map(([className, items]) => ({ className, items }));
-  }
 
-  /** Bulk change status for every record in a class group (used by header buttons) */
-  markClassAll(g: { className: string; items: Attendance[] }, newStatus: AttStatus) {
-    if (!g?.items?.length) return;
-    const ok = confirm(`Change ${g.items.length} records in class "${g.className}" to "${newStatus}"?`);
+    const ok = confirm(
+      `Delete ALL ${this.attendances.length} attendance record(s) shown in this report?`
+    );
     if (!ok) return;
 
+    const ops = this.attendances
+      .filter((a) => !!a._id)
+      .map((a) => this.attendanceService.deleteAttendance(a._id!));
+
+    if (!ops.length) return;
+
     this.loading = true;
-
-    const ops = g.items.map((r) => {
-      const studentId = r.studentId;                      // ✅ use numeric id directly
-      const date = this.formatDate(r.date);
-      return this.attendanceService.correctAttendance({
-        studentId,
-        date,
-        newStatus,
-        reason: `Class-wise bulk update to ${newStatus}`,
-        correctedBy: r.username || 'system',
-      });
-    });
-
     forkJoin(ops).subscribe({
       next: () => {
-        this.msg(`Updated ${g.items.length} record(s) in "${g.className}" to "${newStatus}".`);
         this.loading = false;
+        this.msg('All filtered attendance records deleted.');
         this.applyFilters();
       },
       error: () => {
-        this.msg('Failed to bulk update class records.');
         this.loading = false;
+        this.msg('Failed to delete all records.');
       },
     });
   }
 
-  // ---------------- Export ----------------
+  trackByRecord = (_: number, r: any) => r?._id ?? _;
+
+  // ---------------------------------------------------------------------------
+  //  Export
+  // ---------------------------------------------------------------------------
+
   exportExcel() {
-    const rows = this.attendances.map((a) => ({
+    // We'll export the sorted history (flat) + matrix info as columns only by status.
+    const rows = this.sortedHistory.map((a) => ({
       Student: this.getStudentName(a),
       StudentId: this.getStudentId(a),
       Class: a.className,
@@ -377,10 +453,15 @@ export class AttendanceComponent implements OnInit {
       Date: this.formatDate(a.date),
       Status: a.status,
     }));
+
     const ws = XLSX.utils.json_to_sheet(rows);
     const wb = XLSX.utils.book_new();
     XLSX.utils.book_append_sheet(wb, ws, 'Attendance');
-    XLSX.writeFile(wb, `attendance_export_${new Date().toISOString().slice(0, 10)}.xlsx`);
+
+    XLSX.writeFile(
+      wb,
+      `attendance_report_${new Date().toISOString().slice(0, 10)}.xlsx`
+    );
   }
 
   exportPDF() {
@@ -388,7 +469,7 @@ export class AttendanceComponent implements OnInit {
     doc.setFontSize(14);
     doc.text('Attendance Report', 14, 16);
 
-    const body = this.attendances.map((a) => [
+    const body = this.sortedHistory.map((a) => [
       this.getStudentName(a),
       this.getStudentId(a),
       a.className,
@@ -406,20 +487,24 @@ export class AttendanceComponent implements OnInit {
       headStyles: { fillColor: [240, 240, 240] },
     });
 
-    const y = (doc as any).lastAutoTable.finalY + 10;
+    const y = (doc as any).lastAutoTable.finalY + 8;
+    doc.setFontSize(11);
     doc.text(
-      `Total: ${this.totals.total} | Present: ${this.totals.Present} | Absent: ${this.totals.Absent} | Leave: ${this.totals.Leave}`,
+      `Total records: ${this.attendances.length}`,
       14,
       y
     );
 
-    doc.save(`attendance_${new Date().toISOString().slice(0, 10)}.pdf`);
+    doc.save(`attendance_report_${new Date().toISOString().slice(0, 10)}.pdf`);
   }
 
-  // ---------------- UI helpers / narrowers ----------------
-  /** Resolve student name from studentId using loaded students[] list */
+  // ---------------------------------------------------------------------------
+  //  Helpers
+  // ---------------------------------------------------------------------------
+
+  /** Resolve student name from studentId using loaded allStudents[] list */
   getStudentName(r: Attendance): string {
-    const stu = this.students.find(s => s.studentId === r.studentId);
+    const stu = this.allStudents.find((s) => s.studentId === r.studentId);
     return stu?.name ?? '';
   }
 
@@ -427,26 +512,15 @@ export class AttendanceComponent implements OnInit {
     return r.studentId ?? '';
   }
 
-  toggleSelectAll(ev: Event) {
-    const checked = (ev.target as HTMLInputElement | null)?.checked ?? false;
-    this.students = this.students.map((s) => ({ ...s, selected: checked }));
-  }
-
-  get allSelected(): boolean {
-    return this.students.length > 0 && this.students.every((s) => !!s.selected);
-  }
-
-  trackByStudent = (_: number, s: any) => s?._id ?? s?.id ?? s?.studentId ?? _;
-  trackByRecord = (_: number, r: any) => r?._id ?? _;
-
-  // ---------------- Utils ----------------
-  /** Safe date formatter -> YYYY-MM-DD */
+  /** Safe date formatter -> YYYY-MM-DD (accepts Date or any) */
   public formatDate(d: any): string {
     if (!d) return '';
     try {
       const dateObj = new Date(d);
       if (isNaN(dateObj.getTime())) return String(d);
-      return new Date(dateObj.getTime() - dateObj.getTimezoneOffset() * 60000)
+      return new Date(
+        dateObj.getTime() - dateObj.getTimezoneOffset() * 60000
+      )
         .toISOString()
         .slice(0, 10);
     } catch {

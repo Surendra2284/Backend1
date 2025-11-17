@@ -4,10 +4,20 @@ import { FormsModule } from '@angular/forms';
 
 import { StudentService, Student } from '../../services/student.service';
 import { NoticeService, Notice } from '../../services/notice.service';
-import { AttendanceService, Attendance, AttStatus } from '../../services/attendance.service';
+import {
+  AttendanceService,
+  Attendance,
+  AttStatus,
+} from '../../services/attendance.service';
 import { TeacherService } from '../../services/teacher.service';
 import { Teacher } from '../../components/models/Teacher';
-import { StudentProgressService, ProgressStatus, BulkProgressPayload, StudentProgress } from '../../services/student-progress.service';
+import {
+  StudentProgressService,
+  ProgressStatus,
+  BulkProgressPayload,
+  StudentProgress,
+} from '../../services/student-progress.service';
+
 import { forkJoin, of } from 'rxjs';
 
 @Component({
@@ -15,38 +25,57 @@ import { forkJoin, of } from 'rxjs';
   standalone: true,
   imports: [CommonModule, FormsModule],
   templateUrl: './teacherlogin.component.html',
-  styleUrls: ['./teacherlogin.component.css']
+  styleUrls: ['./teacherlogin.component.css'],
 })
 export class TeacherloginComponent implements OnInit {
-  activeTab: string = 'students'; // 'students' | 'notices' | 'attendance' | 'progress'
+  // Tabs: 'students' | 'attendance' | 'notices' | 'progress'
+  activeTab: string = 'students';
+
+  // Logged-in teacher data
   loggedInTeacher: Teacher | null = null;
   displayName: string = '';
 
+  // Students & notices
   students: Student[] = [];
   teacherNotices: Notice[] = [];
   newNotice: Partial<Notice> = { Notice: '' };
 
   /** UI attendance state: keyed by Student.studentId (number) */
   attendance: { [studentId: number]: AttStatus } = {};
-
   attendanceRecords: Attendance[] = [];
 
   // ========== Student Progress (Homework) ==========
-  progressDate: string = this.today();     // YYYY-MM-DD
+
+  /** Filter date for CURRENT homework (for editing/creating one homework set) */
+  progressDate: string = this.today(); // YYYY-MM-DD
+
+  /** Subject filter / current subject for new homework */
   progressSubject: string = '';
+
+  /** Homework text for this class/date/subject (current) */
   homeworkText: string = '';
 
-  // Per-student progress fields
+  /**
+   * Per-student in-memory progress state for the CURRENT date+subject
+   * (used for the "New / Current Homework" block and the "Current homework table").
+   */
   progressMap: {
     [studentId: number]: {
       status: ProgressStatus;
       progressNote: string;
       score?: number;
-      _id?: string; // existing record id (for update/delete if needed)
+      _id?: string; // existing record id (for delete/update)
+      studentRemark?: string;
+      studentRemarkDate?: string;
+      studentName?: string;
     };
   } = {};
 
-  classProgressList: StudentProgress[] = []; // loaded from backend for class & date
+  /** Which students will receive the CURRENT homework when saving */
+  selectedForCurrentHomework: { [studentId: number]: boolean } = {};
+
+  /** FULL history list returned from backend (all dates / all subjects) */
+  classProgressList: StudentProgress[] = [];
 
   // UI helpers
   message = '';
@@ -59,6 +88,10 @@ export class TeacherloginComponent implements OnInit {
     private teacherService: TeacherService,
     private studentProgressService: StudentProgressService
   ) {}
+
+  /* -------------------------------------------------------------------------- */
+  /*  Lifecycle                                                                 */
+  /* -------------------------------------------------------------------------- */
 
   ngOnInit(): void {
     const username = localStorage.getItem('username');
@@ -76,7 +109,7 @@ export class TeacherloginComponent implements OnInit {
           this.loadStudents();
           this.loadNotices();
           this.loadAttendance();
-          this.loadClassProgress(); // load progress for today by default
+          this.loadClassProgress(); // load current + history
         } else {
           console.warn('Teacher has no assigned class.');
         }
@@ -84,7 +117,7 @@ export class TeacherloginComponent implements OnInit {
       error: (err) => {
         console.error('Failed to load teacher:', err);
         alert('Unable to load teacher information. Please try again.');
-      }
+      },
     });
   }
 
@@ -96,7 +129,10 @@ export class TeacherloginComponent implements OnInit {
     }
   }
 
-  // ========== Students ==========
+  /* -------------------------------------------------------------------------- */
+  /*  Students                                                                  */
+  /* -------------------------------------------------------------------------- */
+
   loadStudents(): void {
     const className = this.loggedInTeacher?.Assignclass;
     if (!className) {
@@ -106,35 +142,40 @@ export class TeacherloginComponent implements OnInit {
 
     this.studentService.searchStudentsByClass(className).subscribe({
       next: (students) => {
-        this.students = (students || []).filter(s => s.class === className);
+        this.students = (students || []).filter((s) => s.class === className);
 
-        // Initialize default UI attendance as 'Absent'
-        this.students.forEach(stu => {
+        // Initialize default attendance ('Absent') where not set
+        this.students.forEach((stu) => {
           if (!Object.prototype.hasOwnProperty.call(this.attendance, stu.studentId)) {
             this.attendance[stu.studentId] = 'Absent';
           }
         });
 
-        // Initialize progress map defaults
-        this.students.forEach(stu => {
+        // Initialize progressMap & selection defaults for each student
+        this.students.forEach((stu) => {
           if (!this.progressMap[stu.studentId]) {
             this.progressMap[stu.studentId] = {
               status: 'Not Started',
               progressNote: '',
             };
           }
+          if (this.selectedForCurrentHomework[stu.studentId] === undefined) {
+            this.selectedForCurrentHomework[stu.studentId] = true; // default: selected
+          }
         });
       },
-      error: (err) => console.error('Error loading students:', err)
+      error: (err) => console.error('Error loading students:', err),
     });
   }
 
   editStudent(student: Student) {
     const newName = prompt('Edit name:', student.name);
-    const updated = { ...student, name: newName ?? student.name };
+    if (newName === null) return;
+
+    const updated = { ...student, name: newName || student.name };
     this.studentService.updateStudent(student.studentId, updated).subscribe({
       next: () => this.loadStudents(),
-      error: (err) => console.error('Error updating student:', err)
+      error: (err) => console.error('Error updating student:', err),
     });
   }
 
@@ -142,15 +183,19 @@ export class TeacherloginComponent implements OnInit {
     if (!confirm('Are you sure you want to delete this student?')) return;
     this.studentService.deleteStudent(studentId).subscribe({
       next: () => this.loadStudents(),
-      error: (err) => console.error('Error deleting student:', err)
+      error: (err) => console.error('Error deleting student:', err),
     });
   }
 
-  // ========== Notices ==========
+  /* -------------------------------------------------------------------------- */
+  /*  Notices                                                                   */
+  /* -------------------------------------------------------------------------- */
+
   loadNotices() {
+    // Using teacher name as classteacher identifier
     this.noticeService.getNoticesByClassTeacher(this.displayName).subscribe({
-      next: (data) => this.teacherNotices = data || [],
-      error: (err) => console.error('Error loading notices:', err)
+      next: (data) => (this.teacherNotices = data || []),
+      error: (err) => console.error('Error loading notices:', err),
     });
   }
 
@@ -160,13 +205,19 @@ export class TeacherloginComponent implements OnInit {
       return;
     }
 
+    const text = (this.newNotice.Notice || '').trim();
+    if (!text) {
+      alert('Please enter a notice message.');
+      return;
+    }
+
     const notice: Notice = {
       Noticeid: Date.now().toString(),
       name: this.displayName,
       class: this.loggedInTeacher.Assignclass,
       Role: 'Teacher',
-      Notice: this.newNotice.Notice || '',
-      classteacher: this.displayName
+      Notice: text,
+      classteacher: this.displayName,
     };
 
     this.noticeService.addNotice(notice).subscribe({
@@ -174,16 +225,18 @@ export class TeacherloginComponent implements OnInit {
         this.newNotice = { Notice: '' };
         this.loadNotices();
       },
-      error: (err) => console.error('Error posting notice:', err)
+      error: (err) => console.error('Error posting notice:', err),
     });
   }
 
   editNotice(notice: Notice) {
     const updatedText = prompt('Edit notice:', notice.Notice);
-    const updated = { ...notice, Notice: updatedText ?? notice.Notice };
+    if (updatedText === null) return;
+
+    const updated = { ...notice, Notice: updatedText || notice.Notice };
     this.noticeService.editNotice(notice._id!, updated).subscribe({
       next: () => this.loadNotices(),
-      error: (err) => console.error('Error editing notice:', err)
+      error: (err) => console.error('Error editing notice:', err),
     });
   }
 
@@ -191,40 +244,45 @@ export class TeacherloginComponent implements OnInit {
     if (!confirm('Are you sure you want to delete this notice?')) return;
     this.noticeService.deleteNotice(id).subscribe({
       next: () => this.loadNotices(),
-      error: (err) => console.error('Error deleting notice:', err)
+      error: (err) => console.error('Error deleting notice:', err),
     });
   }
 
-  // ========== Attendance ==========
+  /* -------------------------------------------------------------------------- */
+  /*  Attendance                                                                */
+  /* -------------------------------------------------------------------------- */
+
   loadAttendance() {
     const className = this.loggedInTeacher?.Assignclass;
     if (!className) return;
 
-    this.attendanceService.getAttendanceListOnly({ className, page: 1, limit: 500 }).subscribe({
-      next: (list) => {
-        this.attendanceRecords = list || [];
+    this.attendanceService
+      .getAttendanceListOnly({ className, page: 1, limit: 500 })
+      .subscribe({
+        next: (list) => {
+          this.attendanceRecords = list || [];
 
-        // Build latest status per studentId (records should be sorted desc by date in API)
-        const latestPerStudent = new Map<number, AttStatus>();
-        this.attendanceRecords.forEach(r => {
-          const sid = r.studentId;
-          if (typeof sid === 'number' && !latestPerStudent.has(sid)) {
-            latestPerStudent.set(sid, r.status as AttStatus);
-          }
-        });
+          // Build latest status per studentId
+          const latestPerStudent = new Map<number, AttStatus>();
+          this.attendanceRecords.forEach((r) => {
+            const sid = r.studentId;
+            if (typeof sid === 'number' && !latestPerStudent.has(sid)) {
+              latestPerStudent.set(sid, r.status as AttStatus);
+            }
+          });
 
-        // Seed UI state with latest known values
-        this.students.forEach(stu => {
-          const v = latestPerStudent.get(stu.studentId);
-          if (v) this.attendance[stu.studentId] = v;
-        });
-      },
-      error: (err) => console.error('Error loading attendance:', err)
-    });
+          // Seed UI with latest values
+          this.students.forEach((stu) => {
+            const v = latestPerStudent.get(stu.studentId);
+            if (v) this.attendance[stu.studentId] = v;
+          });
+        },
+        error: (err) => console.error('Error loading attendance:', err),
+      });
   }
 
   markAll(status: AttStatus) {
-    this.students.forEach(s => {
+    this.students.forEach((s) => {
       this.attendance[s.studentId] = status;
     });
   }
@@ -237,14 +295,15 @@ export class TeacherloginComponent implements OnInit {
 
     const className = this.loggedInTeacher.Assignclass;
     const teacher = this.displayName || 'Teacher';
-    const username = localStorage.getItem('username') || this.displayName || 'teacher';
-    const date = this.today(); // YYYY-MM-DD
+    const username =
+      localStorage.getItem('username') || this.displayName || 'teacher';
+    const date = this.today();
 
     const presentIds: (string | number)[] = [];
-    const absentIds: (string | number)[]  = [];
-    const leaveIds: (string | number)[]   = [];
+    const absentIds: (string | number)[] = [];
+    const leaveIds: (string | number)[] = [];
 
-    this.students.forEach(s => {
+    this.students.forEach((s) => {
       const sid = s.studentId;
       const status = this.normalizeStatus(this.attendance[sid] || 'Absent');
 
@@ -269,38 +328,71 @@ export class TeacherloginComponent implements OnInit {
           }
         });
 
-        const presentToSave = presentIds.filter(id => !existingSet.has(Number(id)));
-        const absentToSave  = absentIds.filter(id => !existingSet.has(Number(id)));
-        const leaveToSave   = leaveIds.filter(id => !existingSet.has(Number(id)));
+        const presentToSave = presentIds.filter((id) => !existingSet.has(Number(id)));
+        const absentToSave = absentIds.filter((id) => !existingSet.has(Number(id)));
+        const leaveToSave = leaveIds.filter((id) => !existingSet.has(Number(id)));
 
         const presentExisting = presentIds.length - presentToSave.length;
-        const absentExisting  = absentIds.length - absentToSave.length;
-        const leaveExisting   = leaveIds.length - leaveToSave.length;
-
+        const absentExisting = absentIds.length - absentToSave.length;
+        const leaveExisting = leaveIds.length - leaveToSave.length;
         const totalExisting = presentExisting + absentExisting + leaveExisting;
 
-        const buildCalls = (pIds: (string | number)[], aIds: (string | number)[], lIds: (string | number)[]) => {
+        const buildCalls = (
+          pIds: (string | number)[],
+          aIds: (string | number)[],
+          lIds: (string | number)[]
+        ) => {
           const calls = [];
-          if (pIds.length) calls.push(this.attendanceService.saveAttendanceBulk({
-            studentIds: pIds, className, teacher, username, date, status: 'Present'
-          }));
-          if (aIds.length) calls.push(this.attendanceService.saveAttendanceBulk({
-            studentIds: aIds, className, teacher, username, date, status: 'Absent'
-          }));
-          if (lIds.length) calls.push(this.attendanceService.saveAttendanceBulk({
-            studentIds: lIds, className, teacher, username, date, status: 'Leave'
-          }));
+          if (pIds.length)
+            calls.push(
+              this.attendanceService.saveAttendanceBulk({
+                studentIds: pIds,
+                className,
+                teacher,
+                username,
+                date,
+                status: 'Present',
+              })
+            );
+          if (aIds.length)
+            calls.push(
+              this.attendanceService.saveAttendanceBulk({
+                studentIds: aIds,
+                className,
+                teacher,
+                username,
+                date,
+                status: 'Absent',
+              })
+            );
+          if (lIds.length)
+            calls.push(
+              this.attendanceService.saveAttendanceBulk({
+                studentIds: lIds,
+                className,
+                teacher,
+                username,
+                date,
+                status: 'Leave',
+              })
+            );
           return calls;
         };
 
-        if (presentToSave.length + absentToSave.length + leaveToSave.length === 0) {
+        // Case 1: everything already exists
+        if (
+          presentToSave.length + absentToSave.length + leaveToSave.length ===
+          0
+        ) {
           if (totalExisting === 0) {
             this.loading = false;
             alert('Nothing to save.');
             return;
           }
 
-          const ok = confirm(`${totalExisting} students already have attendance for ${date}. Press OK to overwrite those records, or Cancel to do nothing.`);
+          const ok = confirm(
+            `${totalExisting} students already have attendance for ${date}. Press OK to overwrite those records, or Cancel to do nothing.`
+          );
           if (!ok) {
             this.loading = false;
             return;
@@ -317,13 +409,18 @@ export class TeacherloginComponent implements OnInit {
               this.loading = false;
               console.error('Error saving attendance:', err);
               alert('Failed to save attendance.');
-            }
+            },
           });
           return;
         }
 
+        // Case 2: mix of existing + new
         if (totalExisting > 0) {
-          const ok = confirm(`${totalExisting} students already have attendance for ${date}. Press OK to overwrite them as well, or Cancel to only save for remaining ${presentToSave.length + absentToSave.length + leaveToSave.length} students.`);
+          const ok = confirm(
+            `${totalExisting} students already have attendance for ${date}. Press OK to overwrite them as well, or Cancel to only save for remaining ${
+              presentToSave.length + absentToSave.length + leaveToSave.length
+            } students.`
+          );
           if (ok) {
             const calls = buildCalls(presentIds, absentIds, leaveIds);
             forkJoin(calls.length ? calls : [of(null)]).subscribe({
@@ -336,12 +433,13 @@ export class TeacherloginComponent implements OnInit {
                 this.loading = false;
                 console.error('Error saving attendance:', err);
                 alert('Failed to save attendance.');
-              }
+              },
             });
             return;
           }
         }
 
+        // Case 3: only new records to save
         const calls = buildCalls(presentToSave, absentToSave, leaveToSave);
         if (!calls.length) {
           this.loading = false;
@@ -352,73 +450,126 @@ export class TeacherloginComponent implements OnInit {
         forkJoin(calls).subscribe({
           next: () => {
             this.loading = false;
-            const savedCount = presentToSave.length + absentToSave.length + leaveToSave.length;
+            const savedCount =
+              presentToSave.length + absentToSave.length + leaveToSave.length;
             const skipped = totalExisting;
-            alert(`Attendance saved for ${savedCount} students. Skipped ${skipped} already-recorded students.`);
+            alert(
+              `Attendance saved for ${savedCount} students. Skipped ${skipped} already-recorded students.`
+            );
             this.loadAttendance();
           },
           error: (err) => {
             this.loading = false;
             console.error('Error saving attendance:', err);
             alert('Failed to save attendance.');
-          }
+          },
         });
       },
       error: (err) => {
         this.loading = false;
         console.error('Error checking existing attendance:', err);
         alert('Could not verify existing attendance; aborting save.');
-      }
+      },
     });
   }
 
-  // ========== Student Progress (Homework) ==========
+  /* -------------------------------------------------------------------------- */
+  /*  Student Progress (Homework)                                              */
+  /* -------------------------------------------------------------------------- */
 
-  /** Load class progress list for chosen date & subject */
+  /**
+   * Load:
+   *  1) CURRENT homework for given date+subject (for creating/updating one set)
+   *  2) FULL history (all dates & subjects) for this class
+   */
   loadClassProgress() {
     const className = this.loggedInTeacher?.Assignclass;
     if (!className) return;
 
-    this.studentProgressService.getProgressByClass({
-      className,
-      date: this.progressDate,
-      subject: this.progressSubject || undefined
-    }).subscribe({
-      next: (list) => {
-        this.classProgressList = list || [];
+    const dateFilter = this.progressDate || undefined;
+    const subjectFilter = this.progressSubject || undefined;
 
-        // Merge into progressMap
-        this.classProgressList.forEach(p => {
-          const sid = p.studentId;
-          if (!sid) return;
-          if (!this.progressMap[sid]) {
-            this.progressMap[sid] = {
-              status: p.status || 'Not Started',
-              progressNote: p.progressNote || '',
-              score: p.score,
-              _id: p._id
+    // 1) Load CURRENT homework set (date + subject)
+    this.studentProgressService
+      .getProgressByClass({
+        className,
+        date: dateFilter,
+        subject: subjectFilter,
+      })
+      .subscribe({
+        next: (list) => {
+          // Reset current map for all students
+          this.students.forEach((s) => {
+            this.progressMap[s.studentId] = {
+              status: 'Not Started',
+              progressNote: '',
+              score: undefined,
+              _id: undefined,
+              studentRemark: undefined,
+              studentRemarkDate: undefined,
             };
+          });
+
+          // If we have an existing homework set for this date+subject, load it
+          if (list && list.length > 0) {
+            const first = list[0];
+            if (first.homework) {
+              this.homeworkText = first.homework;
+            }
+            if (first.subject && !this.progressSubject) {
+              this.progressSubject = first.subject;
+            }
+
+            list.forEach((p) => {
+              const sid = p.studentId;
+              if (!sid) return;
+
+              this.progressMap[sid] = {
+                status: p.status || 'Not Started',
+                progressNote: p.progressNote || '',
+                score: p.score,
+                _id: p._id,
+                studentRemark: p.studentRemark,
+                studentRemarkDate: p.studentRemarkDate,
+              };
+            });
           } else {
-            this.progressMap[sid].status = p.status || this.progressMap[sid].status;
-            this.progressMap[sid].progressNote = p.progressNote || this.progressMap[sid].progressNote;
-            this.progressMap[sid].score = p.score ?? this.progressMap[sid].score;
-            this.progressMap[sid]._id = p._id;
+            // If no existing homework set -> clear homework text for new one
+            this.homeworkText = '';
           }
-        });
-      },
-      error: (err) => {
-        console.error('Error loading class progress:', err);
-      }
-    });
+
+          // Ensure selection map is defined for all students
+          this.students.forEach((s) => {
+            if (this.selectedForCurrentHomework[s.studentId] === undefined) {
+              this.selectedForCurrentHomework[s.studentId] = true;
+            }
+          });
+        },
+        error: (err) => {
+          console.error('Error loading current class progress:', err);
+        },
+      });
+
+    // 2) Load FULL history (no date / subject filter)
+    this.studentProgressService
+      .getProgressByClass({ className })
+      .subscribe({
+        next: (all) => {
+          this.classProgressList = all || [];
+        },
+        error: (err) => {
+          console.error('Error loading full progress history:', err);
+        },
+      });
   }
 
-  /** Teacher marks status for all students at once */
+  /** Teacher marks same status for all students at once (CURRENT homework) */
   markAllProgress(status: ProgressStatus) {
-    this.students.forEach(s => {
+    this.students.forEach((s) => {
       if (!this.progressMap[s.studentId]) {
         this.progressMap[s.studentId] = {
           status,
-          progressNote: ''
+          progressNote: '',
         };
       } else {
         this.progressMap[s.studentId].status = status;
@@ -426,41 +577,55 @@ export class TeacherloginComponent implements OnInit {
     });
   }
 
-  /** Save (bulk upsert) progress for the whole class */
+  /** Save (bulk upsert) progress for selected students only */
   saveClassProgress() {
     if (!this.loggedInTeacher?.Assignclass) {
       alert('No class assigned to teacher.');
       return;
     }
 
-    if (!this.progressSubject) {
+    if (!this.progressSubject.trim()) {
       alert('Please enter subject for homework.');
       return;
     }
 
-    if (!this.homeworkText) {
+    if (!this.homeworkText.trim()) {
       alert('Please enter homework text.');
       return;
     }
 
     const className = this.loggedInTeacher.Assignclass;
     const teacher = this.displayName || 'Teacher';
-    const username = localStorage.getItem('username') || this.displayName || 'teacher';
+    const username =
+      localStorage.getItem('username') || this.displayName || 'teacher';
     const date = this.progressDate || this.today();
 
-    const entries = this.students.map((s): BulkProgressPayload['entries'][number] => {
-      const p = this.progressMap[s.studentId] || {
-        status: 'Not Started',
-        progressNote: ''
-      };
+    const selectedStudents = this.students.filter(
+      (s) => this.selectedForCurrentHomework[s.studentId] !== false
+    );
 
-      return {
-        studentId: s.studentId,
-        progressNote: p.progressNote || '',
-        status: p.status || 'Not Started',
-        score: typeof p.score === 'number' ? p.score : undefined
-      };
-    });
+    if (!selectedStudents.length) {
+      alert('Please select at least one student for this homework.');
+      return;
+    }
+
+    const entries = selectedStudents.map(
+  (s): BulkProgressPayload['entries'][number] => {
+    const p = this.progressMap[s.studentId] || {
+      status: 'Not Started' as ProgressStatus,
+      progressNote: '',
+    };
+
+    return {
+      studentId: s.studentId,
+      
+      progressNote: p.progressNote || '',
+      status: p.status || 'Not Started',
+      score: typeof p.score === 'number' ? p.score : undefined,
+    };
+  }
+);
+
 
     this.loading = true;
 
@@ -471,29 +636,29 @@ export class TeacherloginComponent implements OnInit {
       homework: this.homeworkText,
       teacher,
       username,
-      entries
+      entries,
     };
 
     this.studentProgressService.saveBulkProgress(payload).subscribe({
       next: () => {
         this.loading = false;
         alert('Homework & student progress saved successfully.');
-        this.loadClassProgress();
+        this.loadClassProgress(); // reload current + history
       },
       error: (err) => {
         this.loading = false;
         console.error('Error saving student progress:', err);
         alert('Failed to save student progress.');
-      }
+      },
     });
   }
 
   /** Delete a single progress record (from teacher side) */
   deleteProgressRecord(id: string | undefined) {
-  if (!id) return;
-  if (!confirm('Delete this progress record?')) return;
+    if (!id) return;
+    if (!confirm('Delete this progress record?')) return;
 
-  this.studentProgressService.deleteProgress(id).subscribe({
+    this.studentProgressService.deleteProgress(id).subscribe({
       next: () => {
         alert('Progress record deleted.');
         this.loadClassProgress();
@@ -501,30 +666,46 @@ export class TeacherloginComponent implements OnInit {
       error: (err) => {
         console.error('Error deleting progress record:', err);
         alert('Failed to delete progress record.');
-      }
+      },
     });
   }
 
-  // ========== Session ==========
-  logout() {
-    localStorage.removeItem('username');
-    alert('Logged out successfully!');
-  }
+  /* -------------------------------------------------------------------------- */
+  /*  Helpers                                                                   */
+  /* -------------------------------------------------------------------------- */
 
-  // ========== Helpers ==========
   private normalizeStatus(val: any): AttStatus {
     const map: Record<string, AttStatus> = {
       present: 'Present',
       absent: 'Absent',
       leave: 'Leave',
-      late: 'Leave', // legacy -> map to Leave
+      late: 'Leave',
     };
     return map[String(val || '').toLowerCase()] ?? 'Present';
   }
 
+  /** Return ALL homework/progress entries for a given studentId (all subjects, all dates) */
+  getProgressForStudent(studentId: number) {
+    if (!this.classProgressList || !this.classProgressList.length) {
+      return [];
+    }
+    return this.classProgressList.filter((p) => p.studentId === studentId);
+  }
+
+  logout() {
+    localStorage.removeItem('username');
+    alert('Logged out successfully!');
+  }
+getStudentNameById(studentId: number): string {
+  const s = this.students.find(stu => stu.studentId === studentId);
+  return s ? s.name : 'Unknown';
+}
+
   private today(): string {
     const d = new Date();
-    const localISO = new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString();
+    const localISO = new Date(
+      d.getTime() - d.getTimezoneOffset() * 60000
+    ).toISOString();
     return localISO.slice(0, 10);
   }
 }

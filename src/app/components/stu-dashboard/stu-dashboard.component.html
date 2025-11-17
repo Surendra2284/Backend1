@@ -1,5 +1,6 @@
 <div class="dashboard">
-  <!-- Profile -->
+
+  <!-- STUDENT PROFILE CARD -->
   <section class="profile-card" *ngIf="student">
     <img [src]="student.photo" alt="Student Photo" class="profile-photo" />
     <div class="profile-info">
@@ -11,8 +12,84 @@
     </div>
   </section>
 
-  <!-- Attendance -->
-  <section class="attendance-section">
+  <!-- TABS -->
+  <div class="tabs">
+    <button [class.active]="activeTab === 'homework'" (click)="selectTab('homework')">📘 Homework</button>
+    <button [class.active]="activeTab === 'attendance'" (click)="selectTab('attendance')">📊 Attendance</button>
+    <button [class.active]="activeTab === 'notices'" (click)="selectTab('notices')">📢 Notices</button>
+  </div>
+
+  <!-- ============================
+          HOMEWORK TAB
+  ===============================-->
+  <section *ngIf="activeTab === 'homework'" class="homework-section">
+
+    <h3>My Homework & Progress</h3>
+
+    <!-- Filters -->
+    <div class="filters">
+      <input type="date" [(ngModel)]="fromDate">
+      <input type="date" [(ngModel)]="toDate">
+      <input type="text" placeholder="Filter by subject" [(ngModel)]="subjectFilter">
+
+      <button class="btn" (click)="loadMyProgress()">Search</button>
+    </div>
+
+    <!-- Homework Table -->
+    <table class="homework-table" *ngIf="myProgressList.length; else noHomework">
+      <thead>
+        <tr>
+          <th>Date</th>
+          <th>Subject</th>
+          <th>Homework</th>
+          <th>TeacherNote</th>
+          <th>Status</th>
+          <th>Remark</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let p of myProgressList">
+          <td>{{ p.date }}</td>
+          <td>{{ p.subject }}</td>
+          <td>{{ p.homework }}</td>
+          <td>{{ p.progressNote }}</td>
+          <td>
+            <span class="status">{{ p.status }}</span>
+          </td>
+
+          <td>
+            <input
+              type="text"
+              [(ngModel)]="remarkMap[p._id!]"
+              placeholder="Add remark…"
+            />
+            <small *ngIf="p.studentRemarkDate">
+              (Updated: {{ p.studentRemarkDate }})
+            </small>
+          </td>
+
+          <td>
+            <button class="btn done" (click)="markHomeworkDone(p)">
+              Mark Done
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <ng-template #noHomework>
+      <p class="empty">No homework available.</p>
+    </ng-template>
+
+    <p class="message" *ngIf="message">{{ message }}</p>
+  </section>
+
+  <!-- ============================
+          ATTENDANCE TAB
+  ===============================-->
+  <section class="attendance-section" *ngIf="activeTab === 'attendance'">
     <h3>Attendance Records</h3>
     <table class="attendance-table">
       <thead>
@@ -30,9 +107,12 @@
     </table>
   </section>
 
-  <!-- Notices -->
-  <section class="notices-section">
+  <!-- ============================
+           NOTICES TAB
+  ===============================-->
+  <section class="notices-section" *ngIf="activeTab === 'notices'">
     <h3>Class Notices</h3>
+
     <div *ngIf="notices.length; else noNotices">
       <div class="notice-card" *ngFor="let notice of notices">
         <h4>{{ notice.title }}</h4>
@@ -40,8 +120,10 @@
         <small>By {{ notice.name }}</small>
       </div>
     </div>
+
     <ng-template #noNotices>
       <p class="empty">No notices posted yet.</p>
     </ng-template>
   </section>
+
 </div>
