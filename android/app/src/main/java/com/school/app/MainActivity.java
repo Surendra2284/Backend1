@@ -1,4 +1,4 @@
-package com.surendra.kushwaha;
+package com.school.app;
 
 import com.getcapacitor.BridgeActivity;
 

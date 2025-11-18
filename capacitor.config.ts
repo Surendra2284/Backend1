@@ -1,9 +1,9 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.surendra.kushwaha',
-  appName: 'MjrpCacademy',
-  webDir: 'dist/toh-pt5'
+  appId: 'com.school.app',
+  appName: 'schoolapp',
+  webDir: 'dist/surendra'
 };
 
 export default config;

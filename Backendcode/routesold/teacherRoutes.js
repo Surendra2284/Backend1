@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const Teacher = require('../models/Teacher');
+const Teacher = require('../modelsold/Teacher');
 
 // Get all teachers
 router.get('/', async (req, res) => {
@@ -62,23 +62,6 @@ router.delete('/:id', async (req, res) => {
   } catch (err) {
     console.error('Error deleting teacher:', err);
     res.status(500).json({ error: err.message });
-  }
-});
-router.get('/username/:username', async (req, res) => {
-  try {
-    const teacher = await Teacher.findOne({ name: req.params.username });
-
-    if (!teacher) {
-      return res.status(404).json({ message: 'Teacher not found' });
-    }
-
-    res.status(200).json({
-      ...teacher.toObject(),
-      teacherid: teacher.teacherid || teacher._id.toString(),
-    });
-  } catch (error) {
-    console.error('Error fetching teacher by username:', error);
-    res.status(500).json({ message: 'Failed to fetch teacher' });
   }
 });
 
