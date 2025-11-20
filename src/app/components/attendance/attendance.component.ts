@@ -1,4 +1,6 @@
 import { Component, OnInit } from '@angular/core';
+import { DeviceService } from '../../services/device.service';
+
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {
   AttendanceService,
@@ -42,7 +44,7 @@ export class AttendanceComponent implements OnInit {
 
   // Raw attendance records (for history / export)
   attendances: Attendance[] = [];
-
+isMobile = false;
   // Sorting (for history table only)
   sortKey: SortKey = 'date';
   sortDir: 'asc' | 'desc' = 'desc';
@@ -59,6 +61,7 @@ export class AttendanceComponent implements OnInit {
 
   constructor(
     private fb: FormBuilder,
+    private device: DeviceService,
     private attendanceService: AttendanceService
   ) {
     // Add-attendance form (left card)
@@ -86,6 +89,7 @@ export class AttendanceComponent implements OnInit {
   //  Lifecycle
   // ---------------------------------------------------------------------------
   ngOnInit(): void {
+    this.isMobile = this.device.isMobileApp || this.device.isMobileScreen;
     const today = this.formatDate(new Date());
     this.attendanceForm.patchValue({ date: today });
 
