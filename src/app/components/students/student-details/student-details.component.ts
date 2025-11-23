@@ -48,7 +48,7 @@ export class StudentDetailsComponent implements OnInit {
     this.studentService.addStudent(form.value).subscribe(
       (response) => {
         alert('Student added successfully!');
-        this.students.push(response.student); // Update local student list
+        this.students.push(response.students); // Update local student list
         this.resetForm(form); // Clear the form
       },
       (error) => {
