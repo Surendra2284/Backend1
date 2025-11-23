@@ -5,7 +5,7 @@ import { TeacherComponent } from './components/teacher/teacher.component';
 import { AppComponent } from './app.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { HeroDetailComponent } from './hero-detail/hero-detail.component';
-import { HeroesComponent } from './heroes/heroes.component';
+import {NoticUpdatestudentComponent } from './NoticeUpdateStudent/NoticUpdatestudent.component';
 import { MessagesComponent } from './messages/messages.component';
 import { LoginComponent } from './components/login/login.component';
 import { AppRoutingModule } from './app-routing.module';
@@ -35,6 +35,7 @@ import{TeacherloginComponent} from './components/teacherlogin/teacherlogin.compo
     ReactiveFormsModule,
     TeacherloginComponent,
     StudentDetailsComponent,
+    
     StudentComponent,
   ],
   declarations: [
@@ -45,6 +46,7 @@ import{TeacherloginComponent} from './components/teacherlogin/teacherlogin.compo
     LoginComponent,
     ExitComponent,
     StuDashboardComponent,
+    NoticUpdatestudentComponent,
     AdminComponent,
     MessagesComponent,
     SignUpComponent,

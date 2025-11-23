@@ -56,6 +56,12 @@ export class StudentService {
       })
     );
   }
+bulkUpdateNoticeAndAttendance(file: File) {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return this.http.post(`${this.apiUrl}/bulk-notice`, formData);
+}
 
   /** --- Add a New Student --- */
   addStudent(student: Student): Observable<any> {
@@ -103,6 +109,10 @@ export class StudentService {
       })
     );
   }
+getAllStudentsFull() {
+  return this.http.get<any[]>(`${this.apiUrl}/?limit=999999&skip=0`);
+}
+
 
   /** --- Search Students by Name --- */
   searchStudentsByName(name: string, filters?: any): Observable<Student[]> {

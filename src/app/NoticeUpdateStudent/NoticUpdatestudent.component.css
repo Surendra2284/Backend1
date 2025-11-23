@@ -52,3 +52,13 @@
   margin-right: .8em;
   border-radius: 4px 0 0 4px;
 }
+.card {
+  border-radius: 10px;
+  background: #fff;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+  padding: 20px;
+}
+.selected {
+  background-color: #CFD8DC !important;
+  color: white;
+}
