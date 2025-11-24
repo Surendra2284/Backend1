@@ -259,8 +259,8 @@
         </div>
 
         <div class="d-flex align-items-center gap-2">
-          <small>Rows per page:</small>
-          <select #pageSizeSelect class="form-select form-select-sm"
+           <small class="me-2">Rows per page:</small>
+          <select #pageSizeSelect class="form-select form-select-sm w-auto"
         [value]="pageSize"
         (change)="onPageSizeChange(pageSizeSelect.value)">
     <option [value]="5">5</option>

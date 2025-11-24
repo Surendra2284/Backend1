@@ -38,7 +38,8 @@ export class StudentService {
       });
     }
 
-    return this.http.get<Student[]>(`${this.apiUrl}`, { params }).pipe(
+    return this.http.get<Student[]>(`${this.apiUrl}?limit=999999&skip=0`, { params })
+.pipe(
       catchError(error => {
         console.error('Error fetching students:', error);
         

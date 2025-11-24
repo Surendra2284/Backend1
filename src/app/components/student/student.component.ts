@@ -1,8 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { StudentService } from '../../services/student.service';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
+
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -16,6 +15,10 @@ export class StudentComponent implements OnInit {
   students: any[] = [];
   currentStudent: any = {};
   isEditing = false;
+
+totalStudents = 0;
+
+
 
   searchQuery = '';
   searchBy: 'class' | 'name' = 'class';
