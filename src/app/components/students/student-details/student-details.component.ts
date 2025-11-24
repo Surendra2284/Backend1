@@ -6,8 +6,8 @@ import { UserService } from '../../../services/user.service';
 
 @Component({
   selector: 'app-stu-dashboard',
-  standalone: true,
-  imports: [CommonModule, FormsModule], // Include CommonModule and FormsModule for standalone component
+  
+  
   templateUrl: './student-details.component.html',
   styleUrls: ['./student-details.component.css']
 })

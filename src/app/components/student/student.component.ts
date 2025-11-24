@@ -7,8 +7,7 @@ import * as XLSX from 'xlsx';
 
 @Component({
   selector: 'app-student',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  
   templateUrl: './student.component.html',
   styleUrls: ['./student.component.css'],
 })

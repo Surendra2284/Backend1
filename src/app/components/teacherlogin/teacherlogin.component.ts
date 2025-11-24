@@ -22,8 +22,7 @@ import { forkJoin, of } from 'rxjs';
 
 @Component({
   selector: 'app-teacherlogin',
-  standalone: true,
-  imports: [CommonModule, FormsModule],
+  
   templateUrl: './teacherlogin.component.html',
   styleUrls: ['./teacherlogin.component.css'],
 })
