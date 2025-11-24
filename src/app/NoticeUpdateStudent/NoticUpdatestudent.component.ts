@@ -24,44 +24,38 @@ export class NoticUpdatestudentComponent {
     this.messageService.clear();
   }
 
-  // -------------------------------
-  // DOWNLOAD CURRENT TEMPLATE (USING EXISTING getStudents API)
-  // -------------------------------
+  // Download current Excel template
   downloadCurrentTemplate() {
-  this.messageService.add("Generating Excel template...", "info");
+    this.messageService.add("Generating Excel template...", "info");
 
-  this.studentService.getAllStudentsFull().subscribe({
-    next: (students: any[]) => {
-      const data = students.map((s: any) => ({
-        StudentID: s.studentId,
-        Name: s.name,
-        Notice: s.Notice || "",
-        Attendance: s.attendance || 0,
-        ReplaceMode: "Yes"
-      }));
+    this.studentService.getAllStudentsFull().subscribe({
+      next: (students: any[]) => {
+        const data = students.map((s: any) => ({
+          StudentID: s.studentId,
+          Name: s.name,
+          Notice: s.Notice || "",
+          Attendance: s.attendance || 0,
+          ReplaceMode: "Yes"
+        }));
 
-      const worksheet = XLSX.utils.json_to_sheet(data);
-      const workbook = XLSX.utils.book_new();
+        const worksheet = XLSX.utils.json_to_sheet(data);
+        const workbook = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
 
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Students");
+        XLSX.writeFile(workbook, "Current_Student_Notice_Attendance.xlsx");
 
-      XLSX.writeFile(workbook, "Current_Student_Notice_Attendance.xlsx");
+        this.messageService.add("Template downloaded!", "success");
+      },
 
-      this.messageService.add("Template downloaded!", "success");
-    },
-    error: (err: any) => {
-      this.messageService.add("Failed to load students ❌", "error");
-      console.error(err);
-    }
-  });
-}
+      error: () => {
+        this.messageService.add("Failed to load students ❌", "error");
+      }
+    });
+  }
 
-
-  // -------------------------
-  // FILE UPLOAD
-  // -------------------------
+  // Excel Upload
   onFileSelected(event: any) {
-    const file = event.target.files[0];
+    const file = event.target.files?.[0];
     if (!file) return;
 
     this.loading = true;
@@ -86,7 +80,10 @@ export class NoticUpdatestudentComponent {
         this.messageService.add(`Errors: ${res.errors.length}`, "error");
 
         if (res.notFound.length > 0) {
-          this.messageService.add("Students not found: " + res.notFound.join(", "), "warning");
+          this.messageService.add(
+            "Students not found: " + res.notFound.join(", "),
+            "warning"
+          );
         }
 
         res.nameMismatch.forEach((nm: any) =>
@@ -97,18 +94,20 @@ export class NoticUpdatestudentComponent {
         );
 
         res.errors.forEach((err: any) =>
-          this.messageService.add(`Error: ${err.error} (Value: ${err.value})`, "error")
+          this.messageService.add(
+            `Error: ${err.error} (Value: ${err.value})`,
+            "error"
+          )
         );
 
         this.messageService.add("Bulk update completed!", "success");
       },
 
-      error: (err: any) => {
+      error: () => {
         clearInterval(interval);
         this.progress = 100;
         this.loading = false;
         this.messageService.add("Bulk update failed ❌", "error");
-        console.error(err);
       }
     });
   }
