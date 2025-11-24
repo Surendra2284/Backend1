@@ -16,12 +16,12 @@ import { AttendanceComponent } from './components/attendance/attendance.componen
 import{StudentComponent} from './components/student/student.component';
 import{UserComponent} from './components/User/user.component';
 import{TeacherloginComponent} from './components/teacherlogin/teacherlogin.component';
-import { NoticUpdatestudentComponent } from './NoticeUpdateStudent/NoticUpdatestudent.component';
+import { NoticupdatestudentComponent} from './NoticeUpdateStudent/noticupdatestudent.component';
 const routes: Routes = [
   
  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
   { path: 'dashboard', component: DashboardComponent },
- { path: 'update-notice', component: NoticUpdatestudentComponent },
+ { path: 'update-notice', component: NoticupdatestudentComponent },
   { path: 'login', component: LoginComponent },
   { path: 'admin', component: AdminComponent },
   { path: 'teacher', component: TeacherComponent },

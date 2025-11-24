@@ -32,7 +32,7 @@ import { ExcelUploadComponent } from './components/Idcardprinting/components/exc
 import { CardPreviewComponent } from './components/card-preview/card-preview.component';
 
 import { MessagesComponent } from './messages/messages.component';
-import { NoticUpdatestudentComponent } from './NoticeUpdateStudent/NoticUpdatestudent.component';
+import { NoticupdatestudentComponent} from './NoticeUpdateStudent/Noticupdatestudent.component';
 
 import { StudentExlDataService } from './services/StudentExlDataService.service';
 
@@ -58,7 +58,7 @@ import { StudentExlDataService } from './services/StudentExlDataService.service'
     ExcelUploadComponent,
     CardPreviewComponent,
     MessagesComponent,
-    NoticUpdatestudentComponent
+    NoticupdatestudentComponent
   ],
   imports: [
     BrowserModule,
