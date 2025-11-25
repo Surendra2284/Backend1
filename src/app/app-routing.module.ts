@@ -17,6 +17,7 @@ import{StudentComponent} from './components/student/student.component';
 import{UserComponent} from './components/User/user.component';
 import{TeacherloginComponent} from './components/teacherlogin/teacherlogin.component';
 import { NoticupdatestudentComponent } from './NoticeUpdateStudent/noticupdatestudent.component';
+import { UserProfileComponent } from './components/userdetail/user-profile.component';
 const routes: Routes = [
   
  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
@@ -35,6 +36,7 @@ const routes: Routes = [
   { path: 'notice', component: NoticeComponent },
   { path:'Attendance', component:AttendanceComponent},
   {path:'teacherlogin', component:TeacherloginComponent},
+  { path: 'Userprofile', component: UserProfileComponent },
   {path:'Student',component:StudentComponent},
 ];
 

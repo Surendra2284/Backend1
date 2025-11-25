@@ -34,9 +34,7 @@ export class UserService {
     return this.http.post(this.apiUrl, user);
   }
 
-  updateUser(id: string, user: any): Observable<any> {
-    return this.http.put(`${this.apiUrl}/${id}`, user);
-  }
+  
 
   deleteUser(id: string): Observable<any> {
     return this.http.delete(`${this.apiUrl}/${id}`);
@@ -52,6 +50,12 @@ export class UserService {
   }
 getUsersbyrole(): Observable<any[]> {
   return this.http.get<any[]>(`${this.apiUrl}`);
+}
+getUserById(id: string) {
+  return this.http.get(`${this.apiUrl}/${id}`);
+}
+updateUser(id: string, data: any) {
+  return this.http.put(`${this.apiUrl}/${id}`, data);
 }
 
 bulkAddUsers(data: any[]): Observable<any> {

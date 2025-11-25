@@ -1,135 +1,144 @@
 <div class="container py-3">
 
-  <h2 class="mb-3">👥 User Management</h2>
+  <h2 class="mb-3">User Management</h2>
 
-  <!-- Message -->
-  <div *ngIf="message" class="alert alert-info">{{ message }}</div>
+  <!-- Search + Export -->
+  <div class="d-flex justify-content-between mb-3">
+    <input class="form-control w-50" placeholder="Search users..."
+           [(ngModel)]="searchText" (input)="searchUsers()">
 
-  <!-- ===================== ADD USER ===================== -->
-  <div class="card mb-4">
-    <div class="card-header fw-bold">Add New User</div>
-    <div class="card-body">
-
-      <div class="row g-2">
-        <div class="col-md-3">
-          <input class="form-control" [(ngModel)]="newUser.username" placeholder="Username" />
-        </div>
-        <div class="col-md-3">
-          <input class="form-control" [(ngModel)]="newUser.password" placeholder="Password" type="password" />
-        </div>
-        <div class="col-md-3">
-          <input class="form-control" [(ngModel)]="newUser.role" placeholder="Role" />
-        </div>
-        <div class="col-md-3">
-          <button class="btn btn-primary w-100" (click)="addUser()">Add User</button>
-        </div>
-      </div>
-
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary btn-sm" (click)="exportUsers()">Export Excel</button>
+      <button class="btn btn-outline-secondary btn-sm" (click)="downloadTemplate()">Template</button>
     </div>
   </div>
 
-  <!-- ===================== BULK IMPORT ===================== -->
-  <div class="card mb-4">
-    <div class="card-header fw-bold d-flex justify-content-between">
-      <span>Bulk Import Users</span>
-      <button class="btn btn-sm btn-success" (click)="downloadTemplate()">Download Template</button>
+  <!-- Add New User -->
+  <div class="card p-3 mb-4">
+    <h5>Add New User</h5>
+    <div class="row g-2 mt-1">
+      <div class="col-md-3">
+        <input class="form-control" placeholder="Username" [(ngModel)]="newUser.username">
+      </div>
+      <div class="col-md-3">
+        <input class="form-control" placeholder="Password" [(ngModel)]="newUser.password">
+      </div>
+      <div class="col-md-3">
+        <input class="form-control" placeholder="Role" [(ngModel)]="newUser.role">
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary w-100" (click)="addUser()">Add</button>
+      </div>
+    </div>
+  </div>
+<div class="card p-3 mb-4">
+    <h5>Edit User</h5>
+    <div class="row g-2 mt-1">
+      <div class="col-md-3">
+        <input class="form-control" placeholder="Username" [(ngModel)]="newUser.username">
+      </div>
+      <div class="col-md-3">
+        <input class="form-control" placeholder="Password" [(ngModel)]="newUser.password">
+      </div>
+      <div class="col-md-3">
+        <input class="form-control" placeholder="Role" [(ngModel)]="newUser.role">
+      </div>
+      <div class="col-md-3">
+        <button class="btn btn-primary w-100" (click)="updateUser()">UPDATE</button>
+      </div>
+    </div>
+  </div>
+  <!-- Bulk Import -->
+  <div class="card p-3 mb-4">
+    <h5>Bulk Import</h5>
+    <input type="file" accept=".xlsx,.xls" (change)="onExcelSelected($event)" class="form-control">
+
+    <div *ngIf="bulkErrors.length" class="alert alert-danger mt-2 p-2 small">
+      <b>Errors:</b>
+      <ul class="mb-0"><li *ngFor="let e of bulkErrors">{{ e }}</li></ul>
     </div>
 
-    <div class="card-body">
+    <table *ngIf="bulkPreview.length" class="table table-sm table-bordered mt-3">
+      <thead>
+        <tr><th>Username</th><th>Password</th><th>Role</th></tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let u of bulkPreview">
+          <td>{{ u.username }}</td>
+          <td>{{ u.password }}</td>
+          <td>{{ u.role }}</td>
+        </tr>
+      </tbody>
+    </table>
 
-      <input type="file" class="form-control mb-2" accept=".xlsx,.xls" (change)="onExcelSelected($event)" />
+    <button *ngIf="bulkPreview.length" class="btn btn-success mt-2" (click)="commitBulk()">Import</button>
+  </div>
 
-      <div *ngIf="bulkErrors.length" class="alert alert-danger small">
-        <b>Errors:</b>
-        <ul>
-          <li *ngFor="let e of bulkErrors">{{ e }}</li>
-        </ul>
-      </div>
+  <!-- Unapproved Users -->
+  <div *ngIf="unapprovedUsers.length" class="card p-3 mb-4">
+    <h5>Pending Approvals</h5>
 
-      <table *ngIf="bulkPreview.length" class="table table-bordered table-sm">
-        <thead class="table-light">
-          <tr>
-            <th>Username</th>
-            <th>Password</th>
-            <th>Role</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr *ngFor="let u of bulkPreview">
-            <td>{{ u.username }}</td>
-            <td>{{ u.password }}</td>
-            <td>{{ u.role }}</td>
-          </tr>
-        </tbody>
-      </table>
+    <button class="btn btn-success btn-sm mb-2" (click)="approveAll()">Approve All</button>
 
-      <button *ngIf="bulkPreview.length"
-              class="btn btn-primary w-100 mt-2"
-              (click)="commitBulk()">
-        Import Users
-      </button>
-
+    <div *ngFor="let u of unapprovedUsers" class="border p-2 mb-2 rounded">
+      <b>{{ u.username }}</b> ({{ u.role }})
+      <button class="btn btn-sm btn-success float-end" (click)="approveUser(u)">Approve</button>
     </div>
   </div>
 
-  <!-- ===================== UNAPPROVED USERS ===================== -->
-  <div *ngIf="unapprovedUsers.length" class="card mb-4">
-    <div class="card-header fw-bold">Pending Approvals</div>
-    <div class="card-body">
+  <!-- All Users Table -->
+  <div class="card p-3">
+    <h5>All Users</h5>
 
-      <div *ngFor="let user of unapprovedUsers" class="border rounded p-2 mb-2">
-        <b>{{ user.username }}</b> ({{ user.role }})
-        <button class="btn btn-sm btn-success float-end" (click)="approveUser(user)">Approve</button>
+    <table class="table table-hover">
+      <thead>
+        <tr>
+          <th (click)="sort('username')" class="sortable">Username</th>
+          <th (click)="sort('role')" class="sortable">Role</th>
+          <th>Approved</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+
+      <tbody>
+        <tr *ngFor="let u of paginatedUsers">
+          <td>{{ u.username }}</td>
+          <td>{{ u.role }}</td>
+          <td>{{ u.isApproved }}</td>
+          <td>
+            <button class="btn btn-sm btn-outline-primary" (click)="selectUser(u)">Edit</button>
+            <button class="btn btn-sm btn-outline-danger ms-1" (click)="deleteUser(u._id)">Delete</button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="d-flex justify-content-between align-items-center">
+      <button class="btn btn-sm btn-outline-secondary" (click)="prevPage()" [disabled]="page <= 1">Prev</button>
+
+      <div>
+        <button *ngFor="let p of [].constructor(totalPages); let i=index"
+                (click)="goToPage(i+1)"
+                class="btn btn-sm"
+                [ngClass]="page===i+1 ? 'btn-primary' : 'btn-outline-secondary'">
+          {{ i+1 }}
+        </button>
       </div>
 
+      <button class="btn btn-sm btn-outline-secondary" (click)="nextPage()" [disabled]="page >= totalPages">Next</button>
     </div>
   </div>
 
-  <!-- ===================== ALL USERS ===================== -->
-  <div class="card mb-4">
-    <div class="card-header fw-bold">All Users</div>
-    <div class="card-body">
+  <!-- Edit User -->
+  <div *ngIf="selectedUser" class="card p-3 mt-4">
+    <h5>Edit User</h5>
 
-      <div *ngFor="let user of users" class="border rounded p-2 mb-2">
-        <b>{{ user.username }}</b> ({{ user.role }}) —
-        Approved: <b>{{ user.isApproved }}</b>
+    <input class="form-control mb-2" [(ngModel)]="selectedUser.username">
+    <input class="form-control mb-2" [(ngModel)]="selectedUser.role">
 
-        <button class="btn btn-sm btn-primary ms-2" (click)="selectUser(user)">Edit</button>
-        <button class="btn btn-sm btn-danger float-end" (click)="deleteUser(user._id)">Delete</button>
-      </div>
-
-    </div>
-  </div>
-
-  <!-- ===================== EDIT USER ===================== -->
-  <div *ngIf="selectedUser" class="card mb-4">
-    <div class="card-header fw-bold">Edit User</div>
-    <div class="card-body">
-
-      <div class="row g-2">
-        <div class="col-md-4">
-          <label>Username</label>
-          <input class="form-control" [(ngModel)]="selectedUser.username" />
-        </div>
-
-        <div class="col-md-4">
-          <label>Password</label>
-          <input class="form-control" type="password" [(ngModel)]="selectedUser.password" />
-        </div>
-
-        <div class="col-md-4">
-          <label>Role</label>
-          <input class="form-control" [(ngModel)]="selectedUser.role" />
-        </div>
-
-        <div class="col-12 mt-2">
-          <button class="btn btn-primary" (click)="updateUser()">Update</button>
-          <button class="btn btn-secondary ms-2" (click)="selectedUser = null">Cancel</button>
-        </div>
-
-      </div>
-
-    </div>
+    <button class="btn btn-primary" (click)="updateUser()">Update</button>
+    <button class="btn btn-secondary ms-2" (click)="selectedUser=null">Cancel</button>
   </div>
 
 </div>

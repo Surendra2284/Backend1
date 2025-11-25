@@ -8,16 +8,23 @@ import * as XLSX from 'xlsx';
   styleUrls: ['./user.component.css']
 })
 export class UserComponent implements OnInit {
+
   users: any[] = [];
   unapprovedUsers: any[] = [];
+  filteredUsers: any[] = [];
   selectedUser: any = null;
 
+  // Forms
   newUser = { username: '', password: '', role: '', isApproved: false };
   message = '';
 
-  // BULK IMPORT
+  // Bulk import
   bulkPreview: any[] = [];
   bulkErrors: string[] = [];
+
+  // Pagination
+  page = 1;
+  pageSize = 10;
 
   constructor(private userService: UserService) {}
 
@@ -26,63 +33,87 @@ export class UserComponent implements OnInit {
     this.loadUnapprovedUsers();
   }
 
-  /* -------------------- LOAD USERS -------------------- */
+  /* ------------------------- LOAD USERS ------------------------- */
 
   loadUsers(): void {
     this.userService.getUsers().subscribe({
-      next: (data) => this.users = Array.isArray(data) ? data : [],
-      error: (err) => console.error('Error loading users:', err)
+      next: (data) => {
+        this.users = Array.isArray(data) ? data : [];
+        this.filteredUsers = [...this.users];
+      },
+      error: (err) => console.error('Load users error:', err)
     });
   }
 
   loadUnapprovedUsers(): void {
     this.userService.getPendingUsers().subscribe({
-      next: (data) => this.unapprovedUsers = Array.isArray(data) ? data : [],
-      error: (err) => console.error('Error loading pending users:', err)
+      next: (data) => this.unapprovedUsers = data,
+      error: (err) => console.error('Load pending users error:', err)
     });
   }
 
-  /* -------------------- CRUD -------------------- */
+  /* ------------------------- CRUD FUNCTIONS ------------------------- */
 
   selectUser(user: any): void {
-    this.selectedUser = { ...user }; // full edit, password change allowed
+    this.selectedUser = { ...user };
   }
 
   addUser(): void {
-    this.cleanUser(this.newUser);
+    this.newUser.username = this.newUser.username.trim();
 
     this.userService.addUser(this.newUser).subscribe({
       next: () => {
         this.message = 'User added successfully';
         this.loadUsers();
         this.newUser = { username: '', password: '', role: '', isApproved: false };
-      },
-      error: () => this.message = 'Failed to add user'
+      }
     });
   }
 
   updateUser(): void {
     if (!this.selectedUser?._id) return;
 
-    this.cleanUser(this.selectedUser);
+    this.selectedUser.username = this.selectedUser.username.trim();
 
     this.userService.updateUser(this.selectedUser._id, this.selectedUser).subscribe({
       next: () => {
         this.message = 'User updated successfully';
         this.loadUsers();
         this.selectedUser = null;
-      },
-      error: () => this.message = 'Failed to update user'
+      }
     });
   }
+updateUser1() {
+  if (!this.selectedUser?._id) {
+    alert("No user selected!");
+    return;
+  }
+
+  const updatedData = {
+    username: this.newUser.username,
+    password: this.newUser.password,
+    role: this.newUser.role
+  };
+
+  this.userService.updateUser(this.selectedUser._id, updatedData).subscribe({
+    next: () => {
+      alert("User Updated Successfully");
+      this.loadUsers();
+      this.newUser = { username: "", password: "", role: "",isApproved: this.selectedUser.isApproved ?? true };
+    },
+    error: (err) => {
+      console.error(err);
+      alert("Failed to update user");
+    }
+  });
+}
 
   deleteUser(id: string): void {
     this.userService.deleteUser(id).subscribe({
       next: () => {
         this.message = 'User deleted successfully';
         this.loadUsers();
-      },
-      error: () => this.message = 'Failed to delete user'
+      }
     });
   }
 
@@ -92,18 +123,102 @@ export class UserComponent implements OnInit {
         this.message = 'User approved successfully';
         this.loadUsers();
         this.loadUnapprovedUsers();
-      },
-      error: () => this.message = 'Approval failed'
+      }
     });
   }
 
-  /* -------------------- CLEAN USERNAME -------------------- */
+  approveAll(): void {
+    let count = 0;
 
-  cleanUser(user: any) {
-    user.username = String(user.username).trim().replace(/\s+/g, '');
+    this.unapprovedUsers.forEach(u => {
+      this.userService.approveUser(u._id).subscribe({
+        next: () => count++
+      });
+    });
+
+    setTimeout(() => {
+      alert(`Approved ${count} users`);
+      this.loadUsers();
+      this.loadUnapprovedUsers();
+    }, 1000);
   }
 
-  /* -------------------- BULK IMPORT -------------------- */
+  /* ------------------------- SEARCH + SORT ------------------------- */
+
+  searchText = '';
+
+  searchUsers() {
+    const q = this.searchText.toLowerCase().trim();
+
+    this.filteredUsers = this.users.filter(u =>
+      u.username.toLowerCase().includes(q) ||
+      u.role.toLowerCase().includes(q)
+    );
+
+    this.page = 1;
+  }
+
+  sortColumn = '';
+  sortDirection: 'asc' | 'desc' = 'asc';
+
+  sort(col: string) {
+    if (this.sortColumn === col) {
+      this.sortDirection = this.sortDirection === 'asc' ? 'desc' : 'asc';
+    } else {
+      this.sortColumn = col;
+      this.sortDirection = 'asc';
+    }
+
+    this.filteredUsers.sort((a, b) => {
+      const A = (a[col] || '').toString().toLowerCase();
+      const B = (b[col] || '').toString().toLowerCase();
+      return this.sortDirection === 'asc' ? A.localeCompare(B) : B.localeCompare(A);
+    });
+  }
+
+  /* ------------------------- PAGINATION ------------------------- */
+
+  get totalPages() {
+    return Math.ceil(this.filteredUsers.length / this.pageSize);
+  }
+
+  get paginatedUsers() {
+    const start = (this.page - 1) * this.pageSize;
+    return this.filteredUsers.slice(start, start + this.pageSize);
+  }
+
+  prevPage() {
+    if (this.page > 1) this.page--;
+  }
+
+  nextPage() {
+    if (this.page < this.totalPages) this.page++;
+  }
+
+  goToPage(n: number) {
+    this.page = n;
+  }
+
+  /* ------------------------- EXPORT ------------------------- */
+
+  exportUsers() {
+    const ws = XLSX.utils.json_to_sheet(this.users);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Users");
+    XLSX.writeFile(wb, "users_export.xlsx");
+  }
+
+  downloadTemplate() {
+    const sample = [
+      { Username: "john", Password: "12345", Role: "Teacher" }
+    ];
+    const ws = XLSX.utils.json_to_sheet(sample);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, ws, "Template");
+    XLSX.writeFile(wb, "user_template.xlsx");
+  }
+
+  /* ------------------------- BULK IMPORT ------------------------- */
 
   async onExcelSelected(event: any) {
     this.bulkPreview = [];
@@ -115,84 +230,43 @@ export class UserComponent implements OnInit {
     try {
       const data = await file.arrayBuffer();
       const wb = XLSX.read(data, { type: 'array' });
-      const sheet = wb.SheetNames[0];
-
-      const json = XLSX.utils.sheet_to_json<any>(wb.Sheets[sheet], { defval: "" });
+      const json = XLSX.utils.sheet_to_json<any>(wb.Sheets[wb.SheetNames[0]], { defval: "" });
 
       this.bulkPreview = json.map((row: any, i: number) => {
-        const username = (row.Username || row.username || '').trim().replace(/\s+/g, '');
-        const password = (row.Password || row.password || '').trim();
-        const role = (row.Role || row.role || '').trim();
+       const username = (row.Username || row.username || "").trim();
 
-        const obj = { username, password, role, isApproved: false };
+        const password = row.Password || row.password || "";
+        const role = row.Role || row.role || "";
 
-        const rowNum = i + 2;
+        if (!username) this.bulkErrors.push(`Row ${i + 2}: Missing username`);
+        if (!password) this.bulkErrors.push(`Row ${i + 2}: Missing password`);
+        if (!role) this.bulkErrors.push(`Row ${i + 2}: Missing role`);
 
-        if (!username) this.bulkErrors.push(`Row ${rowNum}: Missing username`);
-        if (!password) this.bulkErrors.push(`Row ${rowNum}: Missing password`);
-        if (!role) this.bulkErrors.push(`Row ${rowNum}: Missing role`);
-
-        return obj;
+        return { username, password, role, isApproved: false };
       });
 
-    } catch (err) {
-      this.bulkErrors.push("Invalid Excel file.");
+    } catch {
+      this.bulkErrors.push("Invalid Excel file");
     }
   }
 
-  /* -------------------- BULK COMMIT -------------------- */
-
-  async commitBulk() {
-    if (!this.bulkPreview.length) return alert("No user data found!");
-
-    if (this.bulkErrors.length) {
-      return alert("Fix all errors before importing!");
-    }
-
-    let added = 0;
+  commitBulk() {
+    let inserted = 0;
     let updated = 0;
-    let failed = 0;
 
-    const existingUsers = await this.userService.getUsers().toPromise();
+    this.bulkPreview.forEach(user => {
+      const existing = this.users.find(u => u.username === user.username);
 
-    for (const user of this.bulkPreview) {
-      this.cleanUser(user);
-
-      const exists = existingUsers.find((u: any) => u.username === user.username);
-
-      if (exists) {
-        // UPDATE
-        await this.userService.updateUser(exists._id, user).toPromise()
-          .then(() => updated++)
-          .catch(() => failed++);
+      if (existing) {
+        this.userService.updateUser(existing._id, user).subscribe(() => updated++);
       } else {
-        // ADD
-        await this.userService.addUser(user).toPromise()
-          .then(() => added++)
-          .catch(() => failed++);
+        this.userService.addUser(user).subscribe(() => inserted++);
       }
-    }
+    });
 
-    alert(
-      `Bulk Import Complete:\n` +
-      `Added: ${added}\nUpdated: ${updated}\nFailed: ${failed}`
-    );
-
-    this.loadUsers();
-    this.bulkPreview = [];
-  }
-
-  /* ------------------ DOWNLOAD EXCEL TEMPLATE ------------------ */
-
-  downloadTemplate() {
-    const sample = [
-      { Username: "sampleuser", Password: "123456", Role: "Student" }
-    ];
-
-    const ws = XLSX.utils.json_to_sheet(sample);
-    const wb = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(wb, ws, 'Template');
-
-    XLSX.writeFile(wb, 'users_template.xlsx');
+    setTimeout(() => {
+      alert(`Bulk Operation Completed:\nInserted: ${inserted}\nUpdated: ${updated}`);
+      this.loadUsers();
+    }, 1500);
   }
 }

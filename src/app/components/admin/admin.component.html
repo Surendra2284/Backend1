@@ -184,6 +184,7 @@
         <li (click)="selectTab('users')" [class.active]="activeTab === 'users'">users</li>
         <li (click)="selectTab('Homework')" [class.active]="activeTab === 'Homework'">Homework</li>
         <li (click)="selectTab('noticUpdate')" [class.active]="activeTab === 'noticUpdate'">
+        <li (click)="selectTab('Userprofile')" [class.active]="activeTab === 'Userprofile'">
   Notice Update
 </li>
 
@@ -222,6 +223,11 @@
       <div class="tab-content" *ngIf="activeTab === 'users'">
         <h2>Users Details </h2>
         <app-user></app-user>
+        
+      </div>
+      <div class="tab-content" *ngIf="activeTab === 'Userprofile'">
+        <h2>Users Profile Details </h2>
+        <app-user-profile></app-user-profile>
         
       </div>
       <div class="tab-content" *ngIf="activeTab === 'Homework'">

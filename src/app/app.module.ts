@@ -33,7 +33,7 @@ import { CardPreviewComponent } from './components/card-preview/card-preview.com
 
 import { MessagesComponent } from './messages/messages.component';
 import { NoticupdatestudentComponent} from './NoticeUpdateStudent/noticupdatestudent.component';
-
+import { UserProfileComponent } from './components/userdetail/user-profile.component';
 import { StudentExlDataService } from './services/StudentExlDataService.service';
 
 @NgModule({
@@ -58,6 +58,7 @@ import { StudentExlDataService } from './services/StudentExlDataService.service'
     ExcelUploadComponent,
     CardPreviewComponent,
     MessagesComponent,
+    UserProfileComponent,
     NoticupdatestudentComponent
   ],
   imports: [
