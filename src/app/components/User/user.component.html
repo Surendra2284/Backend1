@@ -1,43 +1,135 @@
-<div class="user-container">
-  <h2>User Management</h2>
+<div class="container py-3">
+
+  <h2 class="mb-3">👥 User Management</h2>
 
   <!-- Message -->
-  <p *ngIf="message" class="message">{{ message }}</p>
+  <div *ngIf="message" class="alert alert-info">{{ message }}</div>
 
-  <!-- Add New User -->
-  <div class="form-section">
-    <h3>Add New User</h3>
-    <input [(ngModel)]="newUser.username" placeholder="Username" />
-    <input [(ngModel)]="newUser.password" placeholder="Password" type="password" />
-    <input [(ngModel)]="newUser.role" placeholder="Role" />
-    <button class="btn btn-primary" (click)="addUser()">Add User</button>
-  </div>
+  <!-- ===================== ADD USER ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-bold">Add New User</div>
+    <div class="card-body">
 
-  <!-- Unapproved Users -->
-  <div *ngIf="unapprovedUsers.length > 0" class="user-list">
-    <h3>Unapproved Users</h3>
-    <div *ngFor="let user of unapprovedUsers" class="user-card">
-      <p><strong>{{ user.username }}</strong> ({{ user.role }})</p>
-      <button class="btn btn-approve" (click)="approveUser(user)">Approve</button>
+      <div class="row g-2">
+        <div class="col-md-3">
+          <input class="form-control" [(ngModel)]="newUser.username" placeholder="Username" />
+        </div>
+        <div class="col-md-3">
+          <input class="form-control" [(ngModel)]="newUser.password" placeholder="Password" type="password" />
+        </div>
+        <div class="col-md-3">
+          <input class="form-control" [(ngModel)]="newUser.role" placeholder="Role" />
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-primary w-100" (click)="addUser()">Add User</button>
+        </div>
+      </div>
+
     </div>
   </div>
 
-  <!-- All Users -->
-  <div class="user-list">
-    <h3>All Users</h3>
-    <div *ngFor="let user of users" class="user-card">
-      <p><strong>{{ user.username }}</strong> ({{ user.role }}) - Approved: {{ user.isApproved }}</p>
-      <button class="btn btn-edit" (click)="selectUser(user)">Edit</button>
-      <button class="btn btn-danger" (click)="deleteUser(user._id)">Delete</button>
+  <!-- ===================== BULK IMPORT ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-bold d-flex justify-content-between">
+      <span>Bulk Import Users</span>
+      <button class="btn btn-sm btn-success" (click)="downloadTemplate()">Download Template</button>
+    </div>
+
+    <div class="card-body">
+
+      <input type="file" class="form-control mb-2" accept=".xlsx,.xls" (change)="onExcelSelected($event)" />
+
+      <div *ngIf="bulkErrors.length" class="alert alert-danger small">
+        <b>Errors:</b>
+        <ul>
+          <li *ngFor="let e of bulkErrors">{{ e }}</li>
+        </ul>
+      </div>
+
+      <table *ngIf="bulkPreview.length" class="table table-bordered table-sm">
+        <thead class="table-light">
+          <tr>
+            <th>Username</th>
+            <th>Password</th>
+            <th>Role</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let u of bulkPreview">
+            <td>{{ u.username }}</td>
+            <td>{{ u.password }}</td>
+            <td>{{ u.role }}</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <button *ngIf="bulkPreview.length"
+              class="btn btn-primary w-100 mt-2"
+              (click)="commitBulk()">
+        Import Users
+      </button>
+
     </div>
   </div>
 
-  <!-- Edit User -->
-  <div *ngIf="selectedUser" class="form-section">
-    <h3>Edit User</h3>
-    <input [(ngModel)]="selectedUser.username" placeholder="Username" />
-    <input [(ngModel)]="selectedUser.role" placeholder="Role" />
-    <button class="btn btn-primary" (click)="updateUser()">Update</button>
-    <button class="btn btn-secondary" (click)="selectedUser = null">Cancel</button>
+  <!-- ===================== UNAPPROVED USERS ===================== -->
+  <div *ngIf="unapprovedUsers.length" class="card mb-4">
+    <div class="card-header fw-bold">Pending Approvals</div>
+    <div class="card-body">
+
+      <div *ngFor="let user of unapprovedUsers" class="border rounded p-2 mb-2">
+        <b>{{ user.username }}</b> ({{ user.role }})
+        <button class="btn btn-sm btn-success float-end" (click)="approveUser(user)">Approve</button>
+      </div>
+
+    </div>
   </div>
+
+  <!-- ===================== ALL USERS ===================== -->
+  <div class="card mb-4">
+    <div class="card-header fw-bold">All Users</div>
+    <div class="card-body">
+
+      <div *ngFor="let user of users" class="border rounded p-2 mb-2">
+        <b>{{ user.username }}</b> ({{ user.role }}) —
+        Approved: <b>{{ user.isApproved }}</b>
+
+        <button class="btn btn-sm btn-primary ms-2" (click)="selectUser(user)">Edit</button>
+        <button class="btn btn-sm btn-danger float-end" (click)="deleteUser(user._id)">Delete</button>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ===================== EDIT USER ===================== -->
+  <div *ngIf="selectedUser" class="card mb-4">
+    <div class="card-header fw-bold">Edit User</div>
+    <div class="card-body">
+
+      <div class="row g-2">
+        <div class="col-md-4">
+          <label>Username</label>
+          <input class="form-control" [(ngModel)]="selectedUser.username" />
+        </div>
+
+        <div class="col-md-4">
+          <label>Password</label>
+          <input class="form-control" type="password" [(ngModel)]="selectedUser.password" />
+        </div>
+
+        <div class="col-md-4">
+          <label>Role</label>
+          <input class="form-control" [(ngModel)]="selectedUser.role" />
+        </div>
+
+        <div class="col-12 mt-2">
+          <button class="btn btn-primary" (click)="updateUser()">Update</button>
+          <button class="btn btn-secondary ms-2" (click)="selectedUser = null">Cancel</button>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
 </div>

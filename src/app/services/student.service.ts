@@ -73,6 +73,9 @@ bulkUpdateNoticeAndAttendance(file: File) {
       })
     );
   }
+  getAllClasses(): Observable<string[]> {
+  return this.http.get<string[]>(`${this.apiUrl}/classes/list`);
+}
 
   /** --- Update an Existing Student --- */
   updateStudent(studentId: number, student: Partial<Student>): Observable<any> {
@@ -110,9 +113,13 @@ bulkUpdateNoticeAndAttendance(file: File) {
       })
     );
   }
-getAllStudentsFull() {
-  return this.http.get<any[]>(`${this.apiUrl}/?limit=999999&skip=0`);
+getAllStudentsFull(): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}`, {
+    params: { limit: '999999', skip: '0' }
+  });
 }
+
+
 
 
   /** --- Search Students by Name --- */

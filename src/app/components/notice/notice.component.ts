@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { NoticeService, Notice } from '../../services/notice.service';
-
+import { UserService} from '../../services/user.service';
+import { StudentService} from '../../services/student.service';
 @Component({
   selector: 'app-notice',
   templateUrl: './notice.component.html',
@@ -15,19 +16,30 @@ export class NoticeComponent implements OnInit {
   currentNoticeId: string | null = null;
   lastNoticeid: string | null = null;
   roles = ['Admin', 'Student', 'Teacher', 'Principal'];
+  teachers: string[] = [];
+classList: string[] = [];
 
-  constructor(private fb: FormBuilder, private noticeService: NoticeService) {
+
+  constructor(private fb: FormBuilder, private noticeService: NoticeService,private userService: UserService,private studentService:StudentService) {
     this.noticeForm = this.fb.group({
       Noticeid: [{ value: '', disabled: true }, Validators.required], // readonly input
       name: ['', Validators.required],
       class: ['', Validators.required],
       Role: ['', Validators.required],
       Notice: [''],
-      classteacher: ['']
+      classteacher: ['', Validators.required]
     });
   }
 
   ngOnInit(): void {
+    const user = this.userService.getUserDetails();
+
+  // Auto-fill the notice creator's name
+  this.noticeForm.patchValue({
+    name: user.username
+  });
+  this.loadClasses();
+  this.loadTeachers();
     this.loadNotices();
     this.loadUnapprovedNotices();
   }
@@ -49,6 +61,7 @@ export class NoticeComponent implements OnInit {
       }
     });
   }
+
 
   // Load only unapproved notices
   loadUnapprovedNotices(): void {
@@ -136,4 +149,38 @@ export class NoticeComponent implements OnInit {
       }
     });
   }
+  loadTeachers() {
+  this.userService.getUsers().subscribe({
+    next: (users: any[]) => {
+
+      // Normalize all data
+      this.teachers = users
+        .filter(u => {
+          const role = (u.Role || u.role || "").toString().toLowerCase();
+          return role === "teacher";
+        })
+        .map(u => u.username)
+        .sort();
+    },
+
+    error: (err) => console.error("Failed to load teachers:", err)
+  });
+}
+
+
+loadClasses() {
+  this.studentService.getStudents().subscribe({
+    
+    next: (students: any[]) => {
+      this.classList = [
+        ...new Set(students.map(s => s.class).filter(Boolean))
+      ].sort();
+
+      console.log("Loaded class list:", this.classList);
+    },
+    error: (err) => console.error("Failed to load classes", err)
+  });
+}
+
+
 }

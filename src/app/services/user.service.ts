@@ -50,6 +50,13 @@ export class UserService {
     localStorage.setItem('userId', id);
     localStorage.setItem('username', name);
   }
+getUsersbyrole(): Observable<any[]> {
+  return this.http.get<any[]>(`${this.apiUrl}`);
+}
+
+bulkAddUsers(data: any[]): Observable<any> {
+  return this.http.post(`${this.apiUrl}/bulk`, { users: data });
+}
 
   getUserDetails(): { userId: string; username: string } {
     return {
