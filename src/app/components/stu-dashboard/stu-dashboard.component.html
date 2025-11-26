@@ -18,6 +18,7 @@
     <button [class.active]="activeTab === 'homework'" (click)="selectTab('homework')">📘 Homework</button>
     <button [class.active]="activeTab === 'attendance'" (click)="selectTab('attendance')">📊 Attendance</button>
     <button [class.active]="activeTab === 'notices'" (click)="selectTab('notices')">📢 Notices</button>
+    <button [class.active]="activeTab === 'Password'" (click)="selectTab('Password')">📢 Password</button>
   </div>
 
   <!-- ============================
@@ -125,6 +126,14 @@
     <ng-template #noNotices>
       <p class="empty">No notices posted yet.</p>
     </ng-template>
+  </section>
+
+<section class="Password" *ngIf="activeTab === 'Password'">
+    <h3>Change Password</h3>
+<app-user-profile></app-user-profile>
+    
+
+    
   </section>
 
 </div>
