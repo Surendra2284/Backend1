@@ -1,6 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
-import { UserService } from '../../services/user.service';
+import { UserService, User } from '../../services/user.service';
 
 @Component({
   selector: 'app-user-profile',
@@ -10,29 +10,36 @@ import { UserService } from '../../services/user.service';
 export class UserProfileComponent implements OnInit {
 
   profileForm!: FormGroup;
-  user: any = null;
+  user!: User;
   isAdmin = false;
   message = "";
+  loading = true;
 
   roles = ['Admin', 'Teacher', 'Student', 'Principal'];
 
   constructor(private fb: FormBuilder, private userService: UserService) {}
 
   ngOnInit() {
-    const stored = this.userService.getUserDetails();  // { userId, username }
-    this.user = stored;
-    this.isAdmin = stored.userId === 'Admin';
+    const logged = this.userService.getLoggedUser();
 
-    this.loadUserFromDB();
-  }
+    if (!logged.username) {
+      console.error("No logged-in user found");
+      this.loading = false;
+      return;
+    }
 
-  loadUserFromDB() {
-    this.userService.getUserById(this.user.userId).subscribe({
-      next: (u) => {
+    // Load user details from backend using username
+    this.userService.getUserByUsername(logged.username).subscribe({
+      next: (u: User) => {
         this.user = u;
+        this.isAdmin = u.role === 'Admin';
         this.buildForm();
+        this.loading = false;
       },
-      error: (err) => console.error("Failed to load user details", err)
+      error: () => {
+        console.error("Failed to load user");
+        this.loading = false;
+      }
     });
   }
 
@@ -40,10 +47,11 @@ export class UserProfileComponent implements OnInit {
     this.profileForm = this.fb.group({
       username: [{ value: this.user.username, disabled: !this.isAdmin }, Validators.required],
       role: [{ value: this.user.role, disabled: !this.isAdmin }, Validators.required],
-      password: [''], // optional
-      isApproved: [{ value: this.user.isApproved, disabled: !this.isAdmin }]
+      password: [''], // Only send if changed
+      isApproved: [{ value: this.user.isApproved, disabled: true }]
     });
   }
+
 
   saveChanges() {
     if (this.profileForm.invalid) {
@@ -53,17 +61,19 @@ export class UserProfileComponent implements OnInit {
 
     const data = this.profileForm.getRawValue();
 
-    if (!data.password?.trim()) {
-      delete data.password;  // do not overwrite password
+    // If password is blank → do not send it
+    if (!data.password || data.password.trim() === "") {
+      delete data.password;
     }
 
-    this.userService.updateUser(this.user._id, data).subscribe({
+    // Update user
+    this.userService.updateUser(this.user._id!, data).subscribe({
       next: () => {
-        this.message = "Updated successfully";
-        this.loadUserFromDB();
+        this.message = "Profile updated successfully";
       },
-      error: () => this.message = "Update failed"
+      error: () => {
+        this.message = "Update failed";
+      }
     });
   }
-
 }

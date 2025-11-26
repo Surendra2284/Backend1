@@ -29,7 +29,7 @@ progressFilterSubject: string = '';
 
   ngOnInit(): void {
     const userDetails = this.userService.getUserDetails();
-    this.role = userDetails.userId;
+    this.role = userDetails.role;
     this.username = userDetails.username;
 
     this.loadUnapprovedUsers();
