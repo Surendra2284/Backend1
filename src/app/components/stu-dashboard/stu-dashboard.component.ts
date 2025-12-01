@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, Renderer2 } from '@angular/core';
 import { of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
 
@@ -21,38 +21,49 @@ import {
   styleUrls: ['./stu-dashboard.component.css']
 })
 export class StuDashboardComponent implements OnInit {
-  student: any = null;
 
-  // Attendance
+  /* --------------------------
+     UI References (Sidebar)
+  ---------------------------*/
+  @ViewChild('studentSidebar') studentSidebar!: ElementRef;
+  @ViewChild('studentMainContent') studentMainContent!: ElementRef;
+
+  activeTab: string = 'dashboard';
+
+  /* --------------------------
+     Student Info
+  ---------------------------*/
+  student: any = null;
+  username = '';
+  studentId: number = 0;
+
+  /* --------------------------
+     Attendance
+  ---------------------------*/
   attendanceRecords: Attendance[] = [];
   weeklyAttendance: WeekAttendance[] = [];
   attendanceSummary = '';
+  attendancePercent = 0;
   attendanceError = '';
   loadingAttendance = false;
 
-  // Notices
-  classTeacherName = '';
+  /* --------------------------
+     Notices
+  ---------------------------*/
   notices: any[] = [];
+  classTeacherName = '';
 
-  // Auth / identity
-  username = '';
-
-  // studentId is numeric (for getProgressByStudent)
-  studentId: number = 0;
-
-  // Tabs
-  activeTab: string = 'homework';
-
-  // Progress / homework
+  /* --------------------------
+     Homework / Progress
+  ---------------------------*/
   myProgressList: StudentProgress[] = [];
   remarkMap: { [id: string]: string } = {};
+  homeworkDonePercent = 0;
 
-  // Filters
   fromDate: string = '';
   toDate: string = '';
   subjectFilter: string = '';
 
-  // UI state
   loading = false;
   message = '';
 
@@ -60,207 +71,200 @@ export class StuDashboardComponent implements OnInit {
     private studentService: StudentService,
     private attendanceService: AttendanceService,
     private progressService: StudentProgressService,
+    private renderer: Renderer2,
     private noticeService: NoticeService,
   ) {}
 
+  /* ----------------------------------------------
+     INIT: Load student, attendance, homework, etc.
+  -----------------------------------------------*/
   ngOnInit(): void {
-    const storedName = (localStorage.getItem('username') || '').trim();
-    this.username = storedName;
-
-    if (!storedName) {
-      console.warn('No student name found in localStorage');
-      this.attendanceError = 'No student name available';
+    this.username = (localStorage.getItem('username') || '').trim();
+    if (!this.username) {
+      this.attendanceError = 'No student name found';
       return;
     }
 
-    // Default range: last 7 days
+    // Default filter range: last 7 days
     this.toDate = this.today();
     this.fromDate = this.shiftDays(-7);
 
-    // 1) Find student by username (this is the ONLY way to get studentId)
-    this.studentService
-      .searchStudentsByName(storedName)
-      .pipe(
-        catchError((err) => {
-          console.warn('searchStudentsByName failed:', err);
-          return of([] as any[]);
-        })
-      )
-      .subscribe((students) => {
-        if (!students || students.length === 0) {
-          console.warn('No student found for name:', storedName);
-          this.attendanceError = 'Student record not found';
-          return;
-        }
-
-        // Use first matched student
-        this.student = students[0];
-        this.classTeacherName = this.student.classteacher ?? '—';
-
-        // ✅ Get numeric studentId safely
-        const rawId = this.student.studentId;
-        const parsedId =
-          typeof rawId === 'string' ? parseInt(rawId, 10) : Number(rawId);
-
-        if (!parsedId || isNaN(parsedId)) {
-          console.error('Student found but has invalid numeric studentId:', rawId);
-          this.attendanceError = 'Student ID not available for this record';
-          return;
-        }
-
-        this.studentId = parsedId;
-
-        // 2) Load attendance for this student
-        this.loadAttendanceByStudentName(storedName, 1);
-
-        // 3) Load notices for this student's class/teacher
-        this.loadNoticesForStudent();
-
-        // 4) Load progress / homework AFTER studentId is known
-        this.loadMyProgress();
-      });
+    // Step 1 — Get Student Record
+    this.loadStudentByName();
   }
 
-  /** Load notices logic */
-  private loadNoticesForStudent() {
-    const studentClass = (this.student?.class ?? '').toString();
-    const studentClassteacher = (this.student?.classteacher ?? '').toString();
+  /* ----------------------------------------------
+     SIDEBAR TOGGLE (MOBILE + DESKTOP)
+  -----------------------------------------------*/
+  toggleStudentSidebar() {
+    const sidebar = this.studentSidebar.nativeElement;
+    const main = this.studentMainContent.nativeElement;
 
-    if (!studentClass || !studentClassteacher) {
+    // Mobile drawer
+    if (window.innerWidth <= 768) {
+      sidebar.classList.toggle('open');
       return;
     }
 
-    this.noticeService
-      .getNoticesByClassTeacher(studentClassteacher)
-      .pipe(
-        catchError((err) => {
-          console.error('Error fetching notices by classTeacherName:', err);
-          return of([] as any[]);
-        })
-      )
-      .subscribe((noticesFromApi) => {
-        this.notices = (Array.isArray(noticesFromApi)
-          ? noticesFromApi
-          : []
-        ).map((n: any) => ({
-          _id: n._id,
-          Noticeid: n.Noticeid,
-          name: n.name,
-          class: n.class ?? n.className ?? '',
-          role: n.Role ?? n.role ?? '',
-          title: n.title ?? n.Notice ?? n.name ?? 'Notice',
-          message: n.message ?? n.Notice ?? n.description ?? '',
-          classteacher: n.classteacher ?? this.classTeacherName,
-          isApproved: n.isApproved ?? false,
-          createdAt: n.createdAt ?? n.created_at ?? null,
-        }));
-      });
+    // Desktop collapse mode
+    if (sidebar.classList.contains('collapsed')) {
+      sidebar.classList.remove('collapsed');
+      main.classList.remove('expanded');
+    } else {
+      sidebar.classList.add('collapsed');
+      main.classList.add('expanded');
+    }
   }
 
   selectTab(tab: string) {
     this.activeTab = tab;
   }
 
+  /* ----------------------------------------------
+       LOAD STUDENT
+  -----------------------------------------------*/
+  private loadStudentByName() {
+    this.studentService
+      .searchStudentsByName(this.username)
+      .pipe(catchError(() => of([])))
+      .subscribe((students) => {
+        if (!students.length) {
+          this.attendanceError = 'Student not found';
+          return;
+        }
+
+        this.student = students[0];
+        this.classTeacherName = this.student.classteacher ?? '—';
+
+        // Convert studentId to number
+        const idVal = Number(this.student.studentId);
+        if (!idVal || isNaN(idVal)) {
+          this.attendanceError = 'Invalid studentId';
+          return;
+        }
+        this.studentId = idVal;
+
+        // Load dependent data
+        this.loadAttendanceByStudentName(this.username);
+        this.loadNoticesForStudent();
+        this.loadMyProgress();
+      });
+  }
+
+  /* ----------------------------------------------
+     NOTICES
+  -----------------------------------------------*/
+  private loadNoticesForStudent() {
+    const teacher = this.student?.classteacher ?? '';
+
+    if (!teacher) return;
+
+    this.noticeService.getNoticesByClassTeacher(teacher)
+      .pipe(catchError(() => of([])))
+      .subscribe((list) => {
+        this.notices = (list || []).map((n: any) => ({
+          _id: n._id,
+          Noticeid: n.Noticeid,
+          name: n.name,
+          class: n.class ?? '',
+          role: n.Role ?? '',
+          title: n.title ?? n.Notice ?? 'Notice',
+          message: n.message ?? n.Notice ?? '',
+          classteacher: n.classteacher ?? teacher,
+        }));
+      });
+  }
+
+  /* ----------------------------------------------
+      ATTENDANCE
+  -----------------------------------------------*/
   loadAttendanceByStudentName(name: string, weeks: number = 1) {
     this.loadingAttendance = true;
-    this.attendanceError = '';
 
-    this.attendanceService
-      .getAttendanceByStudentName(name, weeks)
+    this.attendanceService.getAttendanceByStudentName(name, weeks)
       .pipe(
-        catchError((err) => {
-          console.error('Error loading attendance by student name:', err);
-          this.attendanceError = err?.message || 'Failed to load attendance';
-          return of(null as StudentAttendanceByNameResponse | null);
-        }),
+        catchError(() => of(null)),
         finalize(() => (this.loadingAttendance = false))
       )
       .subscribe((resp) => {
         if (!resp) {
-          this.weeklyAttendance = [];
           this.attendanceRecords = [];
-          this.attendanceSummary = 'No attendance data';
+          this.weeklyAttendance = [];
           return;
         }
 
-        this.student = resp.student ?? this.student;
         this.weeklyAttendance = resp.weeks ?? [];
+        this.attendanceRecords = this.weeklyAttendance.flatMap(w => w.records || []);
 
-        this.attendanceRecords = this.weeklyAttendance.flatMap((w) =>
-          Array.isArray(w.records) ? w.records : []
-        );
-
-        this.attendanceSummary = this.summarizeAttendance(
-          this.attendanceRecords
-        );
+        this.attendanceSummary = this.summarizeAttendance(this.attendanceRecords);
+        this.calculateAttendancePercent();
       });
   }
 
-  summarizeAttendance(records: Attendance[] | undefined): string {
-    if (!records || !Array.isArray(records) || records.length === 0) {
-      return 'No attendance records';
-    }
+  summarizeAttendance(records: Attendance[]): string {
+    if (!records.length) return 'No attendance records';
 
-    const present = records.filter((r) => r.status === 'Present').length;
-    const absent = records.filter((r) => r.status === 'Absent').length;
-    const leave = records.filter((r) => r.status === 'Leave').length;
+    const present = records.filter(r => r.status === 'Present').length;
+    const absent = records.filter(r => r.status === 'Absent').length;
+    const leave = records.filter(r => r.status === 'Leave').length;
 
     return `Present: ${present}, Absent: ${absent}, Leave: ${leave}`;
   }
 
-  trackByWeek(_: number, item: WeekAttendance) {
-    return (item.weekStart ?? '') + '|' + (item.weekEnd ?? '');
-  }
-
-  trackByRecord(_: number, item: any) {
-    return item._id ?? item.date;
-  }
-
-  loadMyProgress() {
-    if (!this.studentId) {
-      console.warn('loadMyProgress called without studentId');
+  private calculateAttendancePercent() {
+    if (!this.attendanceRecords.length) {
+      this.attendancePercent = 0;
       return;
     }
 
+    const present = this.attendanceRecords.filter(r => r.status === 'Present').length;
+    this.attendancePercent = Math.round((present / this.attendanceRecords.length) * 100);
+  }
+
+  /* ----------------------------------------------
+      HOMEWORK / PROGRESS
+  -----------------------------------------------*/
+  loadMyProgress() {
+    if (!this.studentId) return;
+
     this.loading = true;
-    this.message = '';
 
     this.progressService
       .getProgressByStudent(this.studentId, {
-        fromDate: this.fromDate || undefined,
-        toDate: this.toDate || undefined,
+        fromDate: this.fromDate,
+        toDate: this.toDate,
       })
+      .pipe(finalize(() => (this.loading = false)))
       .subscribe({
         next: (list) => {
-          // Optional subject filter
-          if (this.subjectFilter) {
-            this.myProgressList = (list || []).filter(
-              (p) =>
-                p.subject &&
-                p.subject
-                  .toLowerCase()
-                  .includes(this.subjectFilter.toLowerCase())
-            );
-          } else {
-            this.myProgressList = list || [];
-          }
-
-          // Initialize remark map
+          this.myProgressList = this.applySubjectFilter(list || []);
           this.remarkMap = {};
-          this.myProgressList.forEach((p) => {
-            if (p._id) {
-              this.remarkMap[p._id] = p.studentRemark || '';
-            }
+
+          this.myProgressList.forEach(p => {
+            if (p._id) this.remarkMap[p._id] = p.studentRemark || '';
           });
 
-          this.loading = false;
+          this.calculateHomeworkDonePercent();
         },
-        error: (err) => {
-          console.error('Error loading student progress:', err);
-          this.message = 'Failed to load homework/progress.';
-          this.loading = false;
-        },
+        error: () => (this.message = 'Failed to load homework'),
       });
+  }
+
+  private applySubjectFilter(list: StudentProgress[]) {
+    if (!this.subjectFilter) return list;
+
+    const s = this.subjectFilter.toLowerCase();
+    return list.filter(p => p.subject?.toLowerCase().includes(s));
+  }
+
+  private calculateHomeworkDonePercent() {
+    if (!this.myProgressList.length) {
+      this.homeworkDonePercent = 0;
+      return;
+    }
+
+    const done = this.myProgressList.filter(p => p.status === 'Completed').length;
+    this.homeworkDonePercent = Math.round((done / this.myProgressList.length) * 100);
   }
 
   markHomeworkDone(p: StudentProgress) {
@@ -276,40 +280,33 @@ export class StuDashboardComponent implements OnInit {
 
     this.loading = true;
 
-    this.progressService.updateProgress(p._id, payload).subscribe({
-      next: (updated) => {
-        const idx = this.myProgressList.findIndex((x) => x._id === p._id);
-        if (idx >= 0) {
-          this.myProgressList[idx] = {
-            ...this.myProgressList[idx],
-            ...updated,
-          };
-        }
-        this.message = 'Marked as done!';
-        this.loading = false;
-      },
-      error: (err) => {
-        console.error('Error updating homework:', err);
-        alert('Failed to update homework status.');
-        this.loading = false;
-      },
-    });
+    this.progressService.updateProgress(p._id, payload)
+      .pipe(finalize(() => (this.loading = false)))
+      .subscribe({
+        next: (updated) => {
+          Object.assign(p, updated);
+          this.calculateHomeworkDonePercent();
+          this.message = 'Marked as done!';
+        },
+        error: () => alert('Failed to update homework'),
+      });
   }
 
+  /* ----------------------------------------------
+      UTILITIES
+  -----------------------------------------------*/
   private today(): string {
     const d = new Date();
-    const localISO = new Date(
-      d.getTime() - d.getTimezoneOffset() * 60000
-    ).toISOString();
-    return localISO.slice(0, 10);
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 10);
   }
 
   private shiftDays(offset: number): string {
     const d = new Date();
     d.setDate(d.getDate() + offset);
-    const localISO = new Date(
-      d.getTime() - d.getTimezoneOffset() * 60000
-    ).toISOString();
-    return localISO.slice(0, 10);
+    return new Date(d.getTime() - d.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 10);
   }
 }

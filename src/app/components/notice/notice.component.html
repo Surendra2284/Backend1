@@ -1,92 +1,106 @@
-<div class="notice-container">
+<div class="notice-wrapper">
 
   <!-- ==================== NOTICE FORM ==================== -->
-  <form [formGroup]="noticeForm" (ngSubmit)="onSubmit()" class="form">
+  <div class="card form-card shadow-lg">
 
-    <div class="form-row">
-      <div class="form-group">
-        <label>Notice ID:</label>
-        <input formControlName="Noticeid" readonly class="form-control" />
+    <h3 class="section-title">📢 Add / Update Notice</h3>
+
+    <form [formGroup]="noticeForm" (ngSubmit)="onSubmit()">
+
+      <div class="row">
+
+        <!-- Notice ID -->
+        <div class="form-group">
+          <label>Notice ID</label>
+          <input formControlName="Noticeid" readonly class="form-control readonly" />
+        </div>
+
+        <!-- Name -->
+        <div class="form-group">
+          <label>Your Name</label>
+          <input formControlName="name" class="form-control readonly" readonly />
+        </div>
       </div>
 
-      <div class="form-group">
-        <label>Name (Auto-filled):</label>
-        <input formControlName="name" class="form-control" readonly />
+      <div class="row">
+
+        <!-- Class -->
+        <div class="form-group">
+          <label>Class</label>
+          <select class="form-control" formControlName="class">
+            <option value="" disabled>Select Class</option>
+            <option *ngFor="let c of classList" [value]="c">{{ c }}</option>
+          </select>
+        </div>
+
+        <!-- Role -->
+        <div class="form-group">
+          <label>Role</label>
+          <select class="form-control" formControlName="Role">
+            <option value="" disabled>Select Role</option>
+            <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+          </select>
+
+          <small class="text-danger"
+            *ngIf="noticeForm.get('Role')?.touched && noticeForm.get('Role')?.invalid">
+            Role is required.
+          </small>
+        </div>
+
       </div>
-    </div>
 
-    <div class="form-row">
+      <!-- Notice Text -->
+      <div class="form-group full">
+        <label>Notice</label>
+        <textarea formControlName="Notice" rows="3" class="form-control"></textarea>
+      </div>
 
-      <!-- Class Dropdown -->
+      <!-- Class Teacher -->
       <div class="form-group">
-        <label>Class:</label>
-        <select formControlName="class" class="form-control">
-          <option value="" disabled>Select Class</option>
-          <option *ngFor="let c of classList" [value]="c">{{ c }}</option>
+        <label>Class Teacher</label>
+        <select formControlName="classteacher" class="form-control">
+          <option value="" disabled>Select Class Teacher</option>
+          <option *ngFor="let t of teachers" [value]="t">{{ t }}</option>
         </select>
       </div>
 
-      <!-- Role Dropdown -->
-      <div class="form-group">
-        <label>Role:</label>
-        <select formControlName="Role" class="form-control">
-          <option value="" disabled>Select Role</option>
-          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
-        </select>
+      <button type="submit" class="btn-save">
+        {{ isEdit ? 'Update Notice' : 'Add Notice' }}
+      </button>
 
-        <small
-          *ngIf="noticeForm.get('Role')?.invalid && noticeForm.get('Role')?.touched"
-          class="error-text"
-        >
-          Role is required.
-        </small>
-      </div>
-
-    </div>
-
-    <!-- Notice Text -->
-    <div class="form-group full-width">
-      <label>Notice:</label>
-      <textarea formControlName="Notice" rows="3" class="form-control"></textarea>
-    </div>
-
-    <!-- Class Teacher Dropdown -->
-    <div class="form-group">
-      <label>Class Teacher:</label>
-      <select formControlName="classteacher" class="form-control">
-        <option value="" disabled>Select Class Teacher</option>
-        <option *ngFor="let t of teachers" [value]="t">{{ t }}</option>
-      </select>
-    </div>
-
-    <button type="submit" class="btn btn-primary w-100 mt-2">
-      {{ isEdit ? 'Update Notice' : 'Add Notice' }}
-    </button>
-
-  </form>
+    </form>
+  </div>
 
   <!-- ==================== FILTERS ==================== -->
-  <div class="filter-section mt-4">
+  <div class="card filter-card shadow-sm">
 
-    <div class="filter-row">
-      <label>Filter by Class Teacher:</label>
-      <select #classTeacherInput class="form-control">
-        <option value="">All</option>
-        <option *ngFor="let t of teachers" [value]="t">{{ t }}</option>
-      </select>
-      <button class="btn btn-secondary"
+    <h4 class="filter-title">🔍 Filter Notices</h4>
+
+    <div class="row align-items-end">
+      <div class="form-group half">
+        <label>By Class Teacher</label>
+        <select #classTeacherInput class="form-control">
+          <option value="">All</option>
+          <option *ngFor="let t of teachers" [value]="t">{{ t }}</option>
+        </select>
+      </div>
+
+      <button class="btn-search"
               (click)="filterNoticesByClassTeacher(classTeacherInput.value)">
         Search
       </button>
     </div>
 
-    <div class="filter-row mt-2">
-      <label>Filter by Role:</label>
-      <select #roleInput class="form-control">
-        <option value="">All</option>
-        <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
-      </select>
-      <button class="btn btn-secondary"
+    <div class="row mt-3 align-items-end">
+      <div class="form-group half">
+        <label>By Role</label>
+        <select #roleInput class="form-control">
+          <option value="">All</option>
+          <option *ngFor="let role of roles" [value]="role">{{ role }}</option>
+        </select>
+      </div>
+
+      <button class="btn-search"
               (click)="filterNoticesByRole(roleInput.value)">
         Search
       </button>
@@ -95,75 +109,80 @@
   </div>
 
   <!-- ==================== APPROVED NOTICES ==================== -->
-  <h3 class="mt-4">Approved Notices</h3>
+  <div class="card table-card shadow-sm" *ngIf="notices.length > 0">
+    <h4 class="table-title">✔ Approved Notices</h4>
 
-  <table class="notice-table" *ngIf="notices.length > 0">
-    <thead>
-      <tr>
-        <th>Notice ID</th>
-        <th>Name</th>
-        <th>Class</th>
-        <th>Role</th>
-        <th>Notice</th>
-        <th>Class Teacher</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
+    <table class="school-table">
+      <thead>
+        <tr>
+          <th>Notice ID</th>
+          <th>Name</th>
+          <th>Class</th>
+          <th>Role</th>
+          <th>Notice</th>
+          <th>Class Teacher</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
 
-    <tbody>
-      <tr *ngFor="let notice of notices">
-        <td>{{ notice.Noticeid }}</td>
-        <td>{{ notice.name }}</td>
-        <td>{{ notice.class }}</td>
-        <td>{{ notice.Role }}</td>
-        <td>{{ notice.Notice }}</td>
-        <td>{{ notice.classteacher }}</td>
-        <td>
-          <button class="btn btn-sm btn-primary" (click)="editNotice(notice)">Edit</button>
-          <button class="btn btn-sm btn-danger ms-1"
-                  *ngIf="notice._id"
-                  (click)="deleteNotice(notice._id)">
-            Delete
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+      <tbody>
+        <tr *ngFor="let notice of notices">
+          <td>{{ notice.Noticeid }}</td>
+          <td>{{ notice.name }}</td>
+          <td>{{ notice.class }}</td>
+          <td>{{ notice.Role }}</td>
+          <td>{{ notice.Notice }}</td>
+          <td>{{ notice.classteacher }}</td>
+          <td>
+            <button class="btn-edit" (click)="editNotice(notice)">Edit</button>
+            <button class="btn-delete"
+                    *ngIf="notice._id"
+                    (click)="deleteNotice(notice._id)">
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
 
   <!-- ==================== PENDING NOTICES ==================== -->
-  <h3 *ngIf="unapprovedNotices.length > 0" class="mt-4">Pending Notices</h3>
+  <div class="card table-card shadow-sm" *ngIf="unapprovedNotices.length > 0">
+    <h4 class="table-title">⏳ Pending Notices</h4>
 
-  <table class="notice-table" *ngIf="unapprovedNotices.length > 0">
-    <thead>
-      <tr>
-        <th>Notice ID</th>
-        <th>Name</th>
-        <th>Class</th>
-        <th>Role</th>
-        <th>Notice</th>
-        <th>Class Teacher</th>
-        <th>Actions</th>
-      </tr>
-    </thead>
+    <table class="school-table">
+      <thead>
+        <tr>
+          <th>Notice ID</th>
+          <th>Name</th>
+          <th>Class</th>
+          <th>Role</th>
+          <th>Notice</th>
+          <th>Class Teacher</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
 
-    <tbody>
-      <tr *ngFor="let notice of unapprovedNotices">
-        <td>{{ notice.Noticeid }}</td>
-        <td>{{ notice.name }}</td>
-        <td>{{ notice.class }}</td>
-        <td>{{ notice.Role }}</td>
-        <td>{{ notice.Notice }}</td>
-        <td>{{ notice.classteacher }}</td>
-        <td>
-          <button class="btn btn-sm btn-success" (click)="approveNotice(notice)">Approve</button>
-          <button class="btn btn-sm btn-danger ms-1"
-                  *ngIf="notice._id"
-                  (click)="deleteNotice(notice._id)">
-            Delete
-          </button>
-        </td>
-      </tr>
-    </tbody>
-  </table>
+      <tbody>
+        <tr *ngFor="let notice of unapprovedNotices">
+          <td>{{ notice.Noticeid }}</td>
+          <td>{{ notice.name }}</td>
+          <td>{{ notice.class }}</td>
+          <td>{{ notice.Role }}</td>
+          <td>{{ notice.Notice }}</td>
+          <td>{{ notice.classteacher }}</td>
+          <td>
+            <button class="btn-approve" (click)="approveNotice(notice)">Approve</button>
+            <button class="btn-delete"
+                    *ngIf="notice._id"
+                    (click)="deleteNotice(notice._id)">
+              Delete
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+  </div>
 
 </div>

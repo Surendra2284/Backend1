@@ -1,319 +1,205 @@
-<div class="attendance-page container" [ngClass]="{ mobile: isMobile }">
+<div class="attendance-wrapper">
 
-  <!-- Header -->
-  <div class="att-header">
-    <div>
-      <h3 *ngIf="!isMobile">Attendance Reports & Marking</h3>
-      <h4 *ngIf="isMobile">Attendance</h4>
+  <!-- ======================
+       HEADER
+  ====================== -->
+  <div class="att-header fade-in">
+    <h2 class="title">
+      <span class="icon">📊</span>
+      Attendance Management
+    </h2>
 
-      <p class="subtitle" *ngIf="!isMobile">
-        Select class and date range to generate report. Add new attendance for selected class & date.
-      </p>
+    <p class="subtitle">
+      Mark attendance, filter reports & export results easily.
+    </p>
 
-      <p class="subtitle-mobile" *ngIf="isMobile">
-        Mark attendance & view report
-      </p>
-    </div>
+    <div *ngIf="message" class="toast">{{ message }}</div>
   </div>
 
-  <!-- Toast message -->
-  <div *ngIf="message" class="alert alert-info mt-2 py-2 text-center msg-mobile">
-    {{ message }}
-  </div>
-
-
-
-  <!-- ================================
-       MOBILE LAYOUT (Stacked Cards)
-     ================================ -->
+  <!-- ======================
+       MOBILE VIEW
+  ====================== -->
   <ng-container *ngIf="isMobile">
 
-    <!-- Add Attendance Card -->
-    <div class="card att-card mobile-card">
-      <div class="card-body">
+    <!-- Card : Mark Attendance -->
+    <div class="att-card slide-up">
 
-        <h5 class="card-title mb-3">Mark Attendance</h5>
+      <h3 class="section-title">Mark Attendance</h3>
 
-        <form [formGroup]="attendanceForm" (ngSubmit)="saveAttendance()">
+      <form [formGroup]="attendanceForm" (ngSubmit)="saveAttendance()">
 
-          <!-- Class -->
-          <input formControlName="className" class="form-control mb-2"
-                 placeholder="Class (e.g. 6A)" (blur)="onClassChange()" />
+        <input formControlName="className" class="input" placeholder="Class (e.g. 6A)"
+               (blur)="onClassChange()" />
 
-          <!-- Teacher -->
-          <input formControlName="teacher" class="form-control mb-2"
-                 placeholder="Teacher name" />
+        <input formControlName="teacher" class="input" placeholder="Teacher Name" />
 
-          <!-- Username -->
-          <input formControlName="username" class="form-control mb-2"
-                 placeholder="Your username" />
+        <input formControlName="username" class="input" placeholder="Your Username" />
 
-          <!-- Date + Status -->
-          <div class="row g-2 mb-2">
-            <div class="col-6">
-              <input formControlName="date" type="date" class="form-control" />
-            </div>
-            <div class="col-6">
-              <select formControlName="status" class="form-select">
-                <option>Present</option>
-                <option>Absent</option>
-                <option>Leave</option>
-              </select>
-            </div>
-          </div>
-
-          <!-- Students -->
-          <div class="student-box-mobile">
-            <div class="d-flex justify-content-between mb-1">
-              <strong>Students</strong>
-              <label class="small">
-                <input type="checkbox" (change)="toggleSelectAll($event)" [checked]="allSelected" />
-                Select all
-              </label>
-            </div>
-
-            <div class="mobile-student-list">
-              <div *ngFor="let s of students; let i = index"
-                   class="mobile-student-item">
-                <div class="d-flex justify-content-between align-items-center">
-
-                  <label class="flex-grow-1">
-                    {{ getStudentLabel(s) }}
-                    <div class="small text-muted">
-                      ID: {{ s.studentId }}
-                    </div>
-                  </label>
-
-                  <input type="checkbox"
-                         [(ngModel)]="s.selected"
-                         [ngModelOptions]="{ standalone: true }"
-                         class="form-check-input" />
-                </div>
-              </div>
-
-              <div *ngIf="!students.length" class="small text-muted">
-                Enter class name to load students.
-              </div>
-            </div>
-          </div>
-
-          <button type="submit" class="btn btn-success w-100 mt-3" [disabled]="loading">
-            Save Attendance
-          </button>
-
-        </form>
-      </div>
-    </div>
-
-
-
-    <!-- Filters (Collapsed for mobile) -->
-    <div class="card att-card mobile-card mt-3">
-      <div class="card-body">
-        <h5>Filters</h5>
-
-        <form [formGroup]="filterForm" (ngSubmit)="applyFilters()">
-
-          <input formControlName="className" class="form-control mb-2" placeholder="Class" />
-          <input formControlName="studentName" class="form-control mb-2" placeholder="Student name" />
-          <input formControlName="studentId" class="form-control mb-2" placeholder="Student ID" />
-          <input formControlName="username" class="form-control mb-2" placeholder="Marked by" />
-
-          <div class="row g-2">
-            <div class="col-6"><input type="date" formControlName="fromDate" class="form-control" /></div>
-            <div class="col-6"><input type="date" formControlName="toDate" class="form-control" /></div>
-          </div>
-
-          <select formControlName="status" class="form-select mt-2">
-            <option value="">All</option>
-            <option value="Present">Present</option>
-            <option value="Absent">Absent</option>
-            <option value="Leave">Leave</option>
+        <div class="row-2">
+          <input type="date" formControlName="date" class="input" />
+          <select formControlName="status" class="input">
+            <option>Present</option>
+            <option>Absent</option>
+            <option>Leave</option>
           </select>
-
-          <button type="submit" class="btn btn-primary w-100 mt-3">Apply Filters</button>
-
-        </form>
-      </div>
-    </div>
-
-
-    <!-- History Table (Mobile Friendly List) -->
-    <div class="card att-card mobile-card mt-3">
-      <div class="card-body">
-        <h5>Attendance History</h5>
-
-        <div *ngFor="let a of sortedHistory" class="mobile-history-item">
-
-          <div><strong>{{ getStudentName(a) }}</strong></div>
-          <div class="small">ID: {{ a.studentId }}</div>
-
-          <div class="row mt-1 small">
-            <div class="col-6">Date:</div><div class="col-6">{{ formatDate(a.date) }}</div>
-            <div class="col-6">Class:</div><div class="col-6">{{ a.className }}</div>
-            <div class="col-6">Teacher:</div><div class="col-6">{{ a.teacher }}</div>
-            <div class="col-6">By:</div><div class="col-6">{{ a.username }}</div>
-            <div class="col-6">Status:</div>
-            <div class="col-6">
-              <span class="badge"
-                [ngClass]="{
-                  'bg-success': a.status==='Present',
-                  'bg-danger': a.status==='Absent',
-                  'bg-warning': a.status==='Leave'
-                }">
-                {{ a.status }}
-              </span>
-            </div>
-          </div>
-
-          <button class="btn btn-outline-danger btn-sm w-100 mt-2"
-                  (click)="deleteAttendance(a._id || '')">
-            Delete
-          </button>
-
-          <hr />
         </div>
 
-        <p *ngIf="!sortedHistory.length" class="text-muted text-center small">
-          No records found
-        </p>
+        <!-- Students Box -->
+        <div class="student-box">
 
-      </div>
+          <div class="box-head">
+            <strong>Students</strong>
+
+            <label class="small">
+              <input type="checkbox" (change)="toggleSelectAll($event)" [checked]="allSelected" />
+              Select All
+            </label>
+          </div>
+
+          <div class="student-list">
+            <div *ngFor="let s of students">
+              <div class="student-item">
+                <div class="info">
+                  <strong>{{ getStudentLabel(s) }}</strong>
+                  <small>ID: {{ s.studentId }}</small>
+                </div>
+                <input type="checkbox" [(ngModel)]="s.selected"
+                       [ngModelOptions]="{standalone:true}" />
+              </div>
+            </div>
+
+            <p *ngIf="!students.length" class="empty">Enter class name to load students.</p>
+          </div>
+
+        </div>
+
+        <button class="btn-primary full">Save Attendance</button>
+
+      </form>
     </div>
+
+
+    <!-- Filters -->
+    <div class="att-card slide-up">
+
+      <h3 class="section-title">Filters</h3>
+
+      <form [formGroup]="filterForm" (ngSubmit)="applyFilters()">
+
+        <input formControlName="className" class="input" placeholder="Class" />
+        <input formControlName="studentName" class="input" placeholder="Student Name" />
+        <input formControlName="studentId" class="input" placeholder="Student ID" />
+        <input formControlName="username" class="input" placeholder="Marked By" />
+
+        <div class="row-2">
+          <input type="date" formControlName="fromDate" class="input" />
+          <input type="date" formControlName="toDate" class="input" />
+        </div>
+
+        <select class="input" formControlName="status">
+          <option value="">All</option>
+          <option value="Present">Present</option>
+          <option value="Absent">Absent</option>
+          <option value="Leave">Leave</option>
+        </select>
+
+        <button class="btn-secondary full">Apply Filters</button>
+      </form>
+    </div>
+
+
+    <!-- History -->
+    <div class="att-card slide-up">
+
+      <h3 class="section-title">Attendance History</h3>
+
+      <div *ngFor="let a of sortedHistory" class="history-item">
+        <strong>{{ getStudentName(a) }}</strong>
+        <small>ID: {{ a.studentId }}</small>
+
+        <div class="mini-grid">
+          <span>Date:</span><span>{{ formatDate(a.date) }}</span>
+          <span>Class:</span><span>{{ a.className }}</span>
+          <span>Teacher:</span><span>{{ a.teacher }}</span>
+          <span>By:</span><span>{{ a.username }}</span>
+          <span>Status:</span>
+          <span>
+            <span class="status" [class.present]="a.status==='Present'"
+                                [class.absent]="a.status==='Absent'"
+                                [class.leave]="a.status==='Leave'">
+              {{ a.status }}
+            </span>
+          </span>
+        </div>
+
+        <button class="btn-danger full small"
+                (click)="deleteAttendance(a._id || '')">
+          Delete
+        </button>
+
+        <hr>
+      </div>
+
+      <p *ngIf="!sortedHistory.length" class="empty">No records found</p>
+
+    </div>
+
 
     <!-- Absent List -->
-    <div class="card att-card mobile-card mt-3">
-      <div class="card-body">
-        <h5>Absent List</h5>
+    <div class="att-card slide-up">
+      <h3 class="section-title">Absent List</h3>
 
-        <div *ngFor="let a of absentList" class="mobile-absent-item">
-          <strong>{{ a.name }}</strong>
-          <div class="small">ID: {{ a.studentId }}</div>
+      <div *ngFor="let a of absentList" class="absent-item">
+        <strong>{{ a.name }}</strong>
+        <small>ID: {{ a.studentId }}</small>
 
-          <div class="mt-1 small">Absent on:</div>
-          <div class="small text-muted">
-            <span *ngFor="let d of a.dates; let last = last">
-              {{ d }}<span *ngIf="!last">, </span>
-            </span>
-          </div>
-          <hr />
+        <div class="dates">
+          <small *ngFor="let d of a.dates; let last = last">
+            {{ d }}<span *ngIf="!last">, </span>
+          </small>
         </div>
 
-        <p *ngIf="!absentList.length" class="text-muted small">
-          No absences.
-        </p>
+        <hr />
       </div>
+
+      <p *ngIf="!absentList.length" class="empty">No absences.</p>
     </div>
 
   </ng-container>
 
-<ng-container *ngIf="!isMobile">
-<div class="attendance-page container">
+  <!-- ======================
+       DESKTOP VIEW
+  ====================== -->
+  <ng-container *ngIf="!isMobile">
 
-  <!-- Header -->
-  <div class="att-header">
-    <div>
-      <h3>Attendance Reports & Marking</h3>
-      <p class="subtitle">
-        Select class and date range to generate report. You can also add new attendance
-        for the selected class & date.
-      </p>
-    </div>
-  </div>
+    <div class="desktop-grid">
 
-  <!-- Message / toast -->
-  <div *ngIf="message" class="alert alert-info py-2 mt-2">
-    {{ message }}
-  </div>
-
-  <div class="row mt-3">
-    <!-- LEFT: Add Attendance -->
-    <div class="col-md-4">
-      <div class="card att-card">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Add / Mark Attendance</h5>
+      <!-- Left panel -->
+      <div class="left-panel slide-left">
+        <div class="att-card">
+          <h3 class="section-title">Add / Mark Attendance</h3>
 
           <form [formGroup]="attendanceForm" (ngSubmit)="saveAttendance()">
-            <!-- Class -->
-            <div class="mb-2">
-              <label class="form-label">Class</label>
-              <input
-                formControlName="className"
-                class="form-control"
-                placeholder="Class name (e.g. 6A)"
-                (blur)="onClassChange()"
-              />
-              <div
-                *ngIf="
-                  attendanceForm.controls['className'].touched &&
-                  attendanceForm.controls['className'].invalid
-                "
-                class="text-danger small"
-              >
-                Required
-              </div>
-            </div>
 
-            <!-- Teacher -->
-            <div class="mb-2">
-              <label class="form-label">Teacher</label>
-              <input
-                formControlName="teacher"
-                class="form-control"
-                placeholder="Teacher name"
-              />
-              <div
-                *ngIf="
-                  attendanceForm.controls['teacher'].touched &&
-                  attendanceForm.controls['teacher'].invalid
-                "
-                class="text-danger small"
-              >
-                Required
-              </div>
-            </div>
+            <label>Class</label>
+            <input formControlName="className" class="input"
+                   placeholder="Class name (e.g. 8A)" (blur)="onClassChange()" />
 
-            <!-- Marked by username -->
-            <div class="mb-2">
-              <label class="form-label">Marked By (username)</label>
-              <input
-                formControlName="username"
-                class="form-control"
-                placeholder="Your username"
-              />
-              <div
-                *ngIf="
-                  attendanceForm.controls['username'].touched &&
-                  attendanceForm.controls['username'].invalid
-                "
-                class="text-danger small"
-              >
-                Required
-              </div>
-            </div>
+            <label>Teacher</label>
+            <input formControlName="teacher" class="input" placeholder="Teacher Name" />
 
-            <!-- Date + Status -->
-            <div class="row mb-2">
-              <div class="col-6">
-                <label class="form-label">Date</label>
-                <input
-                  formControlName="date"
-                  type="date"
-                  class="form-control"
-                />
-                <div
-                  *ngIf="
-                    attendanceForm.controls['date'].touched &&
-                    attendanceForm.controls['date'].invalid
-                  "
-                  class="text-danger small"
-                >
-                  Required
-                </div>
+            <label>Marked By</label>
+            <input formControlName="username" class="input" placeholder="Username" />
+
+            <div class="row-2">
+              <div>
+                <label>Date</label>
+                <input type="date" formControlName="date" class="input" />
               </div>
-              <div class="col-6">
-                <label class="form-label">Status (default for selected)</label>
-                <select formControlName="status" class="form-select">
+
+              <div>
+                <label>Status</label>
+                <select formControlName="status" class="input">
                   <option>Present</option>
                   <option>Absent</option>
                   <option>Leave</option>
@@ -321,300 +207,157 @@
               </div>
             </div>
 
-            <hr />
+            <!-- Students -->
+            <div class="student-box desktop-student-box">
+              <div class="box-head">
+                <strong>Students</strong>
 
-            <!-- Students list with checkboxes -->
-            <div class="mb-2">
-              <div class="d-flex align-items-center justify-content-between mb-1">
-                <strong>Students of selected class</strong>
-                <div>
-                  <input
-                    id="selectAllStudents"
-                    type="checkbox"
-                    (change)="toggleSelectAll($event)"
-                    [checked]="allSelected"
-                  />
-                  <label for="selectAllStudents" class="small ms-1"
-                    >Select all</label
-                  >
-                </div>
+                <label class="small">
+                  <input type="checkbox" (change)="toggleSelectAll($event)"
+                         [checked]="allSelected" />
+                  Select All
+                </label>
               </div>
 
-              <div class="students-list">
-                <div *ngIf="!students.length" class="small text-muted">
-                  No students loaded. Enter class name above and move focus out.
+              <div class="student-list big">
+                <div *ngIf="!students.length" class="empty small">
+                  Enter class name to load students.
                 </div>
 
-                <div
-                  *ngFor="let s of students; let i = index"
-                  class="form-check d-flex align-items-center student-row"
-                >
-                  <!-- Standalone ngModel -->
-                  <input
-                    class="form-check-input me-2"
-                    type="checkbox"
-                    [(ngModel)]="s.selected"
-                    [ngModelOptions]="{ standalone: true }"
-                    name="studentCheckbox{{ i }}"
-                    [id]="'student_' + i"
-                  />
+                <div *ngFor="let s of students" class="student-row big-row">
+                  <input type="checkbox" [(ngModel)]="s.selected"
+                         [ngModelOptions]="{standalone:true}" />
 
-                  <label class="form-check-label flex-grow-1" [for]="'student_' + i">
-                    <div class="stu-name">
-                      {{ getStudentLabel(s) || 'Unnamed' }}
-                    </div>
-                    <small class="text-muted">
-                      ID: {{ s.studentId || s._id || '-' }}
-                    </small>
-                  </label>
+                  <div>
+                    <strong>{{ getStudentLabel(s) }}</strong><br>
+                    <small>ID: {{ s.studentId }}</small>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div class="d-flex gap-2 mt-3">
-              <button
-                type="submit"
-                class="btn btn-success flex-grow-1"
-                [disabled]="loading"
-              >
-                Save Attendance
-              </button>
-              <button
-                type="button"
-                class="btn btn-outline-secondary"
-                (click)="clearSelections()"
-                [disabled]="loading"
-              >
-                Clear
-              </button>
-            </div>
+            <button class="btn-primary full mt-2">Save Attendance</button>
+
           </form>
         </div>
       </div>
-    </div>
 
-    <!-- RIGHT: Filters, History, Matrix, Absent List, Export -->
-    <div class="col-md-8">
-      <!-- Filters -->
-      <div class="card att-card mb-3">
-        <div class="card-body">
-          <h5 class="card-title mb-3">Report Filters</h5>
+      <!-- Right panel -->
+      <div class="right-panel slide-right">
+
+        <!-- Filters -->
+        <div class="att-card">
+          <h3 class="section-title">Filters</h3>
 
           <form [formGroup]="filterForm" (ngSubmit)="applyFilters()">
-            <div class="row g-2">
-              <div class="col-md-4">
-                <input
-                  formControlName="className"
-                  class="form-control"
-                  placeholder="Class (e.g. 6A)"
-                />
-              </div>
-              <div class="col-md-4">
-                <input
-                  formControlName="studentName"
-                  class="form-control"
-                  placeholder="Student name"
-                />
-              </div>
-              <div class="col-md-4">
-                <input
-                  formControlName="studentId"
-                  class="form-control"
-                  placeholder="Student ID"
-                />
-              </div>
+
+            <div class="row-3">
+              <input formControlName="className" class="input" placeholder="Class" />
+              <input formControlName="studentName" class="input" placeholder="Student" />
+              <input formControlName="studentId" class="input" placeholder="ID" />
             </div>
 
-            <div class="row g-2 mt-2">
-              <div class="col-md-4">
-                <input
-                  formControlName="username"
-                  class="form-control"
-                  placeholder="Marked by username"
-                />
-              </div>
-              <div class="col-md-4">
-                <input
-                  formControlName="fromDate"
-                  type="date"
-                  class="form-control"
-                  placeholder="From date"
-                />
-              </div>
-              <div class="col-md-4">
-                <input
-                  formControlName="toDate"
-                  type="date"
-                  class="form-control"
-                  placeholder="To date"
-                />
-              </div>
+            <div class="row-3 mt-2">
+              <input formControlName="username" class="input" placeholder="Marked By" />
+              <input formControlName="fromDate" type="date" class="input" />
+              <input formControlName="toDate" type="date" class="input" />
             </div>
 
-            <div class="row g-2 mt-2">
-              <div class="col-md-4">
-                <select formControlName="status" class="form-select">
-                  <option value="">All statuses</option>
-                  <option value="Present">Present</option>
-                  <option value="Absent">Absent</option>
-                  <option value="Leave">Leave</option>
-                </select>
-              </div>
+            <div class="row-2 mt-2">
+              <select formControlName="status" class="input">
+                <option value="">All Status</option>
+                <option value="Present">Present</option>
+                <option value="Absent">Absent</option>
+                <option value="Leave">Leave</option>
+              </select>
 
-              <div class="col-md-8 d-flex gap-2 justify-content-end mt-2 mt-md-0">
-                <button
-                  type="submit"
-                  class="btn btn-primary btn-sm"
-                  [disabled]="loading"
-                >
-                  Apply Filters
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-secondary btn-sm"
-                  (click)="clearFilters()"
-                >
-                  Clear
-                </button>
-                <button
-                  type="button"
-                  class="btn btn-outline-danger btn-sm"
-                  (click)="deleteAllInCurrentFilter()"
-                  [disabled]="loading || !attendances.length"
-                >
-                  Delete All (current filter)
-                </button>
-              </div>
+              <button class="btn-secondary full">Apply Filters</button>
             </div>
           </form>
         </div>
-      </div>
 
-      <!-- History Table -->
-      <div class="card att-card mb-3">
-        <div class="card-body p-0">
-          <div class="table-responsive">
-            <table class="table table-striped table-hover mb-0 history-table">
-              <thead class="table-light">
+
+        <!-- History Table -->
+        <div class="att-card fade-in">
+          <h3 class="section-title">Attendance History</h3>
+
+          <div class="table-wrapper">
+            <table class="themed-table">
+              <thead>
                 <tr>
-                  <th (click)="setSort('student')" class="sortable">
-                    Student
-                    <small *ngIf="sortKey === 'student'">({{ sortDir }})</small>
-                  </th>
-                  <th (click)="setSort('date')" class="sortable">
-                    Date
-                    <small *ngIf="sortKey === 'date'">({{ sortDir }})</small>
-                  </th>
-                  <th (click)="setSort('className')" class="sortable">
-                    Class
-                    <small *ngIf="sortKey === 'className'">({{ sortDir }})</small>
-                  </th>
-                  <th (click)="setSort('teacher')" class="sortable">
-                    Teacher
-                    <small *ngIf="sortKey === 'teacher'">({{ sortDir }})</small>
-                  </th>
-                  <th (click)="setSort('username')" class="sortable">
-                    By
-                    <small *ngIf="sortKey === 'username'">({{ sortDir }})</small>
-                  </th>
+                  <th>Student</th>
+                  <th>Date</th>
+                  <th>Class</th>
+                  <th>Teacher</th>
+                  <th>By</th>
                   <th>Status</th>
                   <th class="text-end">Delete</th>
                 </tr>
               </thead>
 
               <tbody>
-                <tr *ngFor="let a of sortedHistory; trackBy: trackByRecord">
+                <tr *ngFor="let a of sortedHistory">
                   <td>
-                    <div>{{ getStudentName(a) || '—' }}</div>
-                    <small class="text-muted">{{ getStudentId(a) }}</small>
+                    <strong>{{ getStudentName(a) }}</strong><br>
+                    <small>{{ a.studentId }}</small>
                   </td>
                   <td>{{ formatDate(a.date) }}</td>
-                  <td>{{ a.className || '—' }}</td>
-                  <td>{{ a.teacher || '—' }}</td>
-                  <td>{{ a.username || '—' }}</td>
+                  <td>{{ a.className }}</td>
+                  <td>{{ a.teacher }}</td>
+                  <td>{{ a.username }}</td>
                   <td>
-                    <span
-                      class="badge"
-                      [ngClass]="{
-                        'bg-success text-white': a.status === 'Present',
-                        'bg-danger text-white': a.status === 'Absent',
-                        'bg-warning text-dark': a.status === 'Leave'
-                      }"
-                    >
+                    <span class="status"
+                      [class.present]="a.status==='Present'"
+                      [class.absent]="a.status==='Absent'"
+                      [class.leave]="a.status==='Leave'">
                       {{ a.status }}
                     </span>
                   </td>
                   <td class="text-end">
-                    <button
-                      class="btn btn-outline-danger btn-sm"
-                      (click)="deleteAttendance(a._id || '')"
-                    >
+                    <button class="btn-danger small"
+                            (click)="deleteAttendance(a._id || '')">
                       Delete
                     </button>
                   </td>
                 </tr>
 
-                <tr *ngIf="!attendances.length">
-                  <td colspan="7" class="text-center small text-muted py-3">
-                    No attendance records for current filter.
-                  </td>
+                <tr *ngIf="!sortedHistory.length">
+                  <td colspan="7" class="empty text-center">No records found.</td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-      </div>
 
-      <!-- Matrix View (monthly grid) -->
-      <div class="card att-card mb-3">
-        <div class="card-body">
-          <h6 class="mb-2">Monthly Matrix View</h6>
-          <p class="small text-muted">
-            Each row is a student. Columns show attendance status for each date in
-            the selected range.
-          </p>
 
-          <div class="table-responsive matrix-wrap">
-            <table class="table table-bordered table-sm matrix-table">
+        <!-- Monthly Matrix -->
+        <div class="att-card">
+          <h3 class="section-title">Monthly Matrix</h3>
+
+          <div class="table-wrapper matrix">
+            <table class="matrix-table">
               <thead>
                 <tr>
-                  <th class="sticky-col">Student</th>
-                  <th class="sticky-col">ID</th>
-                  <th *ngFor="let d of matrixDates">
-                    {{ d | date: 'dd' }}
-                  </th>
+                  <th>Name</th>
+                  <th>ID</th>
+                  <th *ngFor="let d of matrixDates">{{ d | date:'dd' }}</th>
                 </tr>
               </thead>
+
               <tbody>
-                <tr *ngIf="!matrixRows.length">
-                  <td 
-  [attr.colspan]="2 + matrixDates.length"
-  class="text-center small text-muted py-2"
->
-  No data for matrix view.
-</td>
-
-                </tr>
-
                 <tr *ngFor="let row of matrixRows">
-                  <td class="sticky-col">{{ row.name }}</td>
-                  <td class="sticky-col">{{ row.studentId }}</td>
+                  <td>{{ row.name }}</td>
+                  <td>{{ row.studentId }}</td>
+
                   <td *ngFor="let d of matrixDates">
-                    <span
-                      [ngClass]="{
-                        'm-present': row.perDate[d] === 'Present',
-                        'm-absent': row.perDate[d] === 'Absent',
-                        'm-leave': row.perDate[d] === 'Leave'
-                      }"
-                    >
+                    <span class="matrix-cell"
+                      [class.present]="row.perDate[d]==='Present'"
+                      [class.absent]="row.perDate[d]==='Absent'"
+                      [class.leave]="row.perDate[d]==='Leave'">
                       {{
-                        row.perDate[d] === 'Present'
-                          ? 'P'
-                          : row.perDate[d] === 'Absent'
-                          ? 'A'
-                          : row.perDate[d] === 'Leave'
-                          ? 'L'
-                          : ''
+                        row.perDate[d]=='Present'? 'P' :
+                        row.perDate[d]=='Absent'? 'A' :
+                        row.perDate[d]=='Leave'? 'L' : ''
                       }}
                     </span>
                   </td>
@@ -622,62 +365,38 @@
               </tbody>
             </table>
           </div>
+
         </div>
-      </div>
 
-      <!-- Absent List -->
-      <div class="card att-card mb-3">
-        <div class="card-body">
-          <h6 class="mb-2">Absent List (for SMS / Notices)</h6>
-          <p class="small text-muted">
-            Students with at least one Absent record in the current filter range.
-          </p>
 
-          <div *ngIf="!absentList.length" class="small text-muted">
-            No absent records for current filter.
-          </div>
+        <!-- Absent List -->
+        <div class="att-card fade-in">
+          <h3 class="section-title">Absent List</h3>
 
-          <div
-            *ngFor="let a of absentList"
-            class="absent-row d-flex justify-content-between align-items-start"
-          >
-            <div>
-              <strong>{{ a.name }}</strong>
-              <div class="small text-muted">ID: {{ a.studentId }}</div>
-            </div>
-            <div class="small text-muted text-end">
-              <div>Absent on:</div>
-              <div>
-                <span *ngFor="let d of a.dates; let last = last">
-                  {{ d | date: 'dd MMM' }}<span *ngIf="!last">, </span>
-                </span>
-              </div>
+          <div *ngFor="let a of absentList" class="absent-row">
+            <strong>{{ a.name }}</strong> — <small>{{ a.studentId }}</small>
+
+            <div class="small text-muted">
+              <span *ngFor="let d of a.dates; let last = last">
+                {{ d }}<span *ngIf="!last">, </span>
+              </span>
             </div>
           </div>
+
+          <p *ngIf="!absentList.length" class="empty">No absences.</p>
         </div>
+
+
+        <!-- Export Buttons -->
+        <div class="export-bar">
+          <button class="btn-primary small" (click)="exportExcel()">Export Excel</button>
+          <button class="btn-secondary small" (click)="exportPDF()">Export PDF</button>
+        </div>
+
       </div>
 
-      <!-- Export buttons at bottom -->
-      <div class="export-bar d-flex justify-content-end gap-2 mt-2">
-        <button
-          type="button"
-          class="btn btn-sm btn-primary"
-          (click)="exportExcel()"
-          [disabled]="loading || !attendances.length"
-        >
-          Export to Excel
-        </button>
-        <button
-          type="button"
-          class="btn btn-sm btn-secondary"
-          (click)="exportPDF()"
-          [disabled]="loading || !attendances.length"
-        >
-          Export to PDF
-        </button>
-      </div>
     </div>
-  </div>
-</div>
-</ng-container>
+
+  </ng-container>
+
 </div>

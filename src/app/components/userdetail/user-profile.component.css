@@ -1,131 +1,106 @@
-/* ------------------------------
-   Main Container
------------------------------- */
-.edit-container {
-  max-width: 600px;
-  margin: 40px auto;
-  background: #ffffff;
-  padding: 25px 30px;
-  border-radius: 16px;
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
-  font-family: "Inter", "Segoe UI", sans-serif;
+.profile-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
 }
 
-/* ------------------------------
-   Header
------------------------------- */
-.edit-title {
+.profile-card {
+  width: 100%;
+  max-width: 480px;
+  background: #ffffff;
+  padding: 25px;
+  border-radius: 16px;
+  box-shadow: 0 4px 14px rgba(0,0,0,0.15);
+  border-top: 6px solid #4b1ccf;
+}
+
+.title {
+  margin: 0 0 18px;
   font-size: 26px;
   font-weight: 700;
-  color: #333;
-  margin-bottom: 20px;
   text-align: center;
+  color: #4b1ccf;
 }
 
-/* ------------------------------
-   Form Fields
------------------------------- */
+/* Success box */
+.success-box {
+  background: #e9ffe8;
+  border-left: 5px solid #22c35e;
+  padding: 10px 14px;
+  font-weight: 600;
+  margin-bottom: 15px;
+  border-radius: 6px;
+  color: #117b3a;
+}
+
+/* Group */
 .form-group {
-  margin-bottom: 18px;
+  margin-bottom: 15px;
 }
 
 .form-group label {
   font-weight: 600;
-  color: #444;
-  display: block;
+  color: #3a2d71;
   margin-bottom: 6px;
+  display: block;
 }
 
-.form-control {
+/* Inputs */
+.form-group input,
+.form-group select {
   width: 100%;
   padding: 10px 12px;
-  border-radius: 10px;
-  border: 1px solid #d4d4d4;
-  font-size: 15px;
-  transition: all 0.2s ease;
-}
-
-.form-control:focus {
-  border-color: #4e8cff;
-  box-shadow: 0 0 0 3px rgba(78, 140, 255, 0.2);
-}
-
-/* Disabled fields */
-.form-control[readonly] {
-  background: #f7f7f7;
-  cursor: not-allowed;
-}
-
-/* ------------------------------
-   Buttons
------------------------------- */
-.btn-save {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  background: #4e8cff;
-  border: none;
-  color: white;
-  font-size: 17px;
-  font-weight: 600;
-  transition: 0.2s;
-}
-
-.btn-save:hover {
-  background: #3e78e0;
-}
-
-.btn-cancel {
-  width: 100%;
-  padding: 12px;
-  border-radius: 10px;
-  background: #e7e7e7;
-  border: none;
-  color: #444;
-  font-size: 17px;
-  font-weight: 600;
-  margin-top: 10px;
-  transition: 0.2s;
-}
-
-.btn-cancel:hover {
-  background: #d5d5d5;
-}
-
-/* ------------------------------
-   Error Messages
------------------------------- */
-.error-text {
-  color: #d9534f;
-  font-size: 13px;
-  margin-top: 4px;
-}
-
-/* ------------------------------
-   Success Notification
------------------------------- */
-.success-message {
-  background: #daf6dd;
-  color: #2e7d32;
-  padding: 12px;
-  border-left: 4px solid #2e7d32;
-  margin-bottom: 15px;
   border-radius: 8px;
-  font-weight: 600;
+  border: 1px solid #cfc5fa;
+  background: #faf9ff;
+  font-size: 15px;
+  transition: 0.25s;
 }
 
-/* ------------------------------
-   Responsive Design
------------------------------- */
-@media (max-width: 600px) {
-  .edit-container {
-    padding: 20px;
-    margin: 20px;
-  }
+.form-group input:focus,
+.form-group select:focus {
+  border-color: #5a00c8;
+  box-shadow: 0 0 0 3px rgba(90, 0, 200, 0.15);
+  outline: none;
+}
 
-  .btn-save,
-  .btn-cancel {
-    font-size: 15px;
-    padding: 10px;
-  }
+/* Read-only fields for students/teachers */
+.readonly {
+  background: #f3f0ff !important;
+  cursor: not-allowed;
+  opacity: 0.8;
+}
+
+/* Hint and error */
+.hint {
+  font-size: 13px;
+  color: #6b6898;
+}
+
+.error {
+  font-size: 13px;
+  color: #e63946;
+}
+
+/* Save Button */
+.save-btn {
+  width: 100%;
+  background: #5a00c8;
+  padding: 12px;
+  border: none;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  border-radius: 10px;
+  transition: 0.25s;
+  margin-top: 5px;
+}
+
+.save-btn:hover {
+  background: #43009b;
+}
+
+.save-btn:disabled {
+  background: #b8a5e8;
+  cursor: not-allowed;
 }

@@ -1,345 +1,286 @@
-/* ============================================================
-   GLOBAL WRAPPER
-============================================================ */
-.dash-wrap {
-  padding: 20px;
-  font-family: "Poppins", sans-serif;
-  position: relative;
-  min-height: 100vh;
+:root {
+  --primary: #5a00c8;
+  --primary-dark: #3e0091;
+  --secondary: #0066ff;
+  --bg: #682ae3;
+  --white: #dc5454;
+  --shadow: 0 4px 14px rgba(0,0,0,0.12);
+  --border: #d7c9ff;
+  --text-dark: #2d0066;
 }
 
-/* Loading visual state */
-.dash-wrap.loading {
-  opacity: 0.6;
-  pointer-events: none;
-}
-
-/* ============================================================
-   HEADER / TITLE BAR
-============================================================ */
-.dash-bar {
+/* Layout */
+.teacher-dashboard {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 18px;
-  padding-bottom: 10px;
-  flex-wrap: wrap;
+  height: 100vh;
+  background: var(--bg);
+  overflow: hidden;
 }
 
-/* Title area */
-.sub {
-  font-size: 14px;
-  color: #0b5ed7;
+/* ========================= SIDEBAR ========================= */
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  position: fixed;
+  left: 0;
+  top: 0;
+  background: linear-gradient(180deg, var(--primary), var(--secondary));
+  padding: 20px 0;
+  color: rgb(23, 209, 51);
+  transition: 0.3s ease;
+  z-index: 100;
 }
 
-.sep {
-  margin: 0 6px;
-  color: #6c757d;
+.sidebar h2 {
+  text-align: center;
+  font-size: 22px;
+  margin-bottom: 25px;
 }
 
-/* ============================================================
-   TABS
-============================================================ */
-.tabs {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-}
-
-.tab {
-  border: none;
-  padding: 6px 14px;
+.nav-item {
+  padding: 15px 20px;
+  margin: 6px 12px;
   border-radius: 8px;
+  font-size: 17px;
   cursor: pointer;
-  background: #eaf2ff;
-  transition: 0.2s;
-  font-size: 14px;
+  transition: 0.25s;
 }
 
-.tab:hover {
-  background: #d2e4ff;
+.nav-item:hover {
+  background: rgba(255,255,255,0.25);
 }
 
-.tab._on {
-  background: #0b5ed7;
-  color: white !important;
-  font-weight: 700;
+.nav-item.active {
+  background: rgba(0,0,0,0.32);
+  font-weight: bold;
+  border-left: 4px solid rgb(113, 184, 214);
 }
 
-/* Pills / counters */
-.pill {
-  background: #e9ecef;
-  border-radius: 30px;
-  padding: 2px 8px;
-  margin-left: 5px;
-  font-size: 12px;
+/* Mobile Hidden */
+.sidebar.open {
+  transform: translateX(0);
 }
 
-.pill.ghost {
-  background: #eef4ff;
-  color: #0b5ed7;
+.sidebar {
+  transform: translateX(0);
 }
 
-.pill.good {
-  background: #e6f9ef;
-  color: #1ba94c;
+/* ========================= MENU BUTTON ========================= */
+.menu-btn {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  padding: 10px 12px;
+  background: var(--primary-dark);
+  color: rgb(16, 163, 13);
+  border-radius: 6px;
+  font-size: 20px;
+  z-index: 200;
 }
 
-/* ============================================================
-   PANELS
-============================================================ */
-.panel {
-  background: white;
-  border-radius: 12px;
-  padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+/* ========================= MAIN CONTENT ========================= */
+.main {
+  margin-left: 260px;
+  padding: 10px;
+  width: calc(100% - 260px);
+  height: 100vh;
+  overflow-y: auto;
+  transition: 0.3s;
 }
 
-.panel-head {
-  margin-bottom: 8px;
-}
-
-.section-divider {
+.main.expanded {
+  margin-left: 0;
   width: 100%;
 }
 
-/* Text muted */
-.muted {
-  color: #6c757d;
-  font-size: 13px;
+/* ========================= CARDS + CONTAINERS ========================= */
+.card {
+  background: var(--white);
+  padding: 20px;
+  border-radius: 14px;
+  box-shadow: var(--shadow);
+  margin-bottom: 20px;
 }
 
-/* ============================================================
-   STUDENT CARDS
-============================================================ */
+h1, h2 {
+  color: var(--primary-dark);
+  margin: 0 0 10px;
+}
+
+/* ========================= BANNER ========================= */
+.welcome-banner {
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+  align-items: center;
+}
+
+.banner-left {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.profile-photo {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  box-shadow: var(--shadow);
+  object-fit: cover;
+}
+
+.banner-info p {
+  margin: 4px 0;
+  color: var(--text-dark);
+}
+
+/* ========================= PROGRESS CARDS ========================= */
+.progress-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 15px;
+  margin-top: 15px;
+}
+
+.progress-card {
+  padding: 18px;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  text-align: center;
+  transition: 0.3s ease;
+}
+
+.progress-card:hover {
+  transform: translateY(-4px);
+}
+
+.progress-card .value {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--primary-dark);
+}
+
+.progress-card .label {
+  color: #777;
+}
+
+/* Animations */
+.animate-fade {
+  animation: fadeIn 0.7s ease;
+}
+
+.animate-up {
+  animation: slideUp 0.7s ease;
+}
+
+.animate-scale {
+  animation: zoomIn 0.7s ease;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; } to { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes zoomIn {
+  from { transform: scale(0.8); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}
+
+/* ====================== STUDENTS GRID ====================== */
 .students-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
-  gap: 14px;
+  grid-template-columns: repeat(auto-fit, minmax(240px,1fr));
+  gap: 15px;
 }
 
 .student-card {
-  background: #f8faff;
-  border: 1px solid #dce6f7;
+  padding: 15px;
+  background: var(--white);
   border-radius: 12px;
-  padding: 14px;
-  transition: 0.2s;
+  box-shadow: var(--shadow);
 }
 
-.student-card:hover {
-  background: #eef4ff;
-  transform: translateY(-2px);
+.actions {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 12px;
 }
 
-.student-card .name {
-  font-weight: 700;
-  font-size: 16px;
-  color: #0b5ed7;
-}
-
-.student-card .id {
-  font-size: 13px;
-  color: #6c757d;
-}
-
-/* Buttons inside cards */
-.btn.tiny {
-  padding: 4px 10px;
-  font-size: 12px;
-  border-radius: 6px;
+/* ====================== BUTTONS ====================== */
+.btn, .btn-primary {
+  background: var(--primary);
+  color: rgb(200, 16, 16);
   border: none;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 600;
   cursor: pointer;
+  transition: 0.25s;
 }
 
-.btn.tiny.danger {
-  background: #d9534f !important;
-  color: white !important;
+.btn:hover, .btn-primary:hover {
+  background: var(--primary-dark);
 }
 
-/* ============================================================
-   TABLE STYLES
-============================================================ */
-.table-wrap {
-  overflow-x: auto;
+.btn.danger {
+  background: #d9534f;
 }
 
-table {
+.btn.danger:hover {
+  background: #b83531;
+}
+
+.btn.tiny {
+  padding: 6px 10px;
+  font-size: 12px;
+}
+
+/* ====================== TABLES ====================== */
+.data-table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 14px;
 }
 
-thead {
-  background: #eef4ff;
-  border-bottom: 2px solid #d0dcf4;
+.data-table th,
+.data-table td {
+  border: 1px solid var(--border);
+  padding: 10px;
 }
 
-th {
-  text-align: left;
-  padding: 10px 12px;
-  font-weight: 700;
-  color: #0b5ed7;
-  white-space: nowrap;
+.data-table thead {
+  background: #ece4ff;
 }
 
-td {
-  padding: 10px 12px;
-  border-bottom: 1px solid #e6ebf5;
+/* ====================== NOTICE CARD ====================== */
+.notice-card {
+  padding: 12px;
+  background: var(--white);
+  box-shadow: var(--shadow);
+  border-radius: 10px;
+  margin-bottom: 12px;
 }
 
-tr:hover {
-  background: #f9fbff;
-}
-
-/* Fit columns */
-.fit {
-  width: 1%;
-  white-space: nowrap;
-}
-
-/* Empty row */
-.empty {
-  text-align: center;
-  padding: 20px;
-  color: #6c757d;
-}
-
-/* Student info in attendance table */
-.cell-stu .nm {
-  font-weight: 600;
-}
-
-.cell-stu .meta {
-  font-size: 12px;
-  color: #6c757d;
-}
-
-/* Status dropdown */
-.status-select {
-  min-width: 120px;
-}
-
-/* ============================================================
-   NOTICE LIST
-============================================================ */
-.notice-item {
-  background: #f8faff;
-  transition: 0.2s;
-}
-
-.notice-item:hover {
-  background: #eef4ff;
-}
-
-.n-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #0b5ed7;
-}
-
-/* ============================================================
-   HOMEWORK / PROGRESS SECTION
-============================================================ */
-.homework-box textarea {
-  resize: vertical;
-}
-
-/* Inputs in progress table */
-input[type="text"],
-input[type="number"],
-textarea,
-select {
-  outline: none;
-  transition: 0.2s;
-}
-
-input:focus,
-textarea:focus,
-select:focus {
-  border-color: #0b5ed7 !important;
-  box-shadow: 0 0 6px rgba(11, 94, 215, 0.3);
-}
-
-/* ============================================================
-   BUTTON STYLES
-============================================================ */
-.btn.primary {
-  background: #0b5ed7;
-  color: white;
-  border: none;
-  padding: 8px 14px;
-  border-radius: 8px;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.btn.primary:hover {
-  background: #094aa8;
-}
-
-.chip {
-  border: none;
-  cursor: pointer;
-  transition: 0.2s;
-}
-
-.chip:hover {
-  opacity: 0.9;
-  transform: translateY(-1px);
-}
-
-/* ============================================================
-   LOADING OVERLAY
-============================================================ */
-.loading-overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(255, 255, 255, 0.7);
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  z-index: 99;
-}
-
-.spinner {
-  width: 40px;
-  height: 40px;
-  border: 4px solid #d0dcf4;
-  border-top-color: #0b5ed7;
-  border-radius: 50%;
-  animation: spin 0.7s linear infinite;
-  margin-bottom: 8px;
-}
-
-@keyframes spin {
-  from { transform: rotate(0deg); }
-  to   { transform: rotate(360deg); }
-}
-
-/* ============================================================
-   RESPONSIVE (MOBILE)
-============================================================ */
+/* ====================== RESPONSIVE ====================== */
 @media (max-width: 768px) {
-  .dash-bar {
-    flex-direction: column;
-    text-align: center;
+  .menu-btn {
+    display: block;
   }
-
-  .tabs {
-    justify-content: center;
+  .sidebar {
+    transform: translateX(-260px);
   }
-
-  table th,
-  table td {
-    padding: 8px;
-    font-size: 13px;
+  .sidebar.open {
+    transform: translateX(0);
   }
-
-  .students-grid {
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  .main {
+    margin-left: 0;
+    width: 100%;
   }
 }

@@ -1,264 +1,381 @@
-/* 🌈 Base Container */
-.stu-dashboard-container {
-  font-family: "Poppins", sans-serif;
-  background: linear-gradient(135deg, #e3f2fd, #bbdefb);
-  min-height: 100vh;
-  padding: 30px;
-  color: #333;
+/* ====================================================
+   COLOR THEME VARIABLES
+==================================================== */
+:root {
+  --primary: #4d00d4;            
+  --primary-dark: #32008f;       
+  --secondary: #0080ff;          
+  --bg: #13337d;                 
+  --white: #a76969;
+  --shadow: 0 4px 14px rgba(0,0,0,0.15);
+
+  --hover: rgba(255,255,255,0.25);
+  --active-bg: rgba(0,0,0,0.40);
+  --text-dark: #303030;
 }
 
-/* 🧭 Header */
-.header {
-  text-align: center;
-  margin-bottom: 30px;
-}
-.header h1 {
-  font-size: 2rem;
-  color: #1976d2;
-  font-weight: 600;
-}
-.header p {
-  color: #555;
-  font-size: 1rem;
+/* ====================================================
+   OVERALL LAYOUT
+==================================================== */
+.student-dashboard {
+  width: 100%;
+  height: 100vh;
+  background: var(--bg);
+  display: flex;
+  overflow: hidden;
+  position: relative;
 }
 
-/* 🔍 Search Section */
-.search-section {
-  margin-bottom: 25px;
-  text-align: center;
-}
-.search-bar {
-  display: inline-flex;
-  gap: 10px;
-  align-items: center;
-}
-.search-bar input {
+/* MOBILE MENU BUTTON */
+.menu-btn {
+  display: none;
+  position: fixed;
+  top: 12px;
+  left: 12px;
+  background: var(--primary-dark);
+  color: rgb(21, 191, 89);
   padding: 10px 14px;
-  border-radius: 8px;
-  border: 1px solid #90caf9;
-  outline: none;
-  width: 250px;
-  transition: all 0.3s ease;
-}
-.search-bar input:focus {
-  border-color: #1976d2;
-  box-shadow: 0 0 5px rgba(25, 118, 210, 0.4);
-}
-.search-bar button {
-  background: #1976d2;
-  color: white;
-  padding: 10px 18px;
-  border: none;
-  border-radius: 8px;
+  border-radius: 6px;
   cursor: pointer;
-  transition: 0.3s;
-}
-.search-bar button:hover {
-  background: #0d47a1;
+  font-size: 18px;
+  z-index: 1000;
+  box-shadow: var(--shadow);
 }
 
-/* 🧾 Student Form */
-.student-form {
-  background: white;
-  border-radius: 12px;
+/* ====================================================
+   SIDEBAR (NOW FIXED & INDEPENDENT)
+==================================================== */
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background: linear-gradient(180deg, var(--primary), var(--secondary));
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 900;
+  color: rgb(142, 20, 20);
+  padding: 20px 0;
+  transition: transform 0.3s ease;
+}
+
+.sidebar h2 {
+  text-align: center;
+  font-size: 22px;
+  font-weight: bold;
+  margin-bottom: 15px;
+}
+
+/* Sidebar collapsed (desktop only) */
+.sidebar.collapsed {
+  transform: translateX(-260px);
+}
+
+/* Sidebar open (mobile drawer) */
+.sidebar.open {
+  transform: translateX(0) !important;
+}
+
+.nav-item {
+  padding: 14px 20px;
+  font-size: 17px;
+  cursor: pointer;
+  border-radius: 8px;
+  margin: 6px 12px;
+  color: #de08ba;
+  font-weight: 500;
+  transition: 0.25s ease;
+}
+
+.nav-item:hover {
+  background: var(--hover);
+}
+
+.nav-item.active {
+  background: var(--active-bg);
+  border-left: 4px solid #16195d;
+  font-weight: 600;
+}
+
+/* ====================================================
+   MAIN CONTENT (INDEPENDENT FROM SIDEBAR)
+==================================================== */
+.main {
+  margin-left: 260px;
+  width: calc(100% - 260px);
   padding: 25px;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-  margin-bottom: 40px;
-}
-.form-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 20px;
-}
-.form-field label {
-  font-weight: 600;
-  color: #444;
-  display: block;
-  margin-bottom: 5px;
-}
-.form-field input {
-  width: 100%;
-  padding: 10px;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  outline: none;
-  transition: all 0.3s ease;
-}
-.form-field input:focus {
-  border-color: #1976d2;
-  box-shadow: 0 0 5px rgba(25, 118, 210, 0.3);
+  height: 100vh;
+  overflow-y: auto;
+  transition: margin-left 0.3s ease;
 }
 
-/* 🎯 Form Buttons */
-.form-actions {
-  text-align: center;
-  margin-top: 20px;
+/* Desktop collapse mode */
+.main.expanded {
+  margin-left: 0;
+  width: 100%;
+}
+
+.main::-webkit-scrollbar {
+  width: 8px;
+}
+.main::-webkit-scrollbar-thumb {
+  background: var(--primary);
+  border-radius: 10px;
+}
+.main::-webkit-scrollbar-track {
+  background: #dcd2ff;
+}
+
+/* ====================================================
+   WELCOME BANNER (NEW CLEAN DESIGN)
+==================================================== */
+.welcome-banner {
   display: flex;
-  justify-content: center;
-  gap: 20px;
-}
-.btn-primary {
-  background: #1976d2;
-  color: white;
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.btn-primary:hover {
-  background: #0d47a1;
-}
-.btn-secondary {
-  background: #eeeeee;
-  color: #333;
-  padding: 10px 20px;
-  border-radius: 10px;
-  border: none;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.3s ease;
-}
-.btn-secondary:hover {
-  background: #e0e0e0;
+  justify-content: space-between;
+  align-items: center;
+  background: linear-gradient(135deg, var(--primary), var(--secondary));
+  color: rgb(4, 145, 39);
+  padding: 25px;
+  border-radius: 18px;
+  margin-bottom: 25px;
+  box-shadow: var(--shadow);
 }
 
-/* 🧍‍♂️ Table Section */
-.table-title {
-  text-align: center;
-  font-weight: 600;
-  color: #1565c0;
-  margin-bottom: 10px;
-}
-.table-container {
-  overflow-x: auto;
-  background: white;
-  border-radius: 12px;
-  padding: 15px;
-  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-}
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-thead {
-  background: #1976d2;
-  color: white;
-}
-th,
-td {
-  text-align: left;
-  padding: 12px 10px;
-  border-bottom: 1px solid #e0e0e0;
-}
-tbody tr:hover {
-  background: #e3f2fd;
-  transition: 0.3s;
-}
-.btn-edit {
-  background: #0288d1;
-  color: white;
-  border: none;
-  border-radius: 8px;
-  padding: 6px 12px;
-  cursor: pointer;
-  transition: 0.3s;
-}
-.btn-edit:hover {
-  background: #01579b;
-}
-
-/* 📱 Responsive */
-@media (max-width: 768px) {
-  .form-grid {
-    grid-template-columns: 1fr;
-  }
-  .search-bar input {
-    width: 100%;
-  }
-}
-.dashboard {
-  max-width: 900px;
-  margin: 2rem auto;
-  font-family: Arial, sans-serif;
-  color: #333;
-}
-
-.profile-card {
+.banner-left {
   display: flex;
   align-items: center;
-  background: #f8f9fa;
-  padding: 1rem;
-  border-radius: 8px;
-  margin-bottom: 2rem;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+  gap: 18px;
 }
 
-.profile-photo {
-  height: 100px;
-  width: 100px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 1rem;
-  border: 2px solid #ccc;
-}
-
-.profile-info h2 {
+.banner-left h1 {
   margin: 0;
-  color: #007bff;
+  font-size: 26px;
+  font-weight: 700;
 }
 
-.attendance-section {
-  margin-bottom: 2rem;
+.banner-left p {
+  margin: 3px 0 0;
+  opacity: 0.9;
 }
 
-.attendance-table {
+.welcome-banner .profile-photo {
+  width: 95px;
+  height: 95px;
+  border-radius: 14px;
+  object-fit: cover;
+  border: 3px solid rgb(4, 15, 116);
+  box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+}
+
+.banner-info {
+  text-align: right;
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+.banner-info p {
+  margin: 3px 0;
+  color: #07a02f;
+}
+
+/* ====================================================
+   PROGRESS CARDS
+==================================================== */
+.progress-cards {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+}
+
+.progress-card {
+  background: var(--white);
+  border-radius: 14px;
+  padding: 20px;
+  width: calc(33.3% - 12px);
+  box-shadow: var(--shadow);
+  text-align: center;
+  transition: 0.3s ease;
+}
+
+.progress-card h3 {
+  margin: 0;
+  color: var(--primary-dark);
+}
+
+.progress-card .value {
+  font-size: 32px;
+  font-weight: bold;
+  color: var(--primary);
+  margin: 6px 0;
+}
+
+.progress-card .label {
+  color: #666;
+  font-size: 14px;
+}
+
+.progress-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 18px rgba(0,0,0,0.2);
+}
+
+/* ====================================================
+   ANIMATIONS
+==================================================== */
+.animate-fade {
+  animation: fadeIn 0.9s ease forwards;
+  opacity: 0;
+}
+.animate-up {
+  animation: slideUp 0.8s ease forwards;
+  opacity: 0;
+}
+.animate-scale {
+  animation: scaleIn 0.7s ease forwards;
+  transform: scale(0.7);
+}
+
+@keyframes fadeIn {
+  to { opacity: 1; }
+}
+@keyframes slideUp {
+  from { transform: translateY(25px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+@keyframes scaleIn {
+  to { transform: scale(1); }
+}
+
+/* ====================================================
+   TABLES
+==================================================== */
+.data-table {
   width: 100%;
   border-collapse: collapse;
+  background: #efea9b;
+}
+.data-table th,
+.data-table td {
+  padding: 10px;
+  border: 1px solid #570707;
+}
+.data-table th {
+  background: #dbe6ff;
+}
+.data-table tr:nth-child(even) {
+  background: #f7f9ff;
 }
 
-.attendance-table th,
-.attendance-table td {
-  border: 1px solid #ddd;
-  padding: 0.5rem;
-  text-align: center;
+/* ====================================================
+   NOTICE CARDS
+==================================================== */
+.notice-card {
+  padding: 15px;
+  background: #ffffff;
+  border-left: 6px solid var(--primary);
+  border-radius: 10px;
+  box-shadow: var(--shadow);
+  margin-bottom: 15px;
 }
 
-.attendance-table th {
-  background: #007bff;
-  color: #fff;
+.notice-card h3 {
+  margin: 0 0 5px 0;
+  color: var(--primary-dark);
 }
 
-.attendance-table td.present {
-  background: #d4edda;
-  color: #155724;
+.notice-card small {
+  color: #555;
 }
 
-.attendance-table td.absent {
-  background: #f8d7da;
-  color: #721c24;
+/* ====================================================
+   RESPONSIVE (MOBILE FIXES)
+==================================================== */
+@media (max-width: 768px) {
+
+  /* Show mobile menu button */
+  .menu-btn {
+    display: block;
+  }
+
+  /* Sidebar default hidden on mobile */
+  .sidebar {
+    transform: translateX(-260px);
+  }
+
+  /* Main content always full-width */
+  .main {
+    margin-left: 0 !important;
+    width: 100% !important;
+    padding: 15px;
+  }
+
+  /* Welcome banner */
+  .welcome-banner {
+    flex-direction: column;
+    text-align: center;
+  }
+
+  .banner-left {
+    flex-direction: column;
+  }
+
+  .banner-info {
+    margin-top: 15px;
+    text-align: center;
+  }
+
+  /* Progress cards become full-width */
+  .progress-card {
+    width: 100% !important;
+  }
+
+  /* Tables shrink */
+  .data-table th,
+  .data-table td {
+    font-size: 13px;
+    padding: 6px;
+  }
+
+  /* Filters stack */
+  .filters {
+    flex-direction: column;
+  }
+  
+  @media (max-width: 768px) {
+
+  /* Sidebar starts hidden on mobile */
+  .sidebar {
+    transform: translateX(-260px);
+  }
+
+  /* When opened */
+  .sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  /* Main should NOT shift on mobile */
+  .main {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+}
+@media (max-width: 768px) {
+
+  /* Sidebar starts hidden on mobile */
+  .sidebar {
+    transform: translateX(-260px);
+  }
+
+  /* When opened */
+  .sidebar.open {
+    transform: translateX(0) !important;
+  }
+
+  /* Main should NOT shift on mobile */
+  .main {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
 }
 
-.attendance-table td.leave {
-  background: #fff3cd;
-  color: #856404;
-}
-
-.notices-section .notice-card {
-  background: #f1f1f1;
-  padding: 1rem;
-  margin-bottom: 1rem;
-  border-left: 4px solid #007bff;
-  border-radius: 4px;
-}
-
-.notices-section h4 {
-  margin: 0 0 0.5rem;
-  color: #007bff;
-}
-
-.empty {
-  color: #888;
-  font-style: italic;
 }

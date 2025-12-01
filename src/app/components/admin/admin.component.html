@@ -1,319 +1,357 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>School Admin Dashboard</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', sans-serif;
-      background: #f5f8ff;
-      margin: 0;
-      padding: 0;
-    }
+  <meta charset="UTF-8" />
+  <title>Admin Dashboard</title>
 
-    .admin-container {
-      max-width: 1000px;
-      margin: 30px auto;
-      padding: 20px;
-      background: #fff;
-      border-radius: 15px;
-      box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
-    }
+ <style>
+:root {
+  --primary: #005beA;        /* Sidebar blue */
+  --primary-dark: #003d99;   /* Headings */
+  --secondary: #00b7ff;      /* Gradient mix */
+  --bg: #e9f4ff;             /* Page background */
+  --white: #ffffff;
+  --shadow: 0 4px 14px rgba(0,0,0,0.12);
 
-    h1, h2 {
-      text-align: center;
-      color: #004080;
-    }
+  --hover-light: rgba(255,255,255,0.25);
+  --active-dark: rgba(0,0,0,0.35);
+}
 
-    .user-details {
-      background-color: #e6f0ff;
-      padding: 15px;
-      border-radius: 10px;
-      margin-bottom: 20px;
-    }
-
-    .user-details p {
-      font-size: 16px;
-      margin: 8px 0;
-    }
-
-    .action-buttons {
-      display: flex;
-      justify-content: center;
-      gap: 20px;
-      margin-bottom: 30px;
-    }
-
-    .btn {
-      padding: 12px 25px;
-      font-size: 16px;
-      border-radius: 30px;
-      border: none;
-      cursor: pointer;
-      transition: all 0.3s ease;
-      font-weight: bold;
-    }
-
-    .btn-primary {
-      background-color: #28a745;
-      color: rgba(255, 255, 255, 0.83);
-    }
-
-    .btn-primary:hover {
-      background-color: #1e7e34;
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(40, 167, 69, 0.4);
-    }
-
-    .btn-danger {
-      background-color: #dc3545;
-      color: rgba(255, 255, 255, 0.667);
-    }
-
-    .btn-danger:hover {
-      background-color: #bd2130;
-      transform: scale(1.05);
-      box-shadow: 0 4px 12px rgba(220, 53, 69, 0.4);
-    }
-
-    .tabs {
-      margin-top: 20px;
-    }
-
-    .tab-headings {
+body {
+  margin: 0;
+  font-family: "Segoe UI", sans-serif;
+  background: var(--bg);
+  height: 100vh;
+  overflow: hidden;
   display: flex;
-  justify-content: space-around;
-  background: linear-gradient(to right, #0052cc, #0073e6);
-  color: rgb(66, 13, 13);
-  padding: 10px;
-  border-radius: 10px;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  height: 100vh;
+  background: linear-gradient(180deg, var(--primary), var(--secondary));
+  color: rgb(140, 28, 28);
+  padding: 20px 0;
+  position: fixed;
+  display: flex;
+  flex-direction: column;
+  transition: 0.3s ease;
+}
+
+.sidebar h2 {
+  text-align: center;
   margin-bottom: 20px;
-  list-style-type: none;
+  font-size: 22px;
+  font-weight: 600;
+  color: #108139;
 }
 
-.tab-headings li {
+/* Navigation Buttons */
+.nav-item {
+  padding: 14px 20px;
+  font-size: 17px;
   cursor: pointer;
-  padding: 10px 20px;
-  border-radius: 5px;
-  transition: background 0.3s, transform 0.2s;
+  border-radius: 8px;
+  margin: 6px 10px;
+  color: #101280;
+  transition: 0.25s ease;
 }
 
-.tab-headings li:hover {
-  background: #3399ff;
-  transform: scale(1.05);
+.nav-item:hover {
+  background: var(--hover-light);
 }
 
-.tab-headings li.active {
-  background: #003d99;
+.nav-item.active {
+  background: var(--active-dark);
+  border-left: 4px solid #59031c;
   font-weight: bold;
 }
-    .tab-content {
-      background: #cf5b5b;
-      border: 1px solid #cccccc5d;
-      padding: 20px;
-      border-radius: 10px;
+
+/* Mobile Menu Button */
+.menu-btn {
+  display: none;
+  position: fixed;
+  left: 12px;
+  top: 12px;
+  background: var(--primary);
+  color: #f0d9d9;
+  padding: 10px 14px;
+  border-radius: 6px;
+  cursor: pointer;
+  z-index: 50;
+  box-shadow: var(--shadow);
+}
+
+/* Main Content */
+.main {
+  margin-left: 260px;
+  width: calc(100% - 260px);
+  padding: 25px;
+  overflow-y: auto;
+  height: 100vh;
+  transition: 0.3s ease;
+}
+
+.main.expanded {
+  margin-left: 0;
+  width: 100%;
+}
+
+h1 {
+  color: var(--primary-dark);
+  margin-top: 0;
+}
+
+/* Cards */
+.card {
+  background: var(--white);
+  border-radius: 14px;
+  padding: 20px;
+  margin-bottom: 22px;
+  box-shadow: var(--shadow);
+}
+
+/* Tables */
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th, td {
+  padding: 10px;
+  border: 1px solid #d3d3d3;
+}
+
+thead tr {
+  background: #d4e9ff;
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  border: none;
+  font-weight: 600;
+}
+
+.btn-primary {
+  background: #009e47;
+  color: white;
+}
+
+.btn-danger {
+  background: #e63946;
+  color: rgba(255, 255, 255, 0.793);
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  .menu-btn {
+    display: block;
+  }
+  .sidebar {
+    z-index: 40;
+  }
+  .sidebar.collapsed {
+    width: 0;
+    padding: 0;
+    opacity: 0;
+    overflow: hidden;
+  }
+  .main {
+    width: 100% !important;
+    margin-left: 0 !important;
+  }
+}
+</style>
+
+  <script>
+    function toggleSidebar() {
+      const sidebar = document.getElementById("sidebar");
+      const main = document.getElementById("main");
+      sidebar.classList.toggle("collapsed");
+      main.classList.toggle("expanded");
     }
-  </style>
+  </script>
 </head>
+
 <body>
 
-  <div class="admin-container">
-    <h1>Admin Dashboard</h1>
+  <!-- Mobile Menu Button -->
+  <div class="menu-btn" onclick="toggleSidebar()">☰ Menu</div>
 
-    <div class="user-details">
-      <h2>User Information</h2>
-      <p><strong>Username:</strong> {{ username }}</p>
-      <p><strong>Role:</strong> {{ role }}</p>
-    </div>
-<!-- Unapproved Users Section -->
-<div class="user-details" *ngIf="unapprovedUsers.length > 0">
-  <h2>Unapproved Users</h2>
-  <div *ngFor="let user of unapprovedUsers">
-    <p><strong>Username:</strong> {{ user.username }}</p>
-    <p><strong>Role:</strong> {{ user.role }}</p>
-    <button class="btn btn-primary" (click)="approveUser(user._id)">Approve</button>
-    <hr>
+  <!-- Sidebar -->
+  <div class="sidebar" id="sidebar">
+    <h2>Admin Panel</h2>
+
+    <div class="nav-item" (click)="selectTab('dashboard')" [class.active]="activeTab==='dashboard'">Dashboard</div>
+    <div class="nav-item" (click)="selectTab('student')" [class.active]="activeTab==='student'">Students</div>
+    <div class="nav-item" (click)="selectTab('teacher')" [class.active]="activeTab==='teacher'">Teachers</div>
+    <div class="nav-item" (click)="selectTab('notice')" [class.active]="activeTab==='notice'">Notice</div>
+    <div class="nav-item" (click)="selectTab('attendance')" [class.active]="activeTab==='attendance'">Attendance</div>
+    <div class="nav-item" (click)="selectTab('photo')" [class.active]="activeTab==='photo'">Photos</div>
+    <div class="nav-item" (click)="selectTab('users')" [class.active]="activeTab==='users'">Users</div>
+    <div class="nav-item" (click)="selectTab('Userprofile')" [class.active]="activeTab==='Userprofile'">User Profile</div>
+    <div class="nav-item" (click)="selectTab('Homework')" [class.active]="activeTab==='Homework'">Homework</div>
+    <div class="nav-item" (click)="selectTab('noticUpdate')" [class.active]="activeTab==='noticUpdate'">Notice Update</div>
   </div>
-</div>
 
-<!-- Notices Section -->
-<div class="user-details">
-  <h2>Recent Notices</h2>
-  <!-- Pending Notices -->
-  <h3>Pending Notices</h3>
-  <div *ngIf="pendingNotices.length > 0; else noPending">
-    <table>
-      <thead>
-        <tr>
-          <th>Notice ID</th>
-          <th>Title</th>
-          <th>Class</th>
-          <th>Role</th>
-          <th>Notice</th>
-          <th>Class Teacher</th>
-          <th>Actions</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr *ngFor="let notice of pendingNotices">
-          <td>{{ notice.Noticeid }}</td>
-          <td>{{ notice.name }}</td>
-          <td>{{ notice.class }}</td>
-          <td>{{ notice.Role }}</td>
-          <td>{{ notice.Notice }}</td>
-          <td>{{ notice.classteacher }}</td>
-          <td>
-            <button (click)="approveNotice(notice._id)">Approve</button>
-          </td>
-        </tr>
-      </tbody>
-    </table>
-  </div>
-  <ng-template #noPending>
-    <p>No pending notices.</p>
-  </ng-template>
-</div>
-</div>
-    <div class="tabs">
-      <ul class="tab-headings">
-        <li (click)="selectTab('student')" [class.active]="activeTab === 'student'">Student</li>
-        <li (click)="selectTab('teacher')" [class.active]="activeTab === 'teacher'">Teacher</li>
-        <li (click)="selectTab('notice')" [class.active]="activeTab === 'notice'">Notice</li>
-        <li (click)="selectTab('attendance')" [class.active]="activeTab === 'attendance'">Attendance</li>
-        <li (click)="selectTab('photo')" [class.active]="activeTab === 'photo'">Photo</li>
-        <li (click)="selectTab('users')" [class.active]="activeTab === 'users'">users</li>
-        <li (click)="selectTab('Homework')" [class.active]="activeTab === 'Homework'">Homework</li>
-        <li (click)="selectTab('noticUpdate')" [class.active]="activeTab === 'noticUpdate'">
-        <li (click)="selectTab('Userprofile')" [class.active]="activeTab === 'Userprofile'">
-  Notice Update
-</li>
+  <!-- Main Content Area -->
+  <div class="main" id="main">
 
-      </ul>
+    <!-- Dashboard -->
+    <div class="card" *ngIf="activeTab === 'dashboard'">
+      <h1>Welcome Admin</h1>
 
-      <div class="tab-content" *ngIf="activeTab === 'student'">
-        
-        <h2>Student</h2>
-        <app-student></app-student>
+      <div class="card">
+        <h2>User Information</h2>
+        <p><strong>Username:</strong> {{ username }}</p>
+        <p><strong>Role:</strong> {{ role }}</p>
       </div>
-      <div class="tab-content" *ngIf="activeTab === 'noticUpdate'">
-        
-  <h2>Notice & Attendance Bulk Update</h2>
+
+      <div class="card" *ngIf="unapprovedUsers.length > 0">
+        <h2>Unapproved Users</h2>
+        <div *ngFor="let user of unapprovedUsers">
+          <p><strong>{{ user.username }}</strong> — {{ user.role }}</p>
+          <button class="btn btn-primary" (click)="approveUser(user._id)">Approve</button>
+          <hr />
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Pending Notices</h2>
+        <table *ngIf="pendingNotices.length > 0; else noPending">
+          <thead>
+            <tr>
+              <th>ID</th><th>Title</th><th>Class</th><th>Role</th><th>Notice</th><th>Teacher</th><th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let n of pendingNotices">
+              <td>{{ n.Noticeid }}</td>
+              <td>{{ n.name }}</td>
+              <td>{{ n.class }}</td>
+              <td>{{ n.Role }}</td>
+              <td>{{ n.Notice }}</td>
+              <td>{{ n.classteacher }}</td>
+              <td>
+                <button class="btn btn-primary" (click)="approveNotice(n._id)">Approve</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+        <ng-template #noPending><p>No pending notices</p></ng-template>
+      </div>
+    </div>
+
+    <!-- Students -->
+    <div class="card" *ngIf="activeTab === 'student'">
+      <h2>Student</h2>
+      <app-student></app-student>
+    </div>
+
+    <!-- Teachers -->
+    <div class="card" *ngIf="activeTab === 'teacher'">
+      <h2>Teacher</h2>
+      <app-teacher></app-teacher>
+    </div>
+
+    <!-- Notice -->
+    <div class="card" *ngIf="activeTab === 'notice'">
+      <h2>Notice</h2>
+      <app-notice></app-notice>
+    </div>
+
+    <!-- Attendance -->
+    <div class="card" *ngIf="activeTab === 'attendance'">
+      <h2>Attendance</h2>
+      <app-attendance></app-attendance>
+    </div>
+
+    <!-- Photos -->
+    <div class="card" *ngIf="activeTab === 'photo'">
+      <h2>Photo Upload</h2>
+      <app-upload-photo></app-upload-photo>
+    </div>
+
+    <!-- Users -->
+    <div class="card" *ngIf="activeTab === 'users'">
+      <h2>User Details</h2>
+      <app-user></app-user>
+    </div>
+
+    <!-- User Profile -->
+    <div class="card" *ngIf="activeTab === 'Userprofile'">
+      <h2>Edit User Profile</h2>
+      <app-user-profile></app-user-profile>
+    </div>
+
+    <!-- *** ORIGINAL HOMEWORK SECTION (NO CHANGES TO LOGIC) *** -->
+    <div class="card" *ngIf="activeTab === 'Homework'">
+      <h2>Homework / Student Progress</h2>
+
+      <div class="panel-head">
+        <h3>Student Progress Records</h3>
+        <div class="muted">Admin can view and delete progress entries</div>
+      </div>
+
+      <!-- Filters -->
+      <div style="display:flex; gap:10px; margin:15px 0; flex-wrap: wrap;">
+        <input type="text" placeholder="Class (e.g., 10A)" [(ngModel)]="progressFilterClass"
+          style="padding:8px; border-radius:6px; border:1px solid #ccc;">
+
+        <input type="date" [(ngModel)]="progressFilterDate"
+          style="padding:8px; border-radius:6px; border:1px solid #ccc;">
+
+        <input type="text" placeholder="Subject (e.g., Math)" [(ngModel)]="progressFilterSubject"
+          style="padding:8px; border-radius:6px; border:1px solid #ccc;">
+
+        <button class="btn btn-primary" (click)="loadAllProgress()">
+          Search
+        </button>
+      </div>
+
+      <!-- Progress Table -->
+      <table class="table" style="width:100%; border-collapse:collapse;">
+        <thead>
+          <tr style="background: var(--light-blue);">
+            <th>Date</th><th>Student</th><th>Class</th><th>Subject</th>
+            <th>Status</th><th>Score</th><th>Homework</th><th>Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          <tr *ngFor="let p of adminProgressList">
+            <td>{{ p.date }}</td>
+            <td>{{ p.student ? p.studentId : '-' }}</td>
+            <td>{{ p.className }}</td>
+            <td>{{ p.subject }}</td>
+            <td>{{ p.status }}</td>
+            <td>{{ p.score || '-' }}</td>
+            <td>{{ p.homework }}</td>
+            <td>
+              <button class="btn btn-danger" (click)="deleteProgress(p._id!)">
+                Delete
+              </button>
+            </td>
+          </tr>
+
+          <tr *ngIf="adminProgressList.length === 0">
+            <td colspan="8" style="text-align:center;">No progress records found.</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Notice Update -->
+    <div class="card" *ngIf="activeTab === 'noticUpdate'">
+      <h2>Notice Bulk Update</h2>
       <app-notic-updatestudent></app-notic-updatestudent>
-      </div>
-
-      <div class="tab-content" *ngIf="activeTab === 'teacher'">
-        <h2>Teacher</h2>
-        <app-teacher></app-teacher>
-      </div>
-
-      <div class="tab-content" *ngIf="activeTab === 'notice'">
-        <h2>Notice</h2>
-        <app-notice></app-notice>
-      </div>
-
-      <div class="tab-content" *ngIf="activeTab === 'attendance'">
-        <h2>Attendance</h2>
-        <app-attendance></app-attendance>
-      </div>
-
-      <div class="tab-content" *ngIf="activeTab === 'photo'">
-        <h2>Desktop Photos</h2>
-        <app-upload-photo></app-upload-photo>
-      </div>
-      <div class="tab-content" *ngIf="activeTab === 'users'">
-        <h2>Users Details </h2>
-        <app-user></app-user>
-        
-      </div>
-      <div class="tab-content" *ngIf="activeTab === 'Userprofile'">
-        <h2>Users Profile Details </h2>
-        <app-user-profile></app-user-profile>
-        
-      </div>
-      <div class="tab-content" *ngIf="activeTab === 'Homework'">
-  <h2>Homework / Student Progress</h2>
-
-  <div class="panel-head">
-    <h3>Student Progress Records</h3>
-    <div class="muted">Admin can view and delete progress entries</div>
-  </div>
-
-  <!-- Filters -->
-  <div style="display:flex; gap:10px; margin:15px 0;">
-    <input 
-      type="text" 
-      placeholder="Class (e.g., 10A)" 
-      [(ngModel)]="progressFilterClass"
-      style="padding:8px; border-radius:6px; border:1px solid #ccc;"
-    >
-
-    <input 
-      type="date" 
-      [(ngModel)]="progressFilterDate"
-      style="padding:8px; border-radius:6px; border:1px solid #ccc;"
-    >
-
-    <input 
-      type="text" 
-      placeholder="Subject (e.g., Math)" 
-      [(ngModel)]="progressFilterSubject"
-      style="padding:8px; border-radius:6px; border:1px solid #ccc;"
-    >
-
-    <button 
-      class="btn btn-primary" 
-      style="padding:8px 14px;"
-      (click)="loadAllProgress()">
-      Search
-    </button>
-  </div>
-
-  <!-- Progress Table -->
-  <table class="table" style="width:100%; border-collapse:collapse;">
-    <thead>
-      <tr style="background:#e6f0ff;">
-        <th style="padding:10px; border:1px solid #ccc;">Date</th>
-        <th style="padding:10px; border:1px solid #ccc;">Student</th>
-        <th style="padding:10px; border:1px solid #ccc;">Class</th>
-        <th style="padding:10px; border:1px solid #ccc;">Subject</th>
-        <th style="padding:10px; border:1px solid #ccc;">Status</th>
-        <th style="padding:10px; border:1px solid #ccc;">Score</th>
-        <th style="padding:10px; border:1px solid #ccc;">Homework</th>
-        <th style="padding:10px; border:1px solid #ccc;">Action</th>
-      </tr>
-    </thead>
-
-    <tbody>
-      <tr *ngFor="let p of adminProgressList">
-        <td style="padding:8px; border:1px solid #ccc;">{{ p.date }}</td>
-        <td style="padding:8px; border:1px solid #ccc;">{{ p.student?<div class="_id"></div> || '-' }}</td>
-        <td style="padding:8px; border:1px solid #ccc;">{{ p.className }}</td>
-        <td style="padding:8px; border:1px solid #ccc;">{{ p.subject }}</td>
-        <td style="padding:8px; border:1px solid #ccc;">{{ p.status }}</td>
-        <td style="padding:8px; border:1px solid #ccc;">{{ p.score || '-' }}</td>
-        <td style="padding:8px; border:1px solid #ccc;">{{ p.homework }}</td>
-        <td style="padding:8px; border:1px solid #ccc;">
-          <button 
-            class="btn btn-danger" 
-            style="padding:5px 10px;"
-            (click)="deleteProgress(p._id!)">
-            Delete
-          </button>
-        </td>
-      </tr>
-
-      <!-- Empty state -->
-      <tr *ngIf="adminProgressList.length === 0">
-        <td colspan="8" style="padding:12px; text-align:center; border:1px solid #ccc;">
-          No progress records found.
-        </td>
-      </tr>
-    </tbody>
-  </table>
-</div>
-
     </div>
-  
+
+  </div>
 
 </body>
 </html>

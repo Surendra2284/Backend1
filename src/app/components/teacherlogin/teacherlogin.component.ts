@@ -29,6 +29,7 @@ import { forkJoin, of } from 'rxjs';
 export class TeacherloginComponent implements OnInit {
   // Tabs: 'students' | 'attendance' | 'notices' | 'progress'
   activeTab: string = 'students';
+  sidebarOpen: boolean = false;
 
   // Logged-in teacher data
   loggedInTeacher: Teacher | null = null;
@@ -119,6 +120,22 @@ export class TeacherloginComponent implements OnInit {
       },
     });
   }
+toggleTeacherSidebar() {
+  const sidebar = document.getElementById("teacherSidebar");
+  const main = document.getElementById("teacherMainContent");
+
+  if (!sidebar) return;
+
+  // Mobile behavior
+  if (window.innerWidth <= 768) {
+    sidebar.classList.toggle("open");
+    return;
+  }
+
+  // Desktop collapse behavior
+  sidebar.classList.toggle("collapsed");
+  if (main) main.classList.toggle("expanded");
+}
 
   selectTab(tab: string) {
     this.activeTab = tab;
@@ -166,6 +183,13 @@ export class TeacherloginComponent implements OnInit {
       error: (err) => console.error('Error loading students:', err),
     });
   }
+scrollToSection(id: string) {
+  const element = document.getElementById(id);
+  if (element) {
+    element.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+  this.sidebarOpen = false; // auto-close on mobile
+}
 
   editStudent(student: Student) {
     const newName = prompt('Edit name:', student.name);

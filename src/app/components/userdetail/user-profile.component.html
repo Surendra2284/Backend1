@@ -1,69 +1,63 @@
-<div class="container mt-4" *ngIf="profileForm">
-  <div class="card shadow-sm p-4">
-    <h3 class="mb-3 text-primary fw-bold">User Profile</h3>
+<div class="profile-wrapper" *ngIf="profileForm">
 
-    <!-- Success Message -->
-    <div *ngIf="message" class="alert alert-success py-2">
+  <div class="profile-card">
+
+    <h2 class="title">
+      🧑‍🏫 User Profile
+    </h2>
+
+    <!-- SUCCESS MESSAGE -->
+    <div *ngIf="message" class="success-box">
       {{ message }}
     </div>
 
     <form [formGroup]="profileForm" (ngSubmit)="saveChanges()">
 
       <!-- Username -->
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Username</label>
+      <div class="form-group">
+        <label>Username</label>
         <input
           formControlName="username"
-          class="form-control"
-          [class.bg-light]="!isAdmin"
           [readonly]="!isAdmin"
+          [class.readonly]="!isAdmin"
         />
-        <small class="text-danger" *ngIf="profileForm.get('username')?.touched && profileForm.get('username')?.invalid">
+        <small class="error" 
+               *ngIf="profileForm.get('username')?.touched && profileForm.get('username')?.invalid">
           Username is required
         </small>
       </div>
 
       <!-- Role -->
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Role</label>
-        <select
-          formControlName="role"
-          class="form-select"
-          [class.bg-light]="!isAdmin"
-          [disabled]="!isAdmin"
-        >
+      <div class="form-group">
+        <label>User Role</label>
+        <select formControlName="role" [disabled]="!isAdmin" [class.readonly]="!isAdmin">
           <option *ngFor="let r of roles" [value]="r">{{ r }}</option>
         </select>
       </div>
 
       <!-- Password -->
-      <div class="mb-3">
-        <label class="form-label fw-semibold">Change Password</label>
+      <div class="form-group">
+        <label>Change Password</label>
         <input
           formControlName="password"
+          placeholder="Leave blank to keep current password"
           type="password"
-          class="form-control"
-          placeholder="Leave blank to keep your current password"
         />
-
-        <small class="text-muted" *ngIf="!profileForm.get('password')?.value">
-          Leave this empty if you do not want to change your password.
+        <small class="hint" *ngIf="!profileForm.get('password')?.value">
+          (Optional) Enter only if you want to update your password.
         </small>
       </div>
 
       <!-- Approval Status (Admin Only) -->
-      <div class="mb-3" *ngIf="isAdmin">
-        <label class="form-label fw-semibold">Approval Status</label>
-        <input
-          class="form-control bg-light"
-          formControlName="isApproved"
-          readonly
-        />
+      <div class="form-group" *ngIf="isAdmin">
+        <label>Approval Status</label>
+        <input formControlName="isApproved" readonly class="readonly" />
       </div>
 
-      <button class="btn btn-primary w-100 mt-3" [disabled]="profileForm.invalid">
-        Save Changes
+      <button class="save-btn" [disabled]="profileForm.invalid">
+        💾 Save Changes
       </button>
     </form>
+
   </div>
 </div>
