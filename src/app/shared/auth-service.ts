@@ -6,6 +6,8 @@ import { catchError } from "rxjs/operators";
 import { AuthModel } from "../shared/auth-model";
 import { UserService } from "../services/user.service";
 import { environment } from "../../environments/environment";
+import { switchMap } from 'rxjs/operators';
+import { User } from '../services/user.service';
 
 @Injectable({ providedIn: "root" })
 export class AuthService {
@@ -159,8 +161,30 @@ export class AuthService {
       SIGNUP
   ========================================================================== */
   signupUser(username: string, password: string, role: string) {
-    return this.http.post(this.signupUrl, { username, password, role });
-  }
+
+  return this.userService.getUserByUsername(username).pipe(
+
+    // If user exists → duplicate
+    switchMap((user: any) => {
+      return throwError(() => ({
+        error: { message: "Username already exists" }
+      }));
+    }),
+
+    // Handle 404 = OK (username available)
+    catchError((err) => {
+      if (err.status === 404) {
+        // Username free → proceed with signup
+        return this.http.post(this.signupUrl, { username, password, role });
+      }
+
+      // Other errors → throw normally
+      return throwError(() => err);
+    })
+  );
+}
+
+
 
   /* ==========================================================================
       AUTH STATUS CHECKS
