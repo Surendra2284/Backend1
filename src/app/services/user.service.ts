@@ -56,14 +56,14 @@ getLoggedUser() {
   return {
     username: localStorage.getItem("username") || "",
     userId: localStorage.getItem("userId") || "",
-    role: localStorage.getItem("role") || ""
+    role: localStorage.getItem("userRole") || ""
   };
 }
 getUserDetails() {
   return {
     username: localStorage.getItem("username") || "",
     userId: localStorage.getItem("userId") || "",
-    role: localStorage.getItem("role") || ""
+    role: localStorage.getItem("userRole") || ""
   };
 }
   bulkAddUsers(data: any[]): Observable<any> {
