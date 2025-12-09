@@ -4,175 +4,355 @@
   <meta charset="UTF-8" />
   <title>Admin Dashboard</title>
 
- <style>
-:root {
-  --primary: #005beA;        /* Sidebar blue */
-  --primary-dark: #003d99;   /* Headings */
-  --secondary: #00b7ff;      /* Gradient mix */
-  --bg: #e9f4ff;             /* Page background */
-  --white: #ffffff;
-  --shadow: 0 4px 14px rgba(0,0,0,0.12);
+  <style>
+    :root {
+      --primary: #0f172a;
+      --primary-accent: #2563eb;
+      --primary-soft: #1e293b;
+      --bg: #0b1120;
+      --bg-main: #020617;
+      --border-subtle: rgba(148, 163, 184, 0.45);
+      --white: #ffffff;
+      --text-muted: #9ca3af;
+      --shadow-soft: 0 14px 40px rgba(15, 23, 42, 0.45);
+    }
 
-  --hover-light: rgba(255,255,255,0.25);
-  --active-dark: rgba(0,0,0,0.35);
-}
+    * {
+      box-sizing: border-box;
+    }
 
-body {
-  margin: 0;
-  font-family: "Segoe UI", sans-serif;
-  background: var(--bg);
-  height: 100vh;
-  overflow: hidden;
-  display: flex;
-}
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: radial-gradient(circle at top left, #1d4ed8 0, #020617 50%, #020617 100%);
+      height: 100vh;
+      overflow: hidden;
+      color: #e5e7eb;
+      display: flex;
+      flex-direction: column;
+    }
 
-/* Sidebar */
-.sidebar {
-  width: 260px;
-  height: 100vh;
-  background: linear-gradient(180deg, var(--primary), var(--secondary));
-  color: rgb(140, 28, 28);
-  padding: 20px 0;
-  position: fixed;
-  display: flex;
-  flex-direction: column;
-  transition: 0.3s ease;
-}
+    /* Top navbar */
+    .topbar {
+      height: 56px;
+      background: rgba(15, 23, 42, 0.92);
+      border-bottom: 1px solid rgba(51, 65, 85, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 16px 0 72px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 20;
+      backdrop-filter: blur(10px);
+    }
 
-.sidebar h2 {
-  text-align: center;
-  margin-bottom: 20px;
-  font-size: 22px;
-  font-weight: 600;
-  color: #108139;
-}
+    .topbar-left {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
 
-/* Navigation Buttons */
-.nav-item {
-  padding: 14px 20px;
-  font-size: 17px;
-  cursor: pointer;
-  border-radius: 8px;
-  margin: 6px 10px;
-  color: #101280;
-  transition: 0.25s ease;
-}
+    .logo-circle {
+      width: 32px;
+      height: 32px;
+      border-radius: 999px;
+      background: #1d4ed8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      color: #f9fafb;
+      box-shadow: 0 0 0 2px rgba(15, 23, 42, 0.8);
+    }
 
-.nav-item:hover {
-  background: var(--hover-light);
-}
+    .topbar-title {
+      display: flex;
+      flex-direction: column;
+      line-height: 1.1;
+    }
 
-.nav-item.active {
-  background: var(--active-dark);
-  border-left: 4px solid #59031c;
-  font-weight: bold;
-}
+    .topbar-title strong {
+      font-size: 14px;
+      color: #e5e7eb;
+    }
 
-/* Mobile Menu Button */
-.menu-btn {
-  display: none;
-  position: fixed;
-  left: 12px;
-  top: 12px;
-  background: var(--primary);
-  color: #f0d9d9;
-  padding: 10px 14px;
-  border-radius: 6px;
-  cursor: pointer;
-  z-index: 50;
-  box-shadow: var(--shadow);
-}
+    .topbar-title span {
+      font-size: 11px;
+      color: #9ca3af;
+    }
 
-/* Main Content */
-.main {
-  margin-left: 260px;
-  width: calc(100% - 260px);
-  padding: 25px;
-  overflow-y: auto;
-  height: 100vh;
-  transition: 0.3s ease;
-}
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: #9ca3af;
+    }
 
-.main.expanded {
-  margin-left: 0;
-  width: 100%;
-}
+    .top-user {
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+    }
 
-h1 {
-  color: var(--primary-dark);
-  margin-top: 0;
-}
+    /* Mobile menu button */
+    .menu-btn {
+      position: fixed;
+      left: 12px;
+      top: 12px;
+      background: #1d4ed8;
+      color: #f9fafb;
+      padding: 8px 10px;
+      border-radius: 8px;
+      cursor: pointer;
+      z-index: 30;
+      box-shadow: 0 10px 25px rgba(15, 23, 42, 0.65);
+      border: none;
+      display: none;
+    }
 
-/* Cards */
-.card {
-  background: var(--white);
-  border-radius: 14px;
-  padding: 20px;
-  margin-bottom: 22px;
-  box-shadow: var(--shadow);
-}
+    /* Layout wrapper */
+    .layout {
+      display: flex;
+      flex: 1;
+      margin-top: 56px; /* below topbar */
+      overflow: hidden;
+    }
 
-/* Tables */
-table {
-  width: 100%;
-  border-collapse: collapse;
-}
+    /* Sidebar */
+    .sidebar {
+      width: 240px;
+      background: linear-gradient(180deg, #020617, #020617);
+      border-right: 1px solid rgba(51, 65, 85, 0.9);
+      color: #e5e7eb;
+      padding: 12px 10px;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
 
-th, td {
-  padding: 10px;
-  border: 1px solid #d3d3d3;
-}
+    .sidebar h2 {
+      font-size: 14px;
+      font-weight: 600;
+      margin: 4px 12px 10px;
+      color: #9ca3af;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
 
-thead tr {
-  background: #d4e9ff;
-}
+    .nav-group-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: #6b7280;
+      margin: 12px 14px 4px;
+    }
 
-/* Buttons */
-.btn {
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
-  border: none;
-  font-weight: 600;
-}
+    .nav-item {
+      padding: 8px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      border-radius: 999px;
+      margin: 2px 6px;
+      color: #d1d5db;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: background 0.15s ease, transform 0.08s ease;
+      white-space: nowrap;
+    }
 
-.btn-primary {
-  background: #009e47;
-  color: white;
-}
+    .nav-item span.icon {
+      width: 20px;
+      text-align: center;
+      font-size: 14px;
+    }
 
-.btn-danger {
-  background: #e63946;
-  color: rgba(255, 255, 255, 0.793);
-}
+    .nav-item:hover {
+      background: rgba(55, 65, 81, 0.85);
+    }
 
-/* Mobile Responsive */
-@media (max-width: 768px) {
-  .menu-btn {
-    display: block;
-  }
-  .sidebar {
-    z-index: 40;
-  }
-  .sidebar.collapsed {
-    width: 0;
-    padding: 0;
-    opacity: 0;
-    overflow: hidden;
-  }
-  .main {
-    width: 100% !important;
-    margin-left: 0 !important;
-  }
-}
-</style>
+    .nav-item.active {
+      background: #1d4ed8;
+      color: #f9fafb;
+      font-weight: 600;
+      box-shadow: 0 10px 24px rgba(37, 99, 235, 0.55);
+    }
+
+    /* Main content */
+    .main {
+      flex: 1;
+      background: radial-gradient(circle at top, #111827 0, #020617 60%, #020617 100%);
+      padding: 18px 20px;
+      overflow-y: auto;
+    }
+
+    h1, h2 {
+      margin-top: 0;
+    }
+
+    h1 {
+      font-size: 22px;
+      color: #e5e7eb;
+    }
+
+    h2 {
+      font-size: 16px;
+      color: #e5e7eb;
+      margin-bottom: 10px;
+    }
+
+    .card {
+      background: rgba(15, 23, 42, 0.96);
+      border-radius: 16px;
+      padding: 16px 16px 14px;
+      margin-bottom: 16px;
+      box-shadow: var(--shadow-soft);
+      border: 1px solid var(--border-subtle);
+    }
+
+    .muted {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 12px;
+    }
+
+    th, td {
+      padding: 8px 10px;
+      border-bottom: 1px solid rgba(31, 41, 55, 0.9);
+    }
+
+    thead tr {
+      background: #020617;
+    }
+
+    th {
+      text-align: left;
+      font-weight: 500;
+      color: #9ca3af;
+    }
+
+    tbody tr:hover {
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    .info-table th {
+      width: 140px;
+      background: rgba(31, 41, 55, 0.9);
+    }
+
+    .info-table td {
+      color: #e5e7eb;
+    }
+
+    /* Buttons */
+    .btn {
+      padding: 6px 12px;
+      border-radius: 999px;
+      cursor: pointer;
+      border: none;
+      font-weight: 500;
+      font-size: 11px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      transition: transform 0.08s ease, box-shadow 0.12s ease, background 0.15s ease;
+      white-space: nowrap;
+    }
+
+    .btn-primary {
+      background: #22c55e;
+      color: #020617;
+      box-shadow: 0 10px 24px rgba(34, 197, 94, 0.5);
+    }
+
+    .btn-primary:hover {
+      background: #16a34a;
+    }
+
+    .btn-danger {
+      background: #ef4444;
+      color: #f9fafb;
+      box-shadow: 0 10px 24px rgba(239, 68, 68, 0.5);
+    }
+
+    .btn-danger:hover {
+      background: #dc2626;
+    }
+
+    .btn:active {
+      transform: scale(0.97);
+    }
+
+    /* Filter row */
+    .filter-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin: 10px 0 14px;
+    }
+
+    .filter-row input {
+      padding: 6px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: #020617;
+      color: #e5e7eb;
+      font-size: 12px;
+      min-width: 140px;
+      outline: none;
+    }
+
+    .filter-row input:focus {
+      border-color: #22c55e;
+    }
+
+    /* Mobile responsive */
+    @media (max-width: 900px) {
+      .menu-btn {
+        display: block;
+      }
+      .sidebar {
+        position: fixed;
+        left: 0;
+        top: 56px;
+        bottom: 0;
+        z-index: 15;
+        transform: translateX(0);
+        transition: transform 0.2s ease;
+      }
+      .sidebar.collapsed {
+        transform: translateX(-100%);
+      }
+      .topbar {
+        padding-left: 56px;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .main {
+        padding: 14px 10px;
+      }
+    }
+  </style>
 
   <script>
     function toggleSidebar() {
       const sidebar = document.getElementById("sidebar");
-      const main = document.getElementById("main");
       sidebar.classList.toggle("collapsed");
-      main.classList.toggle("expanded");
     }
   </script>
 </head>
@@ -180,178 +360,245 @@ thead tr {
 <body>
 
   <!-- Mobile Menu Button -->
-  <div class="menu-btn" onclick="toggleSidebar()">☰ Menu</div>
+  <button class="menu-btn" onclick="toggleSidebar()">☰</button>
 
-  <!-- Sidebar -->
-  <div class="sidebar" id="sidebar">
-    <h2>Admin Panel</h2>
-
-    <div class="nav-item" (click)="selectTab('dashboard')" [class.active]="activeTab==='dashboard'">Dashboard</div>
-    <div class="nav-item" (click)="selectTab('student')" [class.active]="activeTab==='student'">Students</div>
-    <div class="nav-item" (click)="selectTab('teacher')" [class.active]="activeTab==='teacher'">Teachers</div>
-    <div class="nav-item" (click)="selectTab('notice')" [class.active]="activeTab==='notice'">Notice</div>
-    <div class="nav-item" (click)="selectTab('attendance')" [class.active]="activeTab==='attendance'">Attendance</div>
-    <div class="nav-item" (click)="selectTab('photo')" [class.active]="activeTab==='photo'">Photos</div>
-    <div class="nav-item" (click)="selectTab('users')" [class.active]="activeTab==='users'">Users</div>
-    <div class="nav-item" (click)="selectTab('Userprofile')" [class.active]="activeTab==='Userprofile'">User Profile</div>
-    <div class="nav-item" (click)="selectTab('Homework')" [class.active]="activeTab==='Homework'">Homework</div>
-    <div class="nav-item" (click)="selectTab('noticUpdate')" [class.active]="activeTab==='noticUpdate'">Notice Update</div>
+  <!-- Top Navbar -->
+  <div class="topbar">
+    <div class="topbar-left">
+      <div class="logo-circle">AD</div>
+      <div class="topbar-title">
+        <strong>Admin Dashboard</strong>
+        <span>School Management Panel</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <div class="top-user">
+        {{ username }} · {{ role }}
+      </div>
+    </div>
   </div>
 
-  <!-- Main Content Area -->
-  <div class="main" id="main">
+  <div class="layout">
+    <!-- Sidebar (NAV KEPT) -->
+    <div class="sidebar" id="sidebar">
+      <h2>Navigation</h2>
 
-    <!-- Dashboard -->
-    <div class="card" *ngIf="activeTab === 'dashboard'">
-      <h1>Welcome Admin</h1>
-
-      <div class="card">
-        <h2>User Information</h2>
-        <p><strong>Username:</strong> {{ username }}</p>
-        <p><strong>Role:</strong> {{ role }}</p>
+      <div class="nav-group-title">Main</div>
+      <div class="nav-item" (click)="selectTab('dashboard')" [class.active]="activeTab==='dashboard'">
+        <span class="icon">🏠</span> <span>Dashboard</span>
       </div>
 
-      <div class="card" *ngIf="unapprovedUsers.length > 0">
-        <h2>Unapproved Users</h2>
-        <div *ngFor="let user of unapprovedUsers">
-          <p><strong>{{ user.username }}</strong> — {{ user.role }}</p>
-          <button class="btn btn-primary" (click)="approveUser(user._id)">Approve</button>
-          <hr />
+      <div class="nav-group-title">Data</div>
+      <div class="nav-item" (click)="selectTab('student')" [class.active]="activeTab==='student'">
+        <span class="icon">👨‍🎓</span> <span>Students</span>
+      </div>
+      <div class="nav-item" (click)="selectTab('teacher')" [class.active]="activeTab==='teacher'">
+        <span class="icon">👩‍🏫</span> <span>Teachers</span>
+      </div>
+      <div class="nav-item" (click)="selectTab('attendance')" [class.active]="activeTab==='attendance'">
+        <span class="icon">📅</span> <span>Attendance</span>
+      </div>
+      <div class="nav-item" (click)="selectTab('users')" [class.active]="activeTab==='users'">
+        <span class="icon">👥</span> <span>Users</span>
+      </div>
+
+      <div class="nav-group-title">Communication</div>
+      <div class="nav-item" (click)="selectTab('notice')" [class.active]="activeTab==='notice'">
+        <span class="icon">📢</span> <span>Notice</span>
+      </div>
+      <div class="nav-item" (click)="selectTab('noticUpdate')" [class.active]="activeTab==='noticUpdate'">
+        <span class="icon">📝</span> <span>Notice Update</span>
+      </div>
+      <div class="nav-item" (click)="selectTab('Homework')" [class.active]="activeTab==='Homework'">
+        <span class="icon">📘</span> <span>Homework</span>
+      </div>
+
+      <div class="nav-group-title">Extras</div>
+      <div class="nav-item" (click)="selectTab('photo')" [class.active]="activeTab==='photo'">
+        <span class="icon">🖼</span> <span>Photos</span>
+      </div>
+      <div class="nav-item" (click)="selectTab('Userprofile')" [class.active]="activeTab==='Userprofile'">
+        <span class="icon">⚙</span> <span>User Profile</span>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main" id="main">
+      <!-- Dashboard -->
+      <div class="card" *ngIf="activeTab === 'dashboard'">
+        <h1>Welcome Admin</h1>
+
+        <div class="card">
+          <h2>User Information</h2>
+          <table class="info-table">
+            <tr>
+              <th>Username</th>
+              <td>{{ username }}</td>
+            </tr>
+            <tr>
+              <th>Role</th>
+              <td>{{ role }}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="card" *ngIf="unapprovedUsers.length > 0">
+          <h2>Unapproved Users</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Username</th>
+                <th>Role</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let user of unapprovedUsers">
+                <td>{{ user.username }}</td>
+                <td>{{ user.role }}</td>
+                <td>
+                  <button class="btn btn-primary" (click)="approveUser(user._id)">Approve</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h2>Pending Notices</h2>
+          <table *ngIf="pendingNotices.length > 0; else noPending">
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Title</th>
+                <th>Class</th>
+                <th>Role</th>
+                <th>Notice</th>
+                <th>Teacher</th>
+                <th>Action</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let n of pendingNotices">
+                <td>{{ n.Noticeid }}</td>
+                <td>{{ n.name }}</td>
+                <td>{{ n.class }}</td>
+                <td>{{ n.Role }}</td>
+                <td>{{ n.Notice }}</td>
+                <td>{{ n.classteacher }}</td>
+                <td>
+                  <button class="btn btn-primary" (click)="approveNotice(n._id)">Approve</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+          <ng-template #noPending>
+            <p class="muted">No pending notices</p>
+          </ng-template>
         </div>
       </div>
 
-      <div class="card">
-        <h2>Pending Notices</h2>
-        <table *ngIf="pendingNotices.length > 0; else noPending">
+      <!-- Students -->
+      <div class="card" *ngIf="activeTab === 'student'">
+        <h2>Students</h2>
+        <app-student></app-student>
+      </div>
+
+      <!-- Teachers -->
+      <div class="card" *ngIf="activeTab === 'teacher'">
+        <h2>Teachers</h2>
+        <app-teacher></app-teacher>
+      </div>
+
+      <!-- Notice -->
+      <div class="card" *ngIf="activeTab === 'notice'">
+        <h2>Notice</h2>
+        <app-notice></app-notice>
+      </div>
+
+      <!-- Attendance -->
+      <div class="card" *ngIf="activeTab === 'attendance'">
+        <h2>Attendance</h2>
+        <app-attendance></app-attendance>
+      </div>
+
+      <!-- Photos -->
+      <div class="card" *ngIf="activeTab === 'photo'">
+        <h2>Photo Upload</h2>
+        <app-upload-photo></app-upload-photo>
+      </div>
+
+      <!-- Users -->
+      <div class="card" *ngIf="activeTab === 'users'">
+        <h2>User Details</h2>
+        <app-user></app-user>
+      </div>
+
+      <!-- User Profile -->
+      <div class="card" *ngIf="activeTab === 'Userprofile'">
+        <h2>Edit User Profile</h2>
+        <app-user-profile></app-user-profile>
+      </div>
+
+      <!-- Homework -->
+      <div class="card" *ngIf="activeTab === 'Homework'">
+        <h2>Homework / Student Progress</h2>
+        <div class="muted">Admin can view and delete progress entries</div>
+
+        <div class="filter-row">
+          <input type="text" placeholder="Class (e.g., 10A)" [(ngModel)]="progressFilterClass">
+          <input type="date" [(ngModel)]="progressFilterDate">
+          <input type="text" placeholder="Subject (e.g., Math)" [(ngModel)]="progressFilterSubject">
+          <button class="btn btn-primary" (click)="loadAllProgress()">Search</button>
+        </div>
+
+        <table>
           <thead>
             <tr>
-              <th>ID</th><th>Title</th><th>Class</th><th>Role</th><th>Notice</th><th>Teacher</th><th>Action</th>
+              <th>Date</th>
+              <th>Student</th>
+              <th>Class</th>
+              <th>Subject</th>
+              <th>Status</th>
+              <th>Score</th>
+              <th>Homework</th>
+              <th>Action</th>
             </tr>
           </thead>
           <tbody>
-            <tr *ngFor="let n of pendingNotices">
-              <td>{{ n.Noticeid }}</td>
-              <td>{{ n.name }}</td>
-              <td>{{ n.class }}</td>
-              <td>{{ n.Role }}</td>
-              <td>{{ n.Notice }}</td>
-              <td>{{ n.classteacher }}</td>
+            <tr *ngFor="let p of adminProgressList">
+              <td>{{ p.date }}</td>
+              <td>{{ p.student ? p.studentId : '-' }}</td>
+              <td>{{ p.className }}</td>
+              <td>{{ p.subject }}</td>
+              <td>{{ p.status }}</td>
+              <td>{{ p.score || '-' }}</td>
+              <td>{{ p.homework }}</td>
               <td>
-                <button class="btn btn-primary" (click)="approveNotice(n._id)">Approve</button>
+                <button class="btn btn-danger" (click)="deleteProgress(p._id!)">Delete</button>
               </td>
+            </tr>
+            <tr *ngIf="adminProgressList.length === 0">
+              <td colspan="8" style="text-align:center;">No progress records found.</td>
             </tr>
           </tbody>
         </table>
-        <ng-template #noPending><p>No pending notices</p></ng-template>
-      </div>
-    </div>
-
-    <!-- Students -->
-    <div class="card" *ngIf="activeTab === 'student'">
-      <h2>Student</h2>
-      <app-student></app-student>
-    </div>
-
-    <!-- Teachers -->
-    <div class="card" *ngIf="activeTab === 'teacher'">
-      <h2>Teacher</h2>
-      <app-teacher></app-teacher>
-    </div>
-
-    <!-- Notice -->
-    <div class="card" *ngIf="activeTab === 'notice'">
-      <h2>Notice</h2>
-      <app-notice></app-notice>
-    </div>
-
-    <!-- Attendance -->
-    <div class="card" *ngIf="activeTab === 'attendance'">
-      <h2>Attendance</h2>
-      <app-attendance></app-attendance>
-    </div>
-
-    <!-- Photos -->
-    <div class="card" *ngIf="activeTab === 'photo'">
-      <h2>Photo Upload</h2>
-      <app-upload-photo></app-upload-photo>
-    </div>
-
-    <!-- Users -->
-    <div class="card" *ngIf="activeTab === 'users'">
-      <h2>User Details</h2>
-      <app-user></app-user>
-    </div>
-
-    <!-- User Profile -->
-    <div class="card" *ngIf="activeTab === 'Userprofile'">
-      <h2>Edit User Profile</h2>
-      <app-user-profile></app-user-profile>
-    </div>
-
-    <!-- *** ORIGINAL HOMEWORK SECTION (NO CHANGES TO LOGIC) *** -->
-    <div class="card" *ngIf="activeTab === 'Homework'">
-      <h2>Homework / Student Progress</h2>
-
-      <div class="panel-head">
-        <h3>Student Progress Records</h3>
-        <div class="muted">Admin can view and delete progress entries</div>
       </div>
 
-      <!-- Filters -->
-      <div style="display:flex; gap:10px; margin:15px 0; flex-wrap: wrap;">
-        <input type="text" placeholder="Class (e.g., 10A)" [(ngModel)]="progressFilterClass"
-          style="padding:8px; border-radius:6px; border:1px solid #ccc;">
-
-        <input type="date" [(ngModel)]="progressFilterDate"
-          style="padding:8px; border-radius:6px; border:1px solid #ccc;">
-
-        <input type="text" placeholder="Subject (e.g., Math)" [(ngModel)]="progressFilterSubject"
-          style="padding:8px; border-radius:6px; border:1px solid #ccc;">
-
-        <button class="btn btn-primary" (click)="loadAllProgress()">
-          Search
-        </button>
+      <!-- Notice / Student Fee Update -->
+      <div class="card" *ngIf="activeTab === 'noticUpdate'">
+        <h2>Notice / Student Fee Update</h2>
+        <table class="info-table">
+          <tr>
+            <th>Description</th>
+            <td>Use this section to update student notices or fees in bulk.</td>
+          </tr>
+        </table>
+        <div class="card" style="margin-top: 10px;">
+          <app-notic-updatestudent></app-notic-updatestudent>
+        </div>
       </div>
-
-      <!-- Progress Table -->
-      <table class="table" style="width:100%; border-collapse:collapse;">
-        <thead>
-          <tr style="background: var(--light-blue);">
-            <th>Date</th><th>Student</th><th>Class</th><th>Subject</th>
-            <th>Status</th><th>Score</th><th>Homework</th><th>Action</th>
-          </tr>
-        </thead>
-
-        <tbody>
-          <tr *ngFor="let p of adminProgressList">
-            <td>{{ p.date }}</td>
-            <td>{{ p.student ? p.studentId : '-' }}</td>
-            <td>{{ p.className }}</td>
-            <td>{{ p.subject }}</td>
-            <td>{{ p.status }}</td>
-            <td>{{ p.score || '-' }}</td>
-            <td>{{ p.homework }}</td>
-            <td>
-              <button class="btn btn-danger" (click)="deleteProgress(p._id!)">
-                Delete
-              </button>
-            </td>
-          </tr>
-
-          <tr *ngIf="adminProgressList.length === 0">
-            <td colspan="8" style="text-align:center;">No progress records found.</td>
-          </tr>
-        </tbody>
-      </table>
     </div>
-
-    <!-- Notice Update -->
-    <div class="card" *ngIf="activeTab === 'noticUpdate'">
-      <h2>Notice Bulk Update</h2>
-      <app-notic-updatestudent></app-notic-updatestudent>
-    </div>
-
   </div>
-
 </body>
 </html>
