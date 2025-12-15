@@ -1,189 +1,287 @@
 <div class="teacher-dashboard">
 
   <!-- MOBILE MENU BUTTON -->
-  <div class="menu-btn" (click)="toggleTeacherSidebar()">☰ Menu</div>
+  <button class="menu-btn" (click)="toggleTeacherSidebar()">☰</button>
 
-  <!-- SIDEBAR -->
-  <aside class="sidebar" #teacherSidebar id="teacherSidebar">
-    <h2>Teacher Panel</h2>
+  <!-- TOP NAVBAR (like admin) -->
+  <header class="topbar">
+    <div class="topbar-left">
+      <div class="logo-circle">TP</div>
+      <div class="topbar-title">
+        <strong>Teacher Panel</strong>
+        <span>Class Manager & Homework</span>
+      </div>
+    </div>
+    <div class="topbar-right" *ngIf="loggedInTeacher">
+      <div class="top-user">
+        {{ loggedInTeacher.name }} · {{ loggedInTeacher.Assignclass }}
+      </div>
+    </div>
+  </header>
 
-    <!-- REMOVED DASHBOARD TAB -->
+  <div class="layout">
+    <!-- SIDEBAR -->
+    <aside class="sidebar" #teacherSidebar id="teacherSidebar">
+      <h2>Navigation</h2>
 
-    <div class="nav-item" (click)="selectTab('students')" [class.active]="activeTab === 'students'">👨‍🎓 Students</div>
-    <div class="nav-item" (click)="selectTab('attendance')" [class.active]="activeTab === 'attendance'">📊 Attendance</div>
-    <div class="nav-item" (click)="selectTab('notices')" [class.active]="activeTab === 'notices'">📢 Notices</div>
-    <div class="nav-item" (click)="selectTab('progress')" [class.active]="activeTab === 'progress'">📝 Homework</div>
-    <div class="nav-item" (click)="selectTab('Password')" [class.active]="activeTab === 'Password'">🔐 Password</div>
-  </aside>
-
-  <!-- MAIN CONTENT -->
-  <main class="main" #teacherMainContent>
-
-    <!-- ALWAYS VISIBLE WELCOME BANNER (instead of dashboard tab) -->
-    <section class="welcome-banner card" *ngIf="loggedInTeacher">
-      <div class="banner-left">
-        <img src="assets/teacher.png" class="profile-photo" alt="Teacher Photo">
-        <div>
-          <h3>Welcome, {{ displayName }} 👋</h3>
-          <p>Managing class <strong>{{ loggedInTeacher.Assignclass }}</strong></p>
-        </div>
+      <div class="nav-group-title">Class</div>
+      <div class="nav-item"
+           (click)="selectTab('students')"
+           [class.active]="activeTab === 'students'">
+        <span class="icon">👨‍🎓</span> <span>Students</span>
+      </div>
+      <div class="nav-item"
+           (click)="selectTab('attendance')"
+           [class.active]="activeTab === 'attendance'">
+        <span class="icon">📊</span> <span>Attendance</span>
       </div>
 
-      <div class="banner-info">
-        <p><strong>Teacher Name:</strong> {{ loggedInTeacher.name }}</p>
-        <p><strong>Mobile:</strong> {{ loggedInTeacher.mobileNo }}</p>
-        <p><strong>Assigned Class:</strong> {{ loggedInTeacher.Assignclass }}</p>
-        <p><strong>Total Students:</strong> {{ students.length }}</p>
+      <div class="nav-group-title">Communication</div>
+      <div class="nav-item"
+           (click)="selectTab('notices')"
+           [class.active]="activeTab === 'notices'">
+        <span class="icon">📢</span> <span>Notices</span>
       </div>
-    </section>
-
-    <!-- ALWAYS VISIBLE DASHBOARD CARDS -->
-    <section class="progress-cards">
-
-      <div class="progress-card animate-fade">
-        <h3>👨‍🎓 Students</h3>
-        <p class="value">{{ students.length }}</p>
-        <p class="label">Total Students</p>
+      <div class="nav-item"
+           (click)="selectTab('progress')"
+           [class.active]="activeTab === 'progress'">
+        <span class="icon">📝</span> <span>Homework</span>
       </div>
 
-      <div class="progress-card animate-up">
-        <h3>📢 Notices</h3>
-        <p class="value">{{ teacherNotices.length }}</p>
-        <p class="label">Notices Posted</p>
+      <div class="nav-group-title">Account</div>
+      <div class="nav-item"
+           (click)="selectTab('Password')"
+           [class.active]="activeTab === 'Password'">
+        <span class="icon">🔐</span> <span>Password</span>
       </div>
+    </aside>
 
-      <div class="progress-card animate-scale">
-        <h3>📝 Homework</h3>
-        <p class="value">{{ classProgressList.length }}</p>
-        <p class="label">Homework Records</p>
-      </div>
+    <!-- MAIN CONTENT -->
+    <main class="main" #teacherMainContent>
 
-    </section>
+      <!-- WELCOME BANNER -->
+      <section class="card" *ngIf="loggedInTeacher">
+        <div class="welcome-row">
+          <div class="welcome-left">
+            <img src="assets/teacher.png" class="profile-photo" alt="Teacher Photo">
+            <div>
+              <h3>Welcome, {{ displayName }} 👋</h3>
+              <p class="muted">
+                Managing class <strong>{{ loggedInTeacher.Assignclass }}</strong>
+              </p>
+            </div>
+          </div>
 
-    <!-- ====================== STUDENTS ====================== -->
-    <section *ngIf="activeTab === 'students'" class="card">
-      <h2>Students ({{ students.length }})</h2>
-
-      <div class="students-grid">
-        <div class="student-card" *ngFor="let s of students">
-          <h3>{{ s.name }}</h3>
-          <p><strong>ID:</strong> {{ s.studentId }}</p>
-          <p><strong>Class:</strong> {{ s.class }}</p>
-          <p><strong>Address:</strong> {{ s.address }}</p>
-
-          <div class="actions">
-            <button class="btn primary" (click)="editStudent(s)">Edit</button>
-            <button class="btn danger" (click)="deleteStudent(s.studentId)">Delete</button>
+          <div class="banner-info">
+            <table class="info-table">
+              <tr>
+                <th>Name</th>
+                <td>{{ loggedInTeacher.name }}</td>
+              </tr>
+              <tr>
+                <th>Mobile</th>
+                <td>{{ loggedInTeacher.mobileNo }}</td>
+              </tr>
+              <tr>
+                <th>Assigned Class</th>
+                <td>{{ loggedInTeacher.Assignclass }}</td>
+              </tr>
+              <tr>
+                <th>Total Students</th>
+                <td>{{ students.length }}</td>
+              </tr>
+            </table>
           </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- ====================== ATTENDANCE ====================== -->
-    <section *ngIf="activeTab === 'attendance'" class="card">
-      <h2>Attendance</h2>
-
-      <div class="filters">
-        <button class="btn-primary" (click)="markAll('Present')">All Present</button>
-        <button class="btn-primary" (click)="markAll('Leave')">All Leave</button>
-        <button class="btn-primary" (click)="markAll('Absent')">All Absent</button>
-      </div>
-
-      <table class="data-table">
-        <thead>
-          <tr><th>Name</th><th>ID</th><th>Status</th></tr>
-        </thead>
-
-        <tbody>
-          <tr *ngFor="let s of students">
-            <td>{{ s.name }}</td>
-            <td>{{ s.studentId }}</td>
-            <td>
-              <select [(ngModel)]="attendance[s.studentId]">
-                <option value="Present">Present</option>
-                <option value="Leave">Leave</option>
-                <option value="Absent">Absent</option>
-              </select>
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      <button class="btn-primary" (click)="saveAttendance()">Save Attendance</button>
-    </section>
-
-    <!-- ====================== NOTICES ====================== -->
-    <section *ngIf="activeTab === 'notices'" class="card">
-      <h2>Notices</h2>
-
-      <textarea [(ngModel)]="newNotice.Notice" placeholder="Write notice..."></textarea>
-
-      <button class="btn-primary" (click)="addNotice()">Post Notice</button>
-
-      <div class="notice-card" *ngFor="let n of teacherNotices">
-        <h3>{{ n.Notice }}</h3>
-        <p>Class {{ n.class }} — {{ n.name }}</p>
-
-        <div class="actions">
-          <button class="btn primary" (click)="editNotice(n)">Edit</button>
-          <button class="btn danger" (click)="deleteNotice(n._id!)">Delete</button>
+      <!-- DASHBOARD CARDS -->
+      <section class="card">
+        <h2>Class Overview</h2>
+        <div class="overview-cards">
+          <div class="small-card">
+            <h3>👨‍🎓 Students</h3>
+            <p class="value">{{ students.length }}</p>
+            <p class="label">Total Students</p>
+          </div>
+          <div class="small-card">
+            <h3>📢 Notices</h3>
+            <p class="value">{{ teacherNotices.length }}</p>
+            <p class="label">Notices Posted</p>
+          </div>
+          <div class="small-card">
+            <h3>📝 Homework</h3>
+            <p class="value">{{ classProgressList.length }}</p>
+            <p class="label">Homework Records</p>
+          </div>
         </div>
-      </div>
-    </section>
+      </section>
 
-    <!-- ====================== HOMEWORK ====================== -->
-    <section *ngIf="activeTab === 'progress'" class="card">
-      <h2>Homework / Progress</h2>
-
-      <div class="filters">
-        <input type="date" [(ngModel)]="progressDate">
-        <input type="text" placeholder="Subject..." [(ngModel)]="progressSubject">
-      </div>
-
-      <textarea [(ngModel)]="homeworkText" placeholder="Homework..."></textarea>
-      <button class="btn-primary" (click)="saveClassProgress()">Save Homework</button>
-
-      <div class="history-block" *ngFor="let s of students">
-        <h3>{{ s.name }} — {{ getProgressForStudent(s.studentId).length }} records</h3>
+      <!-- STUDENTS -->
+      <section *ngIf="activeTab === 'students'" class="card">
+        <h2>Students ({{ students.length }})</h2>
 
         <table class="data-table">
           <thead>
             <tr>
-              <th>Date</th>
-              <th>Subject</th>
-              <th>Homework</th>
-              <th>Status</th>
-              <th>Teacher Note</th>
-              <th>Score</th>
-              <th>Remark</th>
-              <th>Delete</th>
+              <th>Name</th>
+              <th>ID</th>
+              <th>Class</th>
+              <th>Address</th>
+              <th style="width:140px;">Actions</th>
             </tr>
           </thead>
-
           <tbody>
-            <tr *ngFor="let p of getProgressForStudent(s.studentId)">
-              <td>{{ p.date }}</td>
-              <td>{{ p.subject }}</td>
-              <td>{{ p.homework }}</td>
-              <td>{{ p.status }}</td>
-              <td>{{ p.progressNote }}</td>
-              <td>{{ p.score || '-' }}</td>
-              <td>{{ p.studentRemark || '-' }}</td>
+            <tr *ngFor="let s of students">
+              <td>{{ s.name }}</td>
+              <td>{{ s.studentId }}</td>
+              <td>{{ s.class }}</td>
+              <td>{{ s.address }}</td>
               <td>
-                <button class="btn danger tiny" (click)="deleteProgressRecord(p._id!)">✖</button>
+                <button class="btn btn-primary" (click)="editStudent(s)">Edit</button>
+                <button class="btn btn-danger" (click)="deleteStudent(s.studentId)">Delete</button>
               </td>
+            </tr>
+            <tr *ngIf="students.length === 0">
+              <td colspan="5" style="text-align:center;">No students found.</td>
             </tr>
           </tbody>
         </table>
-      </div>
+      </section>
 
-    </section>
+      <!-- ATTENDANCE -->
+      <section *ngIf="activeTab === 'attendance'" class="card">
+        <h2>Attendance</h2>
 
-    <!-- ====================== CHANGE PASSWORD ====================== -->
-    <section *ngIf="activeTab === 'Password'" class="card">
-      <h2>Change Password</h2>
-      <app-user-profile></app-user-profile>
-    </section>
+        <div class="filter-row">
+          <button class="btn btn-primary" (click)="markAll('Present')">All Present</button>
+          <button class="btn btn-primary" (click)="markAll('Leave')">All Leave</button>
+          <button class="btn btn-primary" (click)="markAll('Absent')">All Absent</button>
+        </div>
 
-  </main>
+        <table class="data-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>ID</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let s of students">
+              <td>{{ s.name }}</td>
+              <td>{{ s.studentId }}</td>
+              <td>
+                <select [(ngModel)]="attendance[s.studentId]">
+                  <option value="Present">Present</option>
+                  <option value="Leave">Leave</option>
+                  <option value="Absent">Absent</option>
+                </select>
+              </td>
+            </tr>
+            <tr *ngIf="students.length === 0">
+              <td colspan="3" style="text-align:center;">No students to mark.</td>
+            </tr>
+          </tbody>
+        </table>
+
+        <button class="btn btn-primary" (click)="saveAttendance()">Save Attendance</button>
+      </section>
+
+      <!-- NOTICES -->
+      <section *ngIf="activeTab === 'notices'" class="card">
+        <h2>Notices</h2>
+
+        <textarea [(ngModel)]="newNotice.Notice"
+                  placeholder="Write notice..."
+                  class="full-textarea"></textarea>
+
+        <button class="btn btn-primary" (click)="addNotice()">Post Notice</button>
+
+        <table class="data-table" style="margin-top:14px;">
+          <thead>
+            <tr>
+              <th>Notice</th>
+              <th>Class</th>
+              <th>By</th>
+              <th style="width:140px;">Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let n of teacherNotices">
+              <td>{{ n.Notice }}</td>
+              <td>{{ n.class }}</td>
+              <td>{{ n.name }}</td>
+              <td>
+                <button class="btn btn-primary" (click)="editNotice(n)">Edit</button>
+                <button class="btn btn-danger" (click)="deleteNotice(n._id!)">Delete</button>
+              </td>
+            </tr>
+            <tr *ngIf="teacherNotices.length === 0">
+              <td colspan="4" style="text-align:center;">No notices yet.</td>
+            </tr>
+          </tbody>
+        </table>
+      </section>
+
+      <!-- HOMEWORK / PROGRESS -->
+      <section *ngIf="activeTab === 'progress'" class="card">
+        <h2>Homework / Progress</h2>
+
+        <div class="filter-row">
+          <input type="date" [(ngModel)]="progressDate">
+          <input type="text" placeholder="Subject..." [(ngModel)]="progressSubject">
+        </div>
+
+        <textarea [(ngModel)]="homeworkText"
+                  placeholder="Homework..."
+                  class="full-textarea"></textarea>
+
+        <button class="btn btn-primary" (click)="saveClassProgress()">Save Homework</button>
+
+        <div class="history-block" *ngFor="let s of students">
+          <h3>{{ s.name }} — {{ getProgressForStudent(s.studentId).length }} records</h3>
+
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Subject</th>
+                <th>Homework</th>
+                <th>Status</th>
+                <th>Teacher Note</th>
+                <th>Score</th>
+                <th>Remark</th>
+                <th>Delete</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr *ngFor="let p of getProgressForStudent(s.studentId)">
+                <td>{{ p.date }}</td>
+                <td>{{ p.subject }}</td>
+                <td>{{ p.homework }}</td>
+                <td>{{ p.status }}</td>
+                <td>{{ p.progressNote }}</td>
+                <td>{{ p.score || '-' }}</td>
+                <td>{{ p.studentRemark || '-' }}</td>
+                <td>
+                  <button class="btn btn-danger" (click)="deleteProgressRecord(p._id!)">✖</button>
+                </td>
+              </tr>
+              <tr *ngIf="getProgressForStudent(s.studentId).length === 0">
+                <td colspan="8" style="text-align:center;">No records.</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- CHANGE PASSWORD -->
+      <section *ngIf="activeTab === 'Password'" class="card">
+        <h2>Change Password</h2>
+        <app-user-profile></app-user-profile>
+      </section>
+
+    </main>
+  </div>
 </div>
