@@ -1,18 +1,18 @@
 :root {
   /* Layout surfaces */
-  --bg-page: #0f172a;          /* slate-900 style page background */        /*[web:16]*/
-  --bg-main: #020617;          /* almost-black card background */
-  --bg-sidebar: #020617;
-  --bg-topbar: #020617;
+  --bg-page: #a7b4d2;          /* slate-900 style page background */        /*[web:16]*/
+  --bg-main: #abdd46;          /* almost-black card background */
+  --bg-sidebar: #d3d63d;
+  --bg-topbar: #ef2591;
 
   /* Lines & text */
-  --border-subtle: #1e293b;    /* slate-800 */
-  --text-main: #e5e7eb;        /* gray-200 */
-  --text-muted: #9ca3af;       /* gray-400 */
+  --border-subtle:goldenrod;    /* slate-800 */
+  --text-main:goldenrod;        /* gray-200 */
+  --text-muted: goldenrod;       /* gray-400 */
 
   /* Brand & states */
   --primary: #6366f1;          /* indigo-500 */                             /*[web:16][web:18]*/
-  --primary-soft: rgba(99, 102, 241, 0.14);
+  --primary-soft: rgba(227, 227, 241, 0.14);
   --danger: #f97373;           /* red-400 style */
   --success: #22c55e;          /* green-500 */
 
@@ -128,7 +128,7 @@
 /* Sidebar */
 .sidebar {
   width: 240px;
-  background: linear-gradient(to bottom, #020617, #020617 40%, #020617 100%);
+  background: linear-gradient(to bottom, #b9bed8, #5d6794 40%, #4f6beb 100%);
   border-right: 1px solid var(--border-subtle);
   color: var(--text-main);
   padding: 12px 10px;
@@ -275,8 +275,8 @@ h3 {
   flex: 1 1 140px;
   border-radius: 14px;
   padding: 10px 12px;
-  border: 1px solid #1e293b;
-  background: linear-gradient(to bottom right, rgba(15, 23, 42, 0.95), rgba(30, 64, 175, 0.4));
+  border: 1px solid #8ba44e;
+  background: linear-gradient(to bottom right, rgba(141, 170, 237, 0.95), rgba(30, 64, 175, 0.4));
 }
 
 .small-card .value {
@@ -310,11 +310,11 @@ h3 {
 .data-table th {
   text-align: left;
   font-weight: 500;
-  color: #e5e7eb;
+  color: #84c515;
 }
 
 .data-table tbody tr:hover {
-  background: rgba(30, 64, 175, 0.24);
+  background: rgba(239, 241, 247, 0.24);
 }
 
 /* Buttons */
@@ -397,8 +397,8 @@ h3 {
   min-height: 80px;
   padding: 8px 10px;
   border-radius: 10px;
-  border: 1px solid #1f2937;
-  background: rgba(15, 23, 42, 0.96);
+  border: 1px solid #bbac0d;
+  background: rgba(220, 225, 237, 0.96);
   font-size: 12px;
   resize: vertical;
   margin: 6px 0 10px;

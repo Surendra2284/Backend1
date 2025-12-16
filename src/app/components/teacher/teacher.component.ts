@@ -1,7 +1,7 @@
 import { Component, OnDestroy, OnInit } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Subscription } from 'rxjs';
-
+import { StudentService } from '../../services/student.service';
 import { TeacherService } from '../../services/teacher.service';
 import { Teacher } from '../models/Teacher';
 import { AuthService } from '../../shared/auth-service';
@@ -26,6 +26,10 @@ export class TeacherComponent implements OnInit, OnDestroy {
   userAuthenticated = false;
   private authenticatedSub?: Subscription;
 
+  // ---- Class list (for Assignclass select) ----
+  classes: string[] = [];
+  loadingClasses = false;
+
   // ---- Toast ----
   showToast = false;
   toastMessage = '';
@@ -46,6 +50,7 @@ export class TeacherComponent implements OnInit, OnDestroy {
   constructor(
     private fb: FormBuilder,
     private teacherService: TeacherService,
+    private studentService: StudentService,
     private authService: AuthService,
     private router: Router
   ) {
@@ -70,6 +75,7 @@ export class TeacherComponent implements OnInit, OnDestroy {
   ngOnInit(): void {
     this.checkAuthentication();
     this.loadTeachers();
+    this.loadClasses();
   }
 
   ngOnDestroy(): void {
@@ -87,6 +93,32 @@ export class TeacherComponent implements OnInit, OnDestroy {
     });
   }
 
+  // ---------- Auto teacherid helper ----------
+  private generateNextTeacherIdFromList(list: Teacher[]): string {
+    if (!list || !list.length) {
+      return 'T001';
+    }
+
+    const nums = list
+      .map(t => String(t.teacherid || ''))
+      .map(id => {
+        const m = id.match(/T(\d+)/i);
+        return m ? parseInt(m[1], 10) : 0;
+      })
+      .filter(n => !isNaN(n));
+
+    const max = nums.length ? Math.max(...nums) : 0;
+    const next = max + 1;
+
+    return 'T' + String(next).padStart(3, '0');  // T001, T002, ...
+  }
+
+  private setNextTeacherIdIfNew(): void {
+    if (this.isEdit) return;
+    const nextId = this.generateNextTeacherIdFromList(this.teachers);
+    this.teacherForm.patchValue({ teacherid: nextId });
+  }
+
   // ---------- Toast ----------
   private showToastMessage(message: string, type: 'success' | 'error' = 'success') {
     this.toastMessage = message;
@@ -102,8 +134,10 @@ export class TeacherComponent implements OnInit, OnDestroy {
       next: (data) => {
         this.loading = false;
         this.teachers = data || [];
-        // reset pager if needed
         this.page = 1;
+
+        // auto-fill next ID for new entry
+        this.setNextTeacherIdIfNew();
       },
       error: (error) => {
         this.loading = false;
@@ -158,6 +192,7 @@ export class TeacherComponent implements OnInit, OnDestroy {
   // ---------- Row Actions ----------
   editTeacher(teacher: Teacher): void {
     this.isEdit = true;
+
     const idForEdit = (teacher as any)._id ?? teacher.teacherid;
     this.currentTeacherId = idForEdit ? String(idForEdit) : null;
 
@@ -181,7 +216,6 @@ export class TeacherComponent implements OnInit, OnDestroy {
       experience: teacher.experience ?? 0,
     });
 
-    // Scroll to form for visibility
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
 
@@ -213,6 +247,8 @@ export class TeacherComponent implements OnInit, OnDestroy {
     this.teacherForm.reset();
     this.isEdit = false;
     this.currentTeacherId = null;
+    // assign next teacherid after reset
+    this.setNextTeacherIdIfNew();
   }
 
   onPhotoUpload(event: Event): void {
@@ -285,6 +321,20 @@ export class TeacherComponent implements OnInit, OnDestroy {
       this.sortKey = k;
       this.sortDir = 'asc';
     }
+  }
+
+  loadClasses(): void {
+    this.loadingClasses = true;
+    this.studentService.getAllClasses().subscribe({
+      next: (list) => {
+        this.loadingClasses = false;
+        this.classes = (list || []).filter(Boolean);
+      },
+      error: (err) => {
+        this.loadingClasses = false;
+        console.error('Error loading classes', err);
+      }
+    });
   }
 
   setView(mode: 'grid' | 'table') { this.viewMode = mode; }
