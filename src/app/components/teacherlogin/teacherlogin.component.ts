@@ -24,7 +24,7 @@ import { forkJoin, of } from 'rxjs';
   selector: 'app-teacherlogin',
   
   templateUrl: './teacherlogin.component.html',
-  styleUrls: ['./teacherlogin.component.css'],
+  styleUrls: ['./teacherlogin.component.scss'],
 })
 export class TeacherloginComponent implements OnInit {
   // Tabs: 'students' | 'attendance' | 'notices' | 'progress'

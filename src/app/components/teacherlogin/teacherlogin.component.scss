@@ -7,11 +7,11 @@
 
   /* Lines & text */
   --border-subtle:goldenrod;    /* slate-800 */
-  --text-main:goldenrod;        /* gray-200 */
-  --text-muted: goldenrod;       /* gray-400 */
+  --text-main:rgb(238, 177, 23);        /* gray-200 */
+  --text-muted: rgb(228, 168, 15);       /* gray-400 */
 
   /* Brand & states */
-  --primary: #6366f1;          /* indigo-500 */                             /*[web:16][web:18]*/
+  --primary: rgb(240, 179, 24);          /* indigo-500 */                             /*[web:16][web:18]*/
   --primary-soft: rgba(227, 227, 241, 0.14);
   --danger: #f97373;           /* red-400 style */
   --success: #22c55e;          /* green-500 */
@@ -27,7 +27,7 @@
   height: 100vh;
   display: flex;
   flex-direction: column;
-  background: radial-gradient(circle at top left, #1e293b 0, #020617 55%, #000 100%);
+  background: radial-gradient(circle at top left, #f2f5fa 0, #c7cff1 55%, #f29f9f 100%);
   font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
   color: var(--text-main);
   overflow: hidden;
@@ -36,8 +36,8 @@
 /* Top navbar */
 .topbar {
   height: 56px;
-  background: rgba(15, 23, 42, 0.92);
-  border-bottom: 1px solid var(--border-subtle);
+  background: rgba(193, 208, 241, 0.92);
+  border-bottom: 1px solid var(--primary);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -96,9 +96,9 @@
 .top-user {
   padding: 4px 10px;
   border-radius: 999px;
-  background: rgba(15, 23, 42, 0.7);
+  background: rgba(205, 227, 6, 0.7);
   border: 1px solid rgba(148, 163, 184, 0.8);
-  color: #e5e7eb;
+  color: #e81b93;
 }
 
 /* Mobile menu button */
@@ -107,13 +107,13 @@
   left: 12px;
   top: 12px;
   background: var(--primary);
-  color: #f9fafb;
+  color: #1c88f4;
   padding: 8px 10px;
   border-radius: 8px;
   cursor: pointer;
   z-index: 30;
   border: none;
-  box-shadow: 0 18px 40px rgba(79, 70, 229, 0.6);
+  box-shadow: 0 18px 40px rgba(216, 215, 232, 0.6);
   display: none;
 }
 
@@ -198,7 +198,7 @@
 
 /* Cards */
 .card {
-  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.08) 0, #020617 55%);
+  background: radial-gradient(circle at top left, rgba(37, 99, 235, 0.08) 0, #b6bfe6 55%);
   border-radius: 18px;
   padding: 16px 16px 14px;
   margin-bottom: 16px;
@@ -215,6 +215,7 @@ h2 {
 h3 {
   margin: 0 0 4px;
   font-size: 14px;
+  color: var(--text-main);
 }
 
 /* Welcome banner */
@@ -276,7 +277,7 @@ h3 {
   border-radius: 14px;
   padding: 10px 12px;
   border: 1px solid #8ba44e;
-  background: linear-gradient(to bottom right, rgba(141, 170, 237, 0.95), rgba(30, 64, 175, 0.4));
+  background: linear-gradient(to bottom right, rgba(141, 170, 237, 0.95), rgba(228, 233, 250, 0.4));
 }
 
 .small-card .value {
@@ -300,7 +301,7 @@ h3 {
 .data-table th,
 .data-table td {
   padding: 8px 10px;
-  border-bottom: 1px solid #111827;
+  border-bottom: 1px solid #bdcef4;
 }
 
 .data-table thead tr {

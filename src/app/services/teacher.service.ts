@@ -41,7 +41,14 @@ export class TeacherService {
     return this.http.put(`${BASE}/${encodeURIComponent(teacherid)}`, patch)
       .pipe(catchError(this.handle('edit teacher')));
   }
+getTasks(): Observable<any[]> {
+    return this.http.get<any[]>(`${BASE}`);
+  }
 
+  // ✅ UPDATE task status / remark
+  updateTask(task: any): Observable<any> {
+    return this.http.put(`${BASE}/${task._id}`, task);
+  }
   /** Delete — IMPORTANT: backend expects :id = teacherid */
   deleteTeacher(teacherid: string): Observable<any> {
     return this.http.delete(`${BASE}/${encodeURIComponent(teacherid)}`)

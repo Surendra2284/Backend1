@@ -11,12 +11,14 @@
         <strong>Teacher Panel</strong>
         <span>Class Manager & Homework</span>
       </div>
+     
     </div>
     <div class="topbar-right" *ngIf="loggedInTeacher">
       <div class="top-user">
         {{ loggedInTeacher.name }} · {{ loggedInTeacher.Assignclass }}
       </div>
     </div>
+    
   </header>
 
   <div class="layout">
