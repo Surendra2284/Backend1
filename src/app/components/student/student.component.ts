@@ -1,7 +1,8 @@
 import { Component, OnInit } from '@angular/core';
 import { NgForm } from '@angular/forms';
 import { StudentService } from '../../services/student.service';
-
+import { TeacherService } from '../../services/teacher.service';
+import { Teacher } from '../../components/models/Teacher';
 import * as XLSX from 'xlsx';
 
 @Component({
@@ -15,7 +16,7 @@ export class StudentComponent implements OnInit {
   students: any[] = [];
   currentStudent: any = {};
   isEditing = false;
-
+teachers: Teacher[] = [];
 totalStudents = 0;
 
 
@@ -57,14 +58,24 @@ totalStudents = 0;
     photo: 'photo',
   };
 
-  constructor(private studentService: StudentService) {}
+  constructor(private studentService: StudentService,
+    private teacherService: TeacherService 
+  ) {}
 
   ngOnInit(): void {
     this.getStudents();
+    this.loadTeachers();
   }
 
   /* ---------------------------------- LOAD ---------------------------------- */
-
+loadTeachers(): void {
+    this.teacherService.getTeachers().subscribe({
+      next: (teachers) => {
+        this.teachers = teachers || [];
+      },
+      error: (err) => console.error('Error loading teachers', err),
+    });
+  }
   getStudents(): void {
     this.studentService.getStudents().subscribe({
       next: (res) => {

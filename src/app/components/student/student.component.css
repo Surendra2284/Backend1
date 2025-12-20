@@ -9,24 +9,31 @@
   
   label {
     display: block;
-    margin: 8px 0 4px;
+    margin: 1px 0 4px;
   }
   
-  input,
+  button{
+    display: block;
+    
+    padding: 1px;
+    margin-bottom: 16px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+  }
   textarea,
   select,
-  button {
+  input {
     display: block;
     width: 100%;
-    padding: 8px;
+    padding: 1px;
     margin-bottom: 16px;
     border: 1px solid #ccc;
     border-radius: 4px;
   }
   
   button {
-    background-color: #4CAF50;
-    color: white;
+    background-color: #e3d356;
+    color: rgb(222, 92, 92);
     border: none;
     cursor: pointer;
   }
@@ -38,18 +45,21 @@
   table {
     width: 100%;
     border-collapse: collapse;
-    margin-top: 16px;
+    margin-top: 1px;
   }
-  
+  table.table-bordered th {
+  background: #87adf8 !important;
+  font-weight: 700;
+}
   table th,
   table td {
-    border: 1px solid #ccc;
+    border: 1px solid #d01313;
     padding: 8px;
     text-align: left;
   }
   
   table th {
-    background-color: #f2f2f2;
+    background-color: #f99292;
   }
   /* =========================================================
    GLOBAL PAGE LAYOUT
@@ -85,22 +95,18 @@
   font-weight: 700;
 }
 
-
-/* =========================================================
-   TABLES
-   ========================================================= */
-
 .table th {
   font-weight: 700;
-  background: #f8f9fc !important;
+  background: #0e47f1 !important;
   user-select: none;
 }
 
 .table-hover tbody tr:hover {
-  background-color: #f0f6ff !important;
+  background-color: #e68c15 !important;
 }
 
-.table td, .table th {
+.table td,
+.table th {
   vertical-align: middle;
 }
 
@@ -111,7 +117,7 @@
 
 .sortable:hover {
   color: #0b5ed7;
-  background: #eef4ff;
+  background: #467ada;
 }
 
 
@@ -174,19 +180,43 @@
 }
 
 
-/* =========================================================
-   PAGINATION
-   ========================================================= */
-.btn-group .btn {
-  min-width: 38px;
+/* ===============================
+   Pagination container
+================================ */
+.d-flex.justify-content-between.align-items-center.mb-4 {
+  flex-wrap: wrap;
 }
 
-.btn-group .btn-primary {
-  border-radius: 6px !important;
+/* ===============================
+   Page numbers wrapper
+================================ */
+.pagination-pages {
+  display: flex;
+  flex-wrap: wrap;           /* allow 2 lines */
+  max-width: 100%;           /* stay inside card */
+  gap: 4px;
+  overflow: hidden;          /* never overflow */
 }
 
-.btn-group .btn-outline-secondary {
-  border-radius: 6px !important;
+/* ===============================
+   Pagination buttons
+================================ */
+.pagination-pages .btn {
+  min-width: 28px;
+  padding: 0.2rem 0.45rem;
+  font-size: 0.75rem;
+  line-height: 1.2;
+  flex: 0 0 auto;
+}
+
+/* active page */
+.pagination-pages .btn.btn-primary {
+  background-color: #0b5ed7 !important;
+  border-color: #0b5ed7 !important;
+  color: #fff !important;
+}
+.pagination-pages .btn.btn-primary:hover {
+  background-color: #ad1236 !important;
 }
 
 
@@ -214,7 +244,7 @@ table.table-bordered {
 }
 
 table.table-bordered th {
-  background: #f3f7ff !important;
+  background: #87adf8 !important;
   font-weight: 700;
 }
 

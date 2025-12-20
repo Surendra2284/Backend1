@@ -11,7 +11,7 @@ import { StudentProgress, StudentProgressService } from '../../services/student-
 export class AdminComponent implements OnInit {
   role: string = '';
   username: string = '';
-  activeTab: string = 'student'; // Default tab
+  activeTab: string = 'dashboard'; // Default tab
   unapprovedUsers: any[] = [];
   pendingNotices: any[] = [];   // <-- store pending notices
   message: string = '';

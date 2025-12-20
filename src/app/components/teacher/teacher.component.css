@@ -10,8 +10,8 @@
 /* ===== Cards ===== */
 .card {
   border-radius: 12px;
-  background-color: #ffffff;          /* white card for contrast */
-  border: 1px solid #dee2e6;
+  background-color: #ec8787;          /* white card for contrast */
+  border: 1px solid #3c85ce;
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.04);
 }
 
@@ -31,7 +31,7 @@ h2, h3, h4, h5 {
 /* ===== Tables ===== */
 .table {
   border-radius: 12px;
-  background-color: #ffffff;
+  background-color: #7ccbf3;
   overflow: hidden;
 }
 
@@ -206,4 +206,17 @@ h2, h3, h4, h5 {
     left: 12px;
     max-width: unset;
   }
+}
+/* ensures table stays inside card and can scroll horizontally */
+.table-wrapper {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: auto;       /* horizontal scroll if needed */
+}
+
+/* avoid table exceeding container width */
+.table {
+  width: 100%;
+  max-width: 100%;
+  table-layout: auto;     /* or fixed, depending on your preference */
 }

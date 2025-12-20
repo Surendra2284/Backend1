@@ -1,64 +1,92 @@
-/* HeroesComponent's private CSS styles */
-.heroes {
-  margin: 0 0 2em 0;
-  list-style-type: none;
-  padding: 0;
-  width: 15em;
+/* ===== Bulk Notice Card ===== */
+.bulk-update-card {
+  border-radius: 14px;
+  border: 1px solid rgba(15, 23, 42, 0.12);
+  background: #0b1120;                 /* dark background (match dashboard) */
+  color: #e5e7eb;
+  box-shadow: 0 12px 30px rgba(15, 23, 42, 0.45);
+  padding: 1.25rem !important;
 }
-.heroes li {
-  position: relative;
+
+/* Title */
+.bulk-update-card h3 {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #e5e7eb;
+  margin-bottom: 0.75rem;
+}
+
+/* Download button */
+.bulk-update-card .btn-success {
+  border-radius: 999px;
+  font-weight: 500;
+  padding-inline: 1.25rem;
+  box-shadow: 0 8px 22px rgba(34, 197, 94, 0.4);
+  transition: transform 0.08s ease, box-shadow 0.15s ease;
+}
+
+.bulk-update-card .btn-success:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(34, 197, 94, 0.55);
+}
+
+/* File input */
+.bulk-update-card .form-control[type="file"] {
+  border-radius: 999px;
+  border-color: rgba(148, 163, 184, 0.7);
+  background-color: #020617;
+  color: #e5e7eb;
+  font-size: 0.85rem;
+  padding: 0.3rem 0.75rem;
+}
+
+.bulk-update-card .form-control[type="file"]::file-selector-button {
+  border-radius: 999px;
+  border: none;
+  background: #1d4ed8;
+  color: #f9fafb;
+  padding: 0.25rem 0.8rem;
+  margin-right: 0.75rem;
   cursor: pointer;
 }
 
-.heroes li:hover {
-  left: .1em;
+/* Small helper text */
+.bulk-update-card small.text-muted {
+  font-size: 0.8rem;
+  color: #9ca3af !important;
 }
 
-.heroes a {
-  color: #333;
-  text-decoration: none;
-  background-color: #EEE;
-  margin: .5em;
-  padding: .3em 0;
-  height: 1.6em;
-  border-radius: 4px;
+/* Progress bar wrapper */
+.bulk-update-card .progress {
+  height: 0.9rem;
+  border-radius: 999px;
+  background-color: rgba(15, 23, 42, 0.85);
+  overflow: hidden;
+}
+
+/* Progress bar itself */
+.bulk-update-card .progress-bar {
+  background: linear-gradient(90deg, #22c55e, #a3e635);
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: #020617;
+  border-radius: 999px;
+  transition: width 0.2s ease;
+}
+
+/* Messages component spacing */
+.bulk-update-card app-messages {
   display: block;
-  width: 100%;
+  margin-top: 0.75rem;
 }
 
-.heroes a:hover {
-  color: #2c3a41;
-  background-color: #e6e6e6;
-}
+/* Responsive tweaks */
+@media (max-width: 576px) {
+  .bulk-update-card {
+    padding: 1rem !important;
+  }
 
-.heroes a:active {
-  background-color: #525252;
-  color: #fafafa;
-}
-
-.heroes .badge {
-  display: inline-block;
-  font-size: small;
-  color: white;
-  padding: 0.8em 0.7em 0 0.7em;
-  background-color: #405061;
-  line-height: 1em;
-  position: relative;
-  left: -1px;
-  top: -4px;
-  height: 1.8em;
-  min-width: 16px;
-  text-align: right;
-  margin-right: .8em;
-  border-radius: 4px 0 0 4px;
-}
-.card {
-  border-radius: 10px;
-  background: #fff;
-  box-shadow: 0 2px 12px rgba(0,0,0,0.15);
-  padding: 20px;
-}
-.selected {
-  background-color: #CFD8DC !important;
-  color: white;
+  .bulk-update-card h3 {
+    font-size: 1rem;
+  }
 }

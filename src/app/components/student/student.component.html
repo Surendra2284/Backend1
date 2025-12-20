@@ -59,13 +59,23 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label">Role</label>
-              <input name="Role" class="form-control" [(ngModel)]="currentStudent.Role">
-            </div>
+  <label class="form-label d-block">Role</label>
+  <span class="form-control-plaintext">Student</span>
+</div>
 
+            <!-- CLASS TEACHER DROPDOWN -->
             <div class="mb-3">
               <label class="form-label">Class Teacher</label>
-              <input name="classteacher" class="form-control" [(ngModel)]="currentStudent.classteacher">
+              <select
+                name="classteacher"
+                class="form-control"
+                [(ngModel)]="currentStudent.classteacher"
+              >
+                <option value="">-- Select Teacher --</option>
+                <option *ngFor="let t of teachers" [value]="t.name">
+                  {{ t.name }}
+                </option>
+              </select>
             </div>
 
             <div class="mb-3">
@@ -80,9 +90,10 @@
 
               <div *ngIf="currentStudent.photo" class="mt-2 text-center">
                 <small class="text-muted d-block">Preview:</small>
-                <img [src]="currentStudent.photo"
-                     class="rounded shadow-sm border"
-                     style="max-width: 100%; max-height: 200px; object-fit: cover;">
+                <img
+                  [src]="currentStudent.photo"
+                  class="rounded shadow-sm border"
+                  style="max-width: 100%; max-height: 200px; object-fit: cover;">
               </div>
             </div>
 
@@ -90,7 +101,9 @@
               <button class="btn btn-success w-100" [disabled]="studentForm.invalid">
                 {{ isEditing ? 'Update' : 'Add' }}
               </button>
-              <button type="button" class="btn btn-outline-secondary" (click)="resetForm(studentForm)">Reset</button>
+              <button type="button" class="btn btn-outline-secondary" (click)="resetForm(studentForm)">
+                Reset
+              </button>
             </div>
           </form>
         </div>
@@ -180,10 +193,18 @@
 
           <!-- Filter Row -->
           <div class="row g-2 mt-3 small">
-            <div class="col-3"><input class="form-control form-control-sm" placeholder="ID" [(ngModel)]="filters.studentId"></div>
-            <div class="col-3"><input class="form-control form-control-sm" placeholder="Name" [(ngModel)]="filters.name"></div>
-            <div class="col-3"><input class="form-control form-control-sm" placeholder="Class" [(ngModel)]="filters.class"></div>
-            <div class="col-3"><input class="form-control form-control-sm" placeholder="Mobile" [(ngModel)]="filters.mobileNo"></div>
+            <div class="col-3">
+              <input class="form-control form-control-sm" placeholder="ID" [(ngModel)]="filters.studentId">
+            </div>
+            <div class="col-3">
+              <input class="form-control form-control-sm" placeholder="Name" [(ngModel)]="filters.name">
+            </div>
+            <div class="col-3">
+              <input class="form-control form-control-sm" placeholder="Class" [(ngModel)]="filters.class">
+            </div>
+            <div class="col-3">
+              <input class="form-control form-control-sm" placeholder="Mobile" [(ngModel)]="filters.mobileNo">
+            </div>
           </div>
 
         </div>
@@ -212,20 +233,25 @@
               <tbody>
                 <tr *ngFor="let s of paginatedStudents; trackBy: trackByStudent">
                   <td>
-                    <img [src]="s.photo" *ngIf="s.photo"
-                         style="width:45px;height:45px;border-radius:6px;object-fit:cover;">
+                    <img
+                      *ngIf="s.photo"
+                      [src]="s.photo"
+                      style="width:45px;height:45px;border-radius:6px;object-fit:cover;">
+                  </td>
+                  <td class="text-end">
+                    <button class="btn btn-sm btn-outline-primary" (click)="editStudent(s)">Edit</button>
+                    <button class="btn btn-sm btn-outline-danger ms-1" (click)="deleteStudent(s.studentId)">
+                      Delete
+                    </button>
                   </td>
                   <td>{{ s.studentId }}</td>
                   <td>{{ s.name }}</td>
                   <td>{{ s.class }}</td>
                   <td>{{ s.mobileNo }}</td>
                   <td>{{ s.Notice }}</td>
-                  <td>{{ s.Role }}</td>
+                  
                   <td>{{ s.classteacher }}</td>
-                  <td class="text-end">
-                    <button class="btn btn-sm btn-outline-primary" (click)="editStudent(s)">Edit</button>
-                    <button class="btn btn-sm btn-outline-danger ms-1" (click)="deleteStudent(s.studentId)">Delete</button>
-                  </td>
+                  
                 </tr>
 
                 <tr *ngIf="!paginatedStudents.length">
@@ -244,31 +270,41 @@
       <!-- ====================== PAGINATION ====================== -->
       <div class="d-flex justify-content-between align-items-center mb-4">
 
-        <div class="btn-group">
-          <button class="btn btn-sm btn-outline-secondary" [disabled]="page<=1" (click)="prevPage()">Prev</button>
+        <!-- page buttons hidden on small screens -->
+        <div class="pagination-pages d-none d-md-flex">
+
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="page<=1" (click)="prevPage()">
+            Prev
+          </button>
 
           <ng-container *ngFor="let p of [].constructor(totalPages); let i = index;">
-            <button class="btn btn-sm"
+            <button
+              class="btn btn-sm"
               [ngClass]="page===i+1 ? 'btn-primary' : 'btn-outline-secondary'"
               (click)="goToPage(i+1)">
               {{ i+1 }}
             </button>
           </ng-container>
 
-          <button class="btn btn-sm btn-outline-secondary" [disabled]="page>=totalPages" (click)="nextPage()">Next</button>
+          <button class="btn btn-sm btn-outline-secondary" [disabled]="page>=totalPages" (click)="nextPage()">
+            Next
+          </button>
         </div>
 
+        <!-- on small screens you still have Prev/Next via another control if you want, or only rows-per-page -->
         <div class="d-flex align-items-center gap-2">
-           <small class="me-2">Rows per page:</small>
-          <select #pageSizeSelect class="form-select form-select-sm w-auto"
-        [value]="pageSize"
-        (change)="onPageSizeChange(pageSizeSelect.value)">
-    <option [value]="5">5</option>
-    <option [value]="10">10</option>
-    <option [value]="25">25</option>
-    <option [value]="50">50</option>
-</select>
-
+          <small class="me-2">Rows per page:</small>
+          <select
+            #pageSizeSelect
+            class="form-select form-select-sm w-auto"
+            [value]="pageSize"
+            (change)="onPageSizeChange(pageSizeSelect.value)"
+          >
+            <option [value]="5">5</option>
+            <option [value]="10">10</option>
+            <option [value]="25">25</option>
+            <option [value]="50">50</option>
+          </select>
         </div>
 
       </div>

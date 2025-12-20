@@ -161,7 +161,7 @@
       <div *ngIf="notices.length; else noNotices">
         <div class="notice-card" *ngFor="let notice of notices">
           <h3>{{ notice.title }}</h3>
-          <p>{{ notice.message }}</p>
+          
           <small>By {{ notice.name }}</small>
         </div>
       </div>
