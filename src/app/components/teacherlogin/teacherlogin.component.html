@@ -23,7 +23,10 @@
 
   <div class="layout">
     <!-- SIDEBAR -->
-    <aside class="sidebar" #teacherSidebar id="teacherSidebar">
+    <aside
+      class="sidebar"
+      [class.open]="sidebarOpen && isMobile"
+      [class.collapsed]="!sidebarOpen && !isMobile">
       <h2>Navigation</h2>
 
       <div class="nav-group-title">Class</div>
@@ -59,7 +62,9 @@
     </aside>
 
     <!-- MAIN CONTENT -->
-    <main class="main" #teacherMainContent>
+    <main
+      class="main"
+      [class.expanded]="!sidebarOpen && !isMobile">
 
       <!-- WELCOME BANNER -->
       <section class="card" *ngIf="loggedInTeacher">

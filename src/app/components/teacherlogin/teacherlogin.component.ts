@@ -31,6 +31,7 @@ export class TeacherloginComponent implements OnInit {
   activeTab: string = 'students';
   sidebarOpen: boolean = false;
 
+isMobile = false;
   // Logged-in teacher data
   loggedInTeacher: Teacher | null = null;
   displayName: string = '';
@@ -94,6 +95,8 @@ export class TeacherloginComponent implements OnInit {
   /* -------------------------------------------------------------------------- */
 
   ngOnInit(): void {
+    this.checkScreen();
+  window.addEventListener('resize', () => this.checkScreen());
     const username = localStorage.getItem('username');
     if (!username) {
       alert('Session expired. Please log in again.');
@@ -120,21 +123,13 @@ export class TeacherloginComponent implements OnInit {
       },
     });
   }
-toggleTeacherSidebar() {
-  const sidebar = document.getElementById("teacherSidebar");
-  const main = document.getElementById("teacherMainContent");
+  checkScreen() {
+  this.isMobile = window.innerWidth <= 768;
 
-  if (!sidebar) return;
-
-  // Mobile behavior
-  if (window.innerWidth <= 768) {
-    sidebar.classList.toggle("open");
-    return;
+  // Auto-close sidebar on mobile
   }
-
-  // Desktop collapse behavior
-  sidebar.classList.toggle("collapsed");
-  if (main) main.classList.toggle("expanded");
+toggleTeacherSidebar() {
+  this.sidebarOpen = !this.sidebarOpen;
 }
 
   selectTab(tab: string) {

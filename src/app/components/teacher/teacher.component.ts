@@ -38,7 +38,7 @@ export class TeacherComponent implements OnInit, OnDestroy {
   // ---- UI state ----
   loading = false;
   errorMessage = '';
-  viewMode: 'grid' | 'table' = 'table';
+  viewMode: 'grid' | 'table' = 'grid';
 
   // search + sorting + pagination (client-side)
   query = '';

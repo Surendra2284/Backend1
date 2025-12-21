@@ -248,9 +248,11 @@
 ==================================================== */
 .notice-card {
   padding: 15px;
-  background: #ffffff;
+  background: #e86363;
   border-left: 6px solid var(--primary);
   border-radius: 10px;
+  font-style: italic;
+  
   box-shadow: var(--shadow);
   margin-bottom: 15px;
 }
@@ -318,4 +320,5 @@
     padding: 6px;
     white-space: nowrap;
   }
+  
 }
