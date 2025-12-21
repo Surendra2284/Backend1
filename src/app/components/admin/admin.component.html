@@ -349,18 +349,13 @@
     }
   </style>
 
-  <script>
-    function toggleSidebar() {
-      const sidebar = document.getElementById("sidebar");
-      sidebar.classList.toggle("collapsed");
-    }
-  </script>
+  
 </head>
 
 <body>
 
   <!-- Mobile Menu Button -->
-  <button class="menu-btn" onclick="toggleSidebar()">☰</button>
+  <button class="menu-btn" (click)="toggleSidebar()">☰</button>
 
   <!-- Top Navbar -->
   <div class="topbar">
@@ -380,7 +375,7 @@
 
   <div class="layout">
     <!-- Sidebar (NAV KEPT) -->
-    <div class="sidebar" id="sidebar">
+    <div class="sidebar" [class.collapsed]="!sidebarOpen">
       <h2>Navigation</h2>
 
       <div class="nav-group-title">Main</div>

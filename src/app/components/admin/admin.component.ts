@@ -19,7 +19,7 @@ adminProgressList: StudentProgress[] = [];
 progressFilterClass: string = '';
 progressFilterDate: string = '';
 progressFilterSubject: string = '';
-
+ sidebarOpen = false;
   constructor(
     private userService: UserService,
     private adminService: AdminService,
@@ -40,7 +40,9 @@ progressFilterSubject: string = '';
   selectTab(tab: string): void {
     this.activeTab = tab;
   }
-
+  toggleSidebar(): void {
+    this.sidebarOpen = !this.sidebarOpen;
+  }
   // Logout logic
   logout(): void {
     console.log('User logged out.');
