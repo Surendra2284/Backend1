@@ -1,7 +1,9 @@
 <div class="container py-4 teacher-container" [class.loading]="loading">
 
   <!-- Toast -->
-  <div *ngIf="showToast" class="toast-message" [ngClass]="toastType">{{ toastMessage }}</div>
+  <div *ngIf="showToast" class="toast-message" [ngClass]="toastType">
+    {{ toastMessage }}
+  </div>
 
   <!-- Header / Controls -->
   <div class="card shadow-sm border-0 p-3 mb-3">
@@ -12,11 +14,7 @@
       </div>
 
       <div class="d-flex gap-2 align-items-center flex-wrap">
-        
-
-        
-
-        
+        <!-- (keep any header controls here if you add later) -->
       </div>
     </div>
   </div>
@@ -31,7 +29,9 @@
       <div class="row g-3">
         <div class="col-md-3">
           <label class="form-label fw-semibold">Teacher ID</label>
-          <input type="text" class="form-control form-control-sm" formControlName="teacherid" />
+          <input type="text"
+                 class="form-control form-control-sm"
+                 formControlName="teacherid" />
           <small class="text-danger"
                  *ngIf="teacherForm.get('teacherid')?.touched && teacherForm.get('teacherid')?.hasError('required')">
             Required
@@ -40,7 +40,9 @@
 
         <div class="col-md-3">
           <label class="form-label fw-semibold">Name</label>
-          <input type="text" class="form-control form-control-sm" formControlName="name" />
+          <input type="text"
+                 class="form-control form-control-sm"
+                 formControlName="name" />
           <small class="text-danger"
                  *ngIf="teacherForm.get('name')?.touched && teacherForm.get('name')?.hasError('required')">
             Required
@@ -62,7 +64,9 @@
 
         <div class="col-md-3">
           <label class="form-label fw-semibold">Mobile</label>
-          <input type="text" class="form-control form-control-sm" formControlName="mobileNo" />
+          <input type="text"
+                 class="form-control form-control-sm"
+                 formControlName="mobileNo" />
           <small class="text-danger" *ngIf="teacherForm.get('mobileNo')?.hasError('pattern')">
             Must be 10 digits
           </small>
@@ -70,54 +74,70 @@
 
         <div class="col-md-6">
           <label class="form-label fw-semibold">Address</label>
-          <input type="text" class="form-control form-control-sm" formControlName="address" />
+          <input type="text"
+                 class="form-control form-control-sm"
+                 formControlName="address" />
         </div>
 
         <div class="col-md-3">
           <label class="form-label fw-semibold">Role</label>
-          <input type="text" class="form-control form-control-sm" formControlName="Role" />
+          <input type="text"
+                 class="form-control form-control-sm"
+                 formControlName="Role" />
         </div>
 
         <div class="col-md-3">
           <label class="form-label fw-semibold">Notice</label>
-          <input type="text" class="form-control form-control-sm" formControlName="Notice" />
+          <input type="text"
+                 class="form-control form-control-sm"
+                 formControlName="Notice" />
         </div>
 
         <div class="col-md-3">
           <label class="form-label fw-semibold">Email</label>
-          <input type="email" class="form-control form-control-sm" formControlName="Email" />
+          <input type="email"
+                 class="form-control form-control-sm"
+                 formControlName="Email" />
         </div>
 
         <div class="col-md-3">
           <label class="form-label fw-semibold">Subject</label>
-          <input type="text" class="form-control form-control-sm" formControlName="subject" />
+          <input type="text"
+                 class="form-control form-control-sm"
+                 formControlName="subject" />
         </div>
 
         <div class="col-md-3">
           <label class="form-label fw-semibold">Attendance %</label>
-          <input type="number" class="form-control form-control-sm" formControlName="attendance" />
+          <input type="number"
+                 class="form-control form-control-sm"
+                 formControlName="attendance" />
         </div>
 
         <div class="col-md-3">
           <label class="form-label fw-semibold">Class Teacher</label>
-          <input type="text" class="form-control form-control-sm" formControlName="classteacher" />
+          <input type="text"
+                 class="form-control form-control-sm"
+                 formControlName="classteacher" />
         </div>
 
         <div class="col-md-3">
           <label class="form-label fw-semibold">Experience (Years)</label>
-          <input type="number" class="form-control form-control-sm" formControlName="experience" />
+          <input type="number"
+                 class="form-control form-control-sm"
+                 formControlName="experience" />
         </div>
 
         <div class="col-md-6">
           <label class="form-label fw-semibold">Photo</label>
-          <input type="file" class="form-control form-control-sm" (change)="onPhotoUpload($event)" />
+          <input type="file"
+                 class="form-control form-control-sm"
+                 (change)="onPhotoUpload($event)" />
           <div *ngIf="teacherForm.get('photo')?.value" class="mt-2 text-center">
-            <img
-              [src]="teacherForm.get('photo')?.value"
-              alt="Preview"
-              class="img-thumbnail shadow-sm border border-primary"
-              style="max-height: 120px; border-radius: 10px;"
-            />
+            <img [src]="teacherForm.get('photo')?.value"
+                 alt="Preview"
+                 class="img-thumbnail shadow-sm border border-primary"
+                 style="max-height: 120px; border-radius: 10px;" />
           </div>
         </div>
       </div>
@@ -134,42 +154,51 @@
           Clear
         </button>
       </div>
-      <div class="input-group input-group-sm" style="width: 180px;">
-          <span class="input-group-text">Page size</span>
-          <select class="form-select"
-                  [ngModel]="pageSize"
-                  (ngModelChange)="setPageSize($event)">
-            <option *ngFor="let s of [4,8,12,20]" [value]="s">{{ s }}</option>
-          </select>
-        </div>
+
+      <!-- Page size selector (standalone ngModel) -->
+      <div class="input-group input-group-sm mt-3" style="width: 180px;">
+        <span class="input-group-text">Page size</span>
+        <select class="form-select"
+                [ngModel]="pageSize"
+                (ngModelChange)="setPageSize($event)"
+                [ngModelOptions]="{ standalone: true }">
+          <option *ngFor="let s of [4,8,12,20]" [value]="s">{{ s }}</option>
+        </select>
+      </div>
     </form>
   </div>
 
   <!-- Listing -->
   <div class="card shadow-lg border-0 p-3">
-    <div class="input-group input-group-sm" style="width: 260px;">
-          <span class="input-group-text">Search</span>
-          <input type="text"
-                 class="form-control"
-                 placeholder="name, subject, class..."
-                 [(ngModel)]="query"
-                 (ngModelChange)="page=1" />
-        </div>
-        <div class="btn-group btn-group-sm">
-          <button type="button"
-                  class="btn btn-outline-primary"
-                  [class.active]="viewMode==='table'"
-                  (click)="setView('table')">
-            Table
-          </button>
-          <button type="button"
-                  class="btn btn-outline-primary"
-                  [class.active]="viewMode==='grid'"
-                  (click)="setView('grid')">
-            Grid
-          </button>
-          
-        </div>
+
+    <!-- Search + view toggle -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-3 gap-2">
+      <div class="input-group input-group-sm" style="width: 260px;">
+        <span class="input-group-text">Search</span>
+        <input type="text"
+               class="form-control"
+               placeholder="name, subject, class..."
+               [(ngModel)]="query"
+               (ngModelChange)="page=1"
+               [ngModelOptions]="{ standalone: true }" />
+      </div>
+
+      <div class="btn-group btn-group-sm">
+        <button type="button"
+                class="btn btn-outline-primary"
+                [class.active]="viewMode==='table'"
+                (click)="setView('table')">
+          Table
+        </button>
+        <button type="button"
+                class="btn btn-outline-primary"
+                [class.active]="viewMode==='grid'"
+                (click)="setView('grid')">
+          Grid
+        </button>
+      </div>
+    </div>
+
     <div class="d-flex align-items-center justify-content-between mb-3">
       <h5 class="text-primary fw-bold m-0">
         📋 Teacher Directory
@@ -182,7 +211,8 @@
           <span class="input-group-text">Sort by</span>
           <select class="form-select"
                   [ngModel]="sortKey"
-                  (ngModelChange)="changeSort($event)">
+                  (ngModelChange)="changeSort($event)"
+                  [ngModelOptions]="{ standalone: true }">
             <option value="name">Name</option>
             <option value="subject">Subject</option>
             <option value="Assignclass">Class</option>
@@ -190,6 +220,7 @@
           </select>
         </div>
         <button class="btn btn-sm btn-outline-primary"
+                type="button"
                 (click)="sortDir = sortDir==='asc' ? 'desc' : 'asc'">
           {{ sortDir === 'asc' ? 'Asc' : 'Desc' }}
         </button>
@@ -203,18 +234,25 @@
              *ngFor="let t of paged; trackBy: trackById">
           <div class="card h-100 shadow-sm">
             <div class="card-body d-flex flex-column align-items-center text-center">
-              <img [src]="formatPhoto(t.photo)" alt="Teacher"
+              <img [src]="formatPhoto(t.photo)"
+                   alt="Teacher"
                    class="rounded-circle border border-2 mb-3"
                    style="width:90px;height:90px;object-fit:cover;">
               <h3 class="mb-0">{{ t.name }}</h3>
               <small class="text-muted">{{ t.Email }}</small>
               <div class="mt-2">
                 <span class="badge bg-primary-subtle text-primary me-1">{{ t.subject }}</span>
-                <span class="badge bg-success-subtle text-success">Class {{ t.Assignclass || '—' }}</span>
+                <span class="badge bg-success-subtle text-success">
+                  Class {{ t.Assignclass || '—' }}
+                </span>
               </div>
               <div class="mt-3 d-flex gap-2">
-                <button class="btn btn-sm btn-outline-primary" (click)="editTeacher(t)">Edit</button>
-                <button class="btn btn-sm btn-outline-danger" (click)="deleteTeacher(t)">Delete</button>
+                <button class="btn btn-sm btn-outline-primary" (click)="editTeacher(t)">
+                  Edit
+                </button>
+                <button class="btn btn-sm btn-outline-danger" (click)="deleteTeacher(t)">
+                  Delete
+                </button>
               </div>
             </div>
           </div>
@@ -242,12 +280,10 @@
         <tbody *ngIf="paged.length; else noData">
           <tr *ngFor="let teacher of paged; trackBy: trackById" class="table-row">
             <td>
-              <img
-                [src]="formatPhoto(teacher.photo)"
-                alt="Teacher Photo"
-                class="rounded-circle border border-secondary shadow-sm"
-                style="height: 60px; width: 60px; object-fit: cover;"
-              />
+              <img [src]="formatPhoto(teacher.photo)"
+                   alt="Teacher Photo"
+                   class="rounded-circle border border-secondary shadow-sm"
+                   style="height: 60px; width: 60px; object-fit: cover;" />
             </td>
             <td>{{ teacher.name }}</td>
             <td>{{ teacher.Email }}</td>
@@ -257,8 +293,16 @@
             <td>{{ teacher.classteacher }}</td>
             <td>{{ teacher.Notice }}</td>
             <td>
-              <button class="btn btn-sm btn-outline-primary me-1" (click)="editTeacher(teacher)">Edit</button>
-              <button class="btn btn-sm btn-outline-danger" (click)="deleteTeacher(teacher)">Delete</button>
+              <button class="btn btn-sm btn-outline-primary me-1"
+                      type="button"
+                      (click)="editTeacher(teacher)">
+                Edit
+              </button>
+              <button class="btn btn-sm btn-outline-danger"
+                      type="button"
+                      (click)="deleteTeacher(teacher)">
+                Delete
+              </button>
             </td>
           </tr>
         </tbody>
@@ -280,14 +324,16 @@
       </div>
       <div class="btn-group">
         <button class="btn btn-sm btn-outline-secondary"
+                type="button"
                 (click)="prevPage()"
                 [disabled]="page<=1">
           « Prev
         </button>
-        <button class="btn btn-sm btn-outline-secondary" disabled>
+        <button class="btn btn-sm btn-outline-secondary" type="button" disabled>
           Page {{ page }} / {{ totalPages }}
         </button>
         <button class="btn btn-sm btn-outline-secondary"
+                type="button"
                 (click)="nextPage()"
                 [disabled]="page>=totalPages">
           Next »
@@ -302,4 +348,3 @@
     <div>Working…</div>
   </div>
 </div>
-    

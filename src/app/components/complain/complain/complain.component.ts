@@ -67,4 +67,38 @@ console.log(this.user);
   filterResolved(status: boolean) {
     this.service.getResolved(status).subscribe(r => this.complains = r);
   }
+  deleteComplain(id: string) {
+    if (!confirm('Delete this complaint?')) return;
+
+    this.service.delete(id).subscribe(() => {
+      this.loadAll();
+    });
+  }
+
+  // ✅ delete all resolved complaints
+  deleteAllResolved() {
+    const resolved = this.complains.filter(c => c.resolved);
+    if (!resolved.length) {
+      alert('No resolved complaints to delete.');
+      return;
+    }
+
+    if (!confirm(`Delete all ${resolved.length} resolved complaints?`)) {
+      return;
+    }
+
+    let deleted = 0;
+
+    resolved.forEach(c => {
+      this.service.delete(c._id).subscribe({
+        next: () => { deleted++; },
+        error: err => console.error('Delete error', err)
+      });
+    });
+
+    setTimeout(() => {
+      alert(`Deleted ${deleted} resolved complaints.`);
+      this.loadAll();
+    }, 800);
+  }
 }
