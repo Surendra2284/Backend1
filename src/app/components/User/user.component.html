@@ -83,6 +83,11 @@
     <div *ngFor="let u of unapprovedUsers" class="border p-2 mb-2 rounded">
       <b>{{ u.username }}</b> ({{ u.role }})
       <button class="btn btn-sm btn-success float-end" (click)="approveUser(u)">Approve</button>
+      <button
+      class="btn btn-sm btn-danger"
+      (click)="deleteUser(u._id)">
+      Delete
+    </button>
     </div>
   </div>
 

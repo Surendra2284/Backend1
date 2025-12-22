@@ -1,15 +1,3 @@
-.Pending { color: orange; font-weight: bold; }
-.Completed { color: green; font-weight: bold; }
-.Delayed { color: red; font-weight: bold; }
-
-.card {
-  padding: 10px;
-  border: 1px solid #ccc;
-  margin-bottom: 15px;
-}
-.card h3 {
-  margin-top: 0;
-}  
 /* ===============================
    PAGE WRAPPER
 ================================*/
@@ -39,23 +27,18 @@ textarea {
   display: block;
   padding: 12px;
   border-radius: 10px;
-  border: 1px solid #81ea5e;
+  border: 1px solid #ccc;
   resize: none;
   font-size: 14px;
   outline: none;
-  background: hsl(0, 61%, 83%);
+  background: #fff;
 }
 
 textarea:focus {
   border-color: #4f46e5;
   box-shadow: 0 0 0 2px rgba(79, 70, 229, 0.15);
 }
-.card th, td {
-    font-size: 14px;
-  border-bottom: 1px solid #d01313;
 
-  padding: 10px;
-}
 /* ===============================
    BUTTONS
 ================================*/
@@ -128,12 +111,12 @@ hr + button:hover {
 ================================*/
 .card p {
   margin: 6px 0;
-  color: #821e6d;
+  color: #374151;
   font-size: 14px;
 }
 
 .card p b {
-  color: #0b7b49;
+  color: #111827;
 }
 
 /* Date */
@@ -186,117 +169,5 @@ hr + button:hover {
   button {
     font-size: 12px;
     padding: 7px 12px;
-  }
-}
-/* Base table styling */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-  background-color: #5dad2b;
-}
-
-th, td {
-  padding: 8px 10px;
-  border: 1px solid #851313;
-  text-align: left;
-}
-
-th {
-  background-color: #5dad2b;
-  font-weight: 600;
-}
-
-/* Status badge */
-span[ngClass] {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 12px;
-  font-size: 12px;
-}
-
-/* Example classes returned by getTaskStatus(task) */
-.completed {
-  background-color: #e6f9ec;
-  color: #118a3b;
-}
-
-.pending {
-  background-color: #fff7e6;
-  color: #b36b00;
-}
-
-.overdue {
-  background-color: #fdecea;
-  color: #b3261e;
-}
-
-/* Buttons */
-button {
-  padding: 4px 10px;
-  font-size: 12px;
-  border-radius: 4px;
-  border: none;
-  cursor: pointer;
-}
-
-button:hover {
-  opacity: 0.9;
-}
-
-/* Desktop (default) */
-@media (min-width: 769px) {
-  table {
-    font-size: 14px;
-  }
-}
-
-/* Mobile: stack rows as cards */
-@media (max-width: 768px) {
-  table,
-  thead,
-  tbody,
-  th,
-  td,
-  tr {
-    display: block;
-  }
-
-  thead {
-    display: none; /* hide header row */
-  }
-
-  tr {
-    margin-bottom: 10px;
-    border: 1px solid #ddd;
-    border-radius: 6px;
-    padding: 8px;
-    background-color: #fff;
-  }
-
-  td {
-    border: none;
-    border-bottom: 1px solid #eee;
-    position: relative;
-    padding: 6px 8px;
-    font-size: 13px;
-  }
-
-  td:last-child {
-    border-bottom: none;
-  }
-
-  /* Labels for each cell using data-label */
-  td::before {
-    content: attr(data-label);
-    font-weight: 600;
-    display: block;
-    margin-bottom: 2px;
-    color: #555;
-  }
-
-  button {
-    width: 100%;
-    margin-top: 4px;
   }
 }

@@ -176,7 +176,7 @@
 }
 
 .nav-item:hover {
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(161, 178, 219, 0.9);
   color: #abe81d;
   transform: translateX(1px);
 }
@@ -305,7 +305,7 @@ h3 {
 }
 
 .data-table thead tr {
-  background: linear-gradient(to right, rgba(15, 23, 42, 0.9), rgba(30, 64, 175, 0.7));
+  background: linear-gradient(to right, rgba(200, 213, 242, 0.9), rgba(30, 64, 175, 0.7));
 }
 
 .data-table th {
@@ -366,16 +366,17 @@ h3 {
 .filter-row {
   display: flex;
   flex-wrap: wrap;
+ 
   gap: 8px;
   margin: 10px 0 14px;
 }
 
-.filter-row input,
+
 .filter-row select {
   padding: 6px 8px;
   border-radius: 999px;
   border: 1px solid #1f2937;
-  background: rgba(15, 23, 42, 0.95);
+  background: rgba(206, 214, 232, 0.95);
   color: var(--text-main);
   font-size: 12px;
   min-width: 140px;
@@ -386,11 +387,7 @@ h3 {
   color: #6b7280;
 }
 
-.filter-row input:focus,
-.filter-row select:focus {
-  border-color: var(--primary);
-  box-shadow: 0 0 0 1px rgba(99, 102, 241, 0.6);
-}
+
 
 /* Textareas */
 .full-textarea {
@@ -398,7 +395,7 @@ h3 {
   min-height: 80px;
   padding: 8px 10px;
   border-radius: 10px;
-  border: 1px solid #bbac0d;
+  border: 1px solid #bb0d95;
   background: rgba(220, 225, 237, 0.96);
   font-size: 12px;
   resize: vertical;

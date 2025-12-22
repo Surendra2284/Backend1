@@ -86,6 +86,13 @@ bulkUpdateNoticeAndAttendance(file: File) {
       })
     );
   }
+// student.service.ts
+updateStudentNotice(studentId: number, data: { notice: string }) {
+  return this.http.put<any>(
+    `${this.apiUrl}/students/update-notice/${studentId}`,
+    data
+  );
+}
 
   /** --- Delete a Student --- */
   deleteStudent(studentId: number): Observable<any> {

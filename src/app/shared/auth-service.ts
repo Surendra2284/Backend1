@@ -2,11 +2,10 @@ import { HttpClient, HttpHeaders } from "@angular/common/http";
 import { Injectable } from "@angular/core";
 import { Router } from "@angular/router";
 import { Observable, BehaviorSubject, of, throwError } from "rxjs";
-import { catchError } from "rxjs/operators";
+import { catchError, switchMap } from "rxjs/operators";
 import { AuthModel } from "../shared/auth-model";
 import { UserService } from "../services/user.service";
 import { environment } from "../../environments/environment";
-import { switchMap } from 'rxjs/operators';
 import { User } from '../services/user.service';
 
 @Injectable({ providedIn: "root" })
@@ -15,7 +14,7 @@ export class AuthService {
   private token: string = "";
   private isAuthenticated = false;
   private logoutTimer: any;
-  errorMessage: string = ""; // ✅ Added
+  errorMessage: string = "";
 
   private authenticatedSub = new BehaviorSubject<boolean>(false);
 
@@ -53,7 +52,10 @@ export class AuthService {
       .post<{ message: string }>(
         this.updateActivityUrl,
         { username },
-        { headers: this.authHeaders() }
+        {
+          headers: this.authHeaders(),
+          withCredentials: true,      // 🔹 send session cookie to backend
+        }
       )
       .pipe(
         catchError((error) => {
@@ -84,7 +86,13 @@ export class AuthService {
     this.performLocalLogout(); // clean previous state
 
     this.http
-      .post<{ token: string; expiresIn: number }>(this.loginUrl, authData)
+      .post<{ token: string; expiresIn: number }>(
+        this.loginUrl,
+        authData,
+        {
+          withCredentials: true,      // 🔹 allow backend to set session cookie
+        }
+      )
       .pipe(
         catchError((err) => {
           this.errorMessage = err.error?.message || "Login failed";
@@ -135,7 +143,10 @@ export class AuthService {
       .post(
         this.logoutUrl,
         { username },
-        { headers: this.authHeaders() }
+        {
+          headers: this.authHeaders(),
+          withCredentials: true,      // 🔹 send cookie so backend can destroy session
+        }
       )
       .pipe(catchError(() => of(null)))
       .subscribe(() => {
@@ -161,30 +172,26 @@ export class AuthService {
       SIGNUP
   ========================================================================== */
   signupUser(username: string, password: string, role: string) {
+    return this.userService.getUserByUsername(username).pipe(
+      // If user exists → duplicate
+      switchMap((user: any) => {
+        return throwError(() => ({
+          error: { message: "Username already exists" },
+        }));
+      }),
 
-  return this.userService.getUserByUsername(username).pipe(
+      // Handle 404 = OK (username available)
+      catchError((err) => {
+        if (err.status === 404) {
+          // Username free → proceed with signup
+          return this.http.post(this.signupUrl, { username, password, role });
+        }
 
-    // If user exists → duplicate
-    switchMap((user: any) => {
-      return throwError(() => ({
-        error: { message: "Username already exists" }
-      }));
-    }),
-
-    // Handle 404 = OK (username available)
-    catchError((err) => {
-      if (err.status === 404) {
-        // Username free → proceed with signup
-        return this.http.post(this.signupUrl, { username, password, role });
-      }
-
-      // Other errors → throw normally
-      return throwError(() => err);
-    })
-  );
-}
-
-
+        // Other errors → throw normally
+        return throwError(() => err);
+      })
+    );
+  }
 
   /* ==========================================================================
       AUTH STATUS CHECKS

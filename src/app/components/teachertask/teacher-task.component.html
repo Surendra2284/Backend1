@@ -1,0 +1,62 @@
+<h2>Teacher Tasks</h2>
+
+<!-- ADMIN ONLY -->
+<div *ngIf="role === 'Admin'" class="card">
+  <h3>Assign Task</h3>
+
+  <select
+    [(ngModel)]="selectedTeacher"
+    (ngModelChange)="onTeacherChange($event)"
+  >
+    <option [ngValue]="null">Select Teacher</option>
+    <option *ngFor="let t of teachers" [ngValue]="t">
+      {{ t.name }}
+    </option>
+  </select>
+
+  <input placeholder="Class" [(ngModel)]="newTask.class">
+  <textarea
+    placeholder="Task Description"
+    [(ngModel)]="newTask.taskDescription">
+  </textarea>
+
+  <button (click)="addTask()">Assign Task</button>
+</div>
+
+
+<hr>
+
+<table border="1" width="100%">
+  <tr>
+    <th>Teacher</th>
+    <th>Class</th>
+    <th>Description</th>
+    <th>Assigned By</th>
+    <th>Status</th>
+    <th>Action</th>
+  </tr>
+
+  <tr *ngFor="let task of tasks">
+    <td>{{task.taskForUser}}</td>
+    <td>{{task.class}}</td>
+    <td>{{task.taskDescription}}</td>
+    <td>{{task.taskGivenBy}}</td>
+    <td>
+      <span [ngClass]="getTaskStatus(task)">
+        {{ getTaskStatus(task) }}
+      </span>
+    </td>
+
+    <td>
+      <button *ngIf="role === 'Teacher' && !task.completedOn"
+              (click)="markCompleted(task._id!)">
+        Mark Completed
+      </button>
+
+      <button *ngIf="role === 'Admin'"
+              (click)="deleteTask(task._id!)">
+        Delete
+      </button>
+    </td>
+  </tr>
+</table>

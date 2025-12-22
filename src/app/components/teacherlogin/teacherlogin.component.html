@@ -48,6 +48,16 @@
         <span class="icon">📢</span> <span>Notices</span>
       </div>
       <div class="nav-item"
+           (click)="selectTab('TeacherTask')"
+           [class.active]="activeTab === 'TeacherTask'">
+        <span class="icon">📢</span> <span>Teacher Task</span>
+      </div>
+       <div class="nav-item"
+           (click)="selectTab('Complains')"
+           [class.active]="activeTab === 'Complains'">
+        <span class="icon">📢</span> <span>Complains</span>
+      </div>
+      <div class="nav-item"
            (click)="selectTab('progress')"
            [class.active]="activeTab === 'progress'">
         <span class="icon">📝</span> <span>Homework</span>
@@ -131,23 +141,27 @@
         <table class="data-table">
           <thead>
             <tr>
+              <th style="width:140px;">Actions</th>
               <th>Name</th>
               <th>ID</th>
               <th>Class</th>
               <th>Address</th>
-              <th style="width:140px;">Actions</th>
+              <th>Notice</th>
+              
             </tr>
           </thead>
           <tbody>
             <tr *ngFor="let s of students">
-              <td>{{ s.name }}</td>
-              <td>{{ s.studentId }}</td>
-              <td>{{ s.class }}</td>
-              <td>{{ s.address }}</td>
               <td>
                 <button class="btn btn-primary" (click)="editStudent(s)">Edit</button>
                 <button class="btn btn-danger" (click)="deleteStudent(s.studentId)">Delete</button>
               </td>
+              <td>{{ s.name }}</td>
+              <td>{{ s.studentId }}</td>
+              <td>{{ s.class }}</td>
+              <td>{{ s.address }}</td>
+              <td>{{ s.Notice }}</td>
+              
             </tr>
             <tr *ngIf="students.length === 0">
               <td colspan="5" style="text-align:center;">No students found.</td>
@@ -288,7 +302,32 @@
         <h2>Change Password</h2>
         <app-user-profile></app-user-profile>
       </section>
+      <section *ngIf="activeTab === 'Complains'" class="card">
+        
+  <h2>📋 My Complains</h2>
 
+  <div *ngFor="let c of complains" class="card">
+  <p><b>{{ c.username }}</b> ({{ c.class }})</p>
+  <p>{{ c.Notice }}</p>
+  <small>{{ c.dated | date }}</small>
+
+  <p *ngIf="c.resolved">✔ Resolved on {{ c.resolveDate | date }}</p>
+
+  <div *ngIf="!c.resolved">
+    <input [(ngModel)]="remark" placeholder="Admin remark">
+    <button (click)="resolve(c)">Resolve</button>
+  </div>
+</div>
+
+  <ng-template #noTasks>
+    <p class="empty">No Class Complain assigned.</p>
+  </ng-template>
+</section>
+     
+      <section *ngIf="activeTab === 'TeacherTask'" class="card">
+        <h2>Teacher Task</h2>
+        <app-teacher-task></app-teacher-task>
+      </section>
     </main>
   </div>
 </div>

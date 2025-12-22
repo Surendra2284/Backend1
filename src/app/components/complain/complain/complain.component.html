@@ -1,0 +1,26 @@
+<p>complain works!</p>
+<h2>📢 Complaints</h2>
+
+<textarea [(ngModel)]="complaintText" placeholder="Write complaint..."></textarea>
+<button (click)="addComplaint()">Submit</button>
+
+<hr>
+
+<button (click)="loadAll()">All</button>
+<button (click)="filterByUser()">My Complaints</button>
+<button (click)="filterByClass()">By Class</button>
+<button (click)="filterResolved(false)">Unresolved</button>
+<button (click)="filterResolved(true)">Resolved</button>
+
+<div *ngFor="let c of complains" class="card">
+  <p><b>{{ c.username }}</b> ({{ c.class }})</p>
+  <p>{{ c.Notice }}</p>
+  <small>{{ c.dated | date }}</small>
+
+  <p *ngIf="c.resolved">✔ Resolved on {{ c.resolveDate | date }}</p>
+
+  <div *ngIf="!c.resolved">
+    <input [(ngModel)]="remark" placeholder="Admin remark">
+    <button (click)="resolve(c)">Resolve</button>
+  </div>
+</div>

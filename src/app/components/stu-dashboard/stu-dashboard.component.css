@@ -252,11 +252,20 @@
   border-left: 6px solid var(--primary);
   border-radius: 10px;
   font-style: italic;
-  
+  font-display: block;
   box-shadow: var(--shadow);
   margin-bottom: 15px;
 }
-
+.cardcompainbox{
+  padding: 15px;
+  background: #e86363;
+  border-left: 6px solid var(--primary);
+  border-radius: 10px;
+  font-style: italic;
+  font-display: block;
+  box-shadow: var(--shadow);
+  margin-bottom: 15px;
+} 
 /* ====================================================
    ANIMATIONS
 ==================================================== */

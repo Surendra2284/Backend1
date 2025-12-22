@@ -1,9 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
-
+import { ComplainService } from '../../services/complain.service';
 import { StudentService, Student } from '../../services/student.service';
 import { NoticeService, Notice } from '../../services/notice.service';
+import { TeacherTaskService} from '../../services/teacher-task.service';
 import {
   AttendanceService,
   Attendance,
@@ -24,18 +23,25 @@ import { forkJoin, of } from 'rxjs';
   selector: 'app-teacherlogin',
   
   templateUrl: './teacherlogin.component.html',
-  styleUrls: ['./teacherlogin.component.scss'],
+  styleUrls: ['./teacherlogin.component.css'],
 })
 export class TeacherloginComponent implements OnInit {
   // Tabs: 'students' | 'attendance' | 'notices' | 'progress'
   activeTab: string = 'students';
   sidebarOpen: boolean = false;
-
+complains: any[] = [];
 isMobile = false;
   // Logged-in teacher data
   loggedInTeacher: Teacher | null = null;
   displayName: string = '';
-
+userId='Test';
+class='All';
+  user = {
+  username: localStorage.getItem('username') ?? '',
+  userId: localStorage.getItem('userId') ?? '',
+  class: localStorage.getItem('class') ?? '',
+  role: localStorage.getItem('userRole') ?? ''
+};
   // Students & notices
   students: Student[] = [];
   teacherNotices: Notice[] = [];
@@ -81,13 +87,15 @@ isMobile = false;
   // UI helpers
   message = '';
   loading = false;
-
+remark = '';
   constructor(
     private studentService: StudentService,
     private noticeService: NoticeService,
     private attendanceService: AttendanceService,
     private teacherService: TeacherService,
-    private studentProgressService: StudentProgressService
+    private service: ComplainService,
+    private studentProgressService: StudentProgressService,
+    private teacherTaskService: TeacherTaskService,
   ) {}
 
   /* -------------------------------------------------------------------------- */
@@ -96,6 +104,7 @@ isMobile = false;
 
   ngOnInit(): void {
     this.checkScreen();
+    
   window.addEventListener('resize', () => this.checkScreen());
     const username = localStorage.getItem('username');
     if (!username) {
@@ -107,12 +116,14 @@ isMobile = false;
       next: (teacher) => {
         this.loggedInTeacher = teacher;
         this.displayName = teacher?.name || 'Teacher';
-
+        this.class = teacher?.Assignclass || '';
         if (teacher?.Assignclass) {
           this.loadStudents();
           this.loadNotices();
           this.loadAttendance();
-          this.loadClassProgress(); // load current + history
+          
+          this.loadClassProgress();
+          this.loadclasscomplain(); // load current + history
         } else {
           console.warn('Teacher has no assigned class.');
         }
@@ -140,6 +151,7 @@ toggleTeacherSidebar() {
     }
   }
 
+  
   /* -------------------------------------------------------------------------- */
   /*  Students                                                                  */
   /* -------------------------------------------------------------------------- */
@@ -246,7 +258,13 @@ scrollToSection(id: string) {
       error: (err) => console.error('Error posting notice:', err),
     });
   }
+loadclasscomplain() {
+  
+  if (!this.class) { return; }
 
+  this.service.getByClass(this.class!).subscribe(r => this.complains = r);
+  
+}
   editNotice(notice: Notice) {
     const updatedText = prompt('Edit notice:', notice.Notice);
     if (updatedText === null) return;
@@ -257,7 +275,13 @@ scrollToSection(id: string) {
       error: (err) => console.error('Error editing notice:', err),
     });
   }
-
+resolve(c: any) {
+    this.service.update(c._id, {
+      resolved: true,
+      resolveDate: new Date(),
+      remark: this.remark
+    }).subscribe(() => this.loadclasscomplain());
+  }
   deleteNotice(id: string) {
     if (!confirm('Are you sure you want to delete this notice?')) return;
     this.noticeService.deleteNotice(id).subscribe({

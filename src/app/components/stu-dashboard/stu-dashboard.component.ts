@@ -1,7 +1,8 @@
 import { Component, OnInit, ViewChild, ElementRef, Renderer2 } from '@angular/core';
-import { of } from 'rxjs';
+import { Observable, of } from 'rxjs';
 import { catchError, finalize } from 'rxjs/operators';
-
+import { ComplainService } from '../../services/complain.service';
+import { TeacherTaskService} from '../../services/teacher-task.service';
 import { StudentService } from '../../services/student.service';
 import {
   AttendanceService,
@@ -28,7 +29,7 @@ export class StuDashboardComponent implements OnInit {
   @ViewChild('studentSidebar') studentSidebar!: ElementRef;
   @ViewChild('studentMainContent') studentMainContent!: ElementRef;
 
-  activeTab: string = 'dashboard';
+ activeTab: 'homework' | 'complain'|'attendance'|'notices' |'dashboard'|'Password'| 'TeacherTask' = 'homework';
 
   /* --------------------------
      Student Info
@@ -63,16 +64,28 @@ export class StuDashboardComponent implements OnInit {
   fromDate: string = '';
   toDate: string = '';
   subjectFilter: string = '';
-
+ complains: any[] = [];
   loading = false;
   message = '';
-
+complaintText: string = '';
+complaintSuccess = false;
+userId='Test';
+class='All';
+  user = {
+  username: localStorage.getItem('username') ?? '',
+  userId: localStorage.getItem('userId') ?? '',
+  class: localStorage.getItem('class') ?? '',
+  role: localStorage.getItem('userRole') ?? ''
+};
+ 
   constructor(
     private studentService: StudentService,
     private attendanceService: AttendanceService,
     private progressService: StudentProgressService,
     private renderer: Renderer2,
     private noticeService: NoticeService,
+    private service: ComplainService,
+    private teacherTaskService: TeacherTaskService,
   ) {}
 
   /* ----------------------------------------------
@@ -91,7 +104,28 @@ export class StuDashboardComponent implements OnInit {
 
     // Step 1 — Get Student Record
     this.loadStudentByName();
+    this.user.userId = this.studentId.toString();
+    this.user.class = this.class;
   }
+submitComplaint() {
+    const payload = {
+      
+      ...this.user,
+      Notice: this.complaintText,
+      dated: new Date()
+    };
+console.log(this.user);
+    this.service.add(payload).subscribe(() => {
+      this.complaintText = '';
+      this.complaintSuccess = true;
+    });
+  }
+loadTeacherTasks() {
+  const username = localStorage.getItem('username');
+  if (!username) { return; }
+
+  this.service.getByUsername(this.user.username!).subscribe(r => this.complains = r);
+}
 
   /* ----------------------------------------------
      SIDEBAR TOGGLE (MOBILE + DESKTOP)
@@ -115,10 +149,13 @@ export class StuDashboardComponent implements OnInit {
       main.classList.add('expanded');
     }
   }
-
-  selectTab(tab: string) {
-    this.activeTab = tab;
+selectTab(tab: 'homework' | 'complain'|'attendance'|'notices' |'dashboard'|'Password'| 'TeacherTask' = 'homework') {
+  this.activeTab = tab;
+  if (tab === 'TeacherTask') {
+    this.loadTeacherTasks();
   }
+}
+  
 
   /* ----------------------------------------------
        LOAD STUDENT
@@ -143,7 +180,8 @@ export class StuDashboardComponent implements OnInit {
           return;
         }
         this.studentId = idVal;
-
+        this.user.userId = this.student.studentId;
+        this.user.class = this.student.class;
         // Load dependent data
         this.loadAttendanceByStudentName(this.username);
         this.loadNoticesForStudent();

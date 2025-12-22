@@ -19,7 +19,7 @@ import { StuDashboardComponent } from './components/stu-dashboard/stu-dashboard.
 
 import { TeacherComponent } from './components/teacher/teacher.component';
 import { TeacherloginComponent } from './components/teacherlogin/teacherlogin.component';
-
+import { TeacherTaskComponent } from './components/teachertask/teacher-task.component';
 import { UserComponent } from './components/User/user.component';
 import { StudentComponent } from './components/student/student.component';
 import { StudentDetailsComponent } from './components/students/student-details/student-details.component';
@@ -35,6 +35,7 @@ import { MessagesComponent } from './messages/messages.component';
 import { NoticupdatestudentComponent} from './NoticeUpdateStudent/noticupdatestudent.component';
 import { UserProfileComponent } from './components/userdetail/user-profile.component';
 import { StudentExlDataService } from './services/StudentExlDataService.service';
+import { ComplainComponent } from './components/complain/complain/complain.component';
 
 @NgModule({
   declarations: [
@@ -59,7 +60,9 @@ import { StudentExlDataService } from './services/StudentExlDataService.service'
     CardPreviewComponent,
     MessagesComponent,
     UserProfileComponent,
-    NoticupdatestudentComponent
+    NoticupdatestudentComponent,
+    ComplainComponent,
+    TeacherTaskComponent
   ],
   imports: [
     BrowserModule,

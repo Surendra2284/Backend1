@@ -407,7 +407,12 @@
       <div class="nav-item" (click)="selectTab('Homework')" [class.active]="activeTab==='Homework'">
         <span class="icon">📘</span> <span>Homework</span>
       </div>
-
+      <div class="nav-item" (click)="selectTab('Complaints')" [class.active]="activeTab==='Complaints'">
+        <span class="icon">📘</span> <span>Complaints</span>
+      </div>
+      <div class="nav-item" (click)="selectTab('TeacherTask')" [class.active]="activeTab==='TeacherTask'">
+        <span class="icon">📘</span> <span>Teacher Task</span>
+      </div>
       <div class="nav-group-title">Extras</div>
       <div class="nav-item" (click)="selectTab('photo')" [class.active]="activeTab==='photo'">
         <span class="icon">🖼</span> <span>Photos</span>
@@ -534,7 +539,14 @@
         <h2>Edit User Profile</h2>
         <app-user-profile></app-user-profile>
       </div>
-
+ <div class="card" *ngIf="activeTab === 'Complaints'">
+        <h2>Complaints</h2>
+        <app-complain></app-complain>
+      </div>
+       <div class="card" *ngIf="activeTab === 'TeacherTask'">
+        <h2>Teacher Task</h2>
+        <app-teacher-task></app-teacher-task>
+      </div>
       <!-- Homework -->
       <div class="card" *ngIf="activeTab === 'Homework'">
         <h2>Homework / Student Progress</h2>

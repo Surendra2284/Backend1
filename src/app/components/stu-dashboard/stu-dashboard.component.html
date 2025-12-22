@@ -11,6 +11,8 @@
   <div class="nav-item" (click)="selectTab('homework')" [class.active]="activeTab === 'homework'">📘 Homework</div>
   <div class="nav-item" (click)="selectTab('attendance')" [class.active]="activeTab === 'attendance'">📊 Attendance</div>
   <div class="nav-item" (click)="selectTab('notices')" [class.active]="activeTab === 'notices'">📢 Notices</div>
+  <div class="nav-item" (click)="selectTab('complain')" [class.active]="activeTab === 'complain'">📢 Add Complain</div>
+  <div class="nav-item" (click)="selectTab('TeacherTask')" [class.active]="activeTab === 'TeacherTask'">📢 Display Complains</div>
   <div class="nav-item" (click)="selectTab('Password')" [class.active]="activeTab === 'Password'">🔐 Change Password</div>
 </aside>
   
@@ -41,6 +43,15 @@
           <p><strong>Attendance Summary:</strong> {{ attendanceSummary }}</p>
         </div>
       </section>
+<!-- ===============================
+     STUDENT COMPLAINT BOX
+================================-->
+<!-- Existing nav -->
+
+
+<!-- Complaint tab -->
+
+
 
       <!-- PROGRESS CARDS -->
       <div class="progress-cards">
@@ -128,7 +139,56 @@
 
       <p class="message" *ngIf="message">{{ message }}</p>
     </section>
+<section *ngIf="activeTab === 'complain'" class="card">
+  <h3>📝 Submit Complaint / Request</h3>
 
+  <textarea
+    [(ngModel)]="complaintText"
+    placeholder="Write your complaint here..."
+    rows="4">
+    cols="50">
+  </textarea>
+
+  <button class="btn-primary"
+          (click)="submitComplaint()"
+          [disabled]="!complaintText || !complaintText.trim()">
+    Submit Complaint
+  </button>
+
+  <p class="message success" *ngIf="complaintSuccess">
+    ✔ Complaint submitted successfully
+  </p>
+</section>
+
+<!-- Teacher Task tab (skeleton, similar style) -->
+<section *ngIf="activeTab === 'TeacherTask'" class="card">
+  <h2>📋 My Complains</h2>
+
+  <table class="data-table" *ngIf="complains.length; else noTasks">
+    <thead>
+      <tr>
+        <th>Date</th>
+        <th>Complain</th>
+        <th>resolved</th>
+        <th>resolveDate</th>
+        <th>Remark</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr *ngFor="let t of complains">
+        <td>{{ t.dated }}</td>
+        <td>{{ t.Notice }}</td>
+        <td>{{ t.resolved }}</td>
+        <td>{{ t.resolveDate }}</td>
+        <td>{{ t.remark }}</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <ng-template #noTasks>
+    <p class="empty">No teacher tasks assigned.</p>
+  </ng-template>
+</section>
     <!-- =====================================================
           ATTENDANCE
     ========================================================-->
