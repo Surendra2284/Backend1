@@ -146,6 +146,35 @@ updateUser1() {
   /* ------------------------- SEARCH + SORT ------------------------- */
 
   searchText = '';
+deleteAllUnapproved(): void {
+  if (!this.unapprovedUsers.length) {
+    alert('No unapproved users to delete.');
+    return;
+  }
+
+  if (!confirm(`Delete all ${this.unapprovedUsers.length} unapproved users?`)) {
+    return;
+  }
+
+  let deleted = 0;
+
+  this.unapprovedUsers.forEach(u => {
+    this.userService.deleteUser(u._id).subscribe({
+      next: () => {
+        deleted++;
+      },
+      error: (err) => {
+        console.error('Error deleting user', u.username, err);
+      }
+    });
+  });
+
+  setTimeout(() => {
+    alert(`Deleted ${deleted} unapproved users`);
+    this.loadUsers();
+    this.loadUnapprovedUsers();
+  }, 1500);
+}
 
   searchUsers() {
     const q = this.searchText.toLowerCase().trim();

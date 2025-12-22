@@ -4,8 +4,7 @@
 
   <!-- Search + Export -->
   <div class="d-flex justify-content-between mb-3">
-    <input class="form-control w-50" placeholder="Search users..."
-           [(ngModel)]="searchText" (input)="searchUsers()">
+    
 
     <div class="d-flex gap-2">
       <button class="btn btn-outline-primary btn-sm" (click)="exportUsers()">Export Excel</button>
@@ -31,23 +30,7 @@
       </div>
     </div>
   </div>
-<div class="card p-3 mb-4">
-    <h5>Edit User</h5>
-    <div class="row g-2 mt-1">
-      <div class="col-md-3">
-        <input class="form-control" placeholder="Username" [(ngModel)]="newUser.username">
-      </div>
-      <div class="col-md-3">
-        <input class="form-control" placeholder="Password" [(ngModel)]="newUser.password">
-      </div>
-      <div class="col-md-3">
-        <input class="form-control" placeholder="Role" [(ngModel)]="newUser.role">
-      </div>
-      <div class="col-md-3">
-        <button class="btn btn-primary w-100" (click)="updateUser()">UPDATE</button>
-      </div>
-    </div>
-  </div>
+
   <!-- Bulk Import -->
   <div class="card p-3 mb-4">
     <h5>Bulk Import</h5>
@@ -79,7 +62,7 @@
     <h5>Pending Approvals</h5>
 
     <button class="btn btn-success btn-sm mb-2" (click)="approveAll()">Approve All</button>
-
+    <button class="btn btn-success btn-sm mb-2" (click)="deleteAllUnapproved()">Delete All UnapprovedUsers</button> 
     <div *ngFor="let u of unapprovedUsers" class="border p-2 mb-2 rounded">
       <b>{{ u.username }}</b> ({{ u.role }})
       <button class="btn btn-sm btn-success float-end" (click)="approveUser(u)">Approve</button>
@@ -93,6 +76,8 @@
 
   <!-- All Users Table -->
   <div class="card p-3">
+    <input class="form-control w-50" placeholder="Search users..."
+           [(ngModel)]="searchText" (input)="searchUsers()">
     <h5>All Users</h5>
 
     <table class="table table-hover">
