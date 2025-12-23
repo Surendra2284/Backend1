@@ -417,6 +417,9 @@
       <div class="nav-item" (click)="selectTab('photo')" [class.active]="activeTab==='photo'">
         <span class="icon">🖼</span> <span>Photos</span>
       </div>
+      <div class="nav-item" (click)="selectTab('TeacherNotice')" [class.active]="activeTab==='TeacherNotice'">
+        <span class="icon">📝</span> <span>Teacher Notice</span>
+      </div>
       <div class="nav-item" (click)="selectTab('Userprofile')" [class.active]="activeTab==='Userprofile'">
         <span class="icon">⚙</span> <span>User Profile</span>
       </div>
@@ -546,6 +549,43 @@
        <div class="card" *ngIf="activeTab === 'TeacherTask'">
         <h2>Teacher Task</h2>
         <app-teacher-task></app-teacher-task>
+      </div>
+      <div class="card" *ngIf="activeTab === 'TeacherNotice'">
+        <h2>Teacher Notice</h2>
+        <!-- Update All Teachers Notice Section -->
+<div *ngIf="activeTab === 'TeacherNotice'" class="notice-update-section">
+  <h3>📝 Update All Teachers Notice</h3>
+
+  <button (click)="loadAllTeachers()" class="btn btn-secondary">
+    📥 Load All Teachers
+  </button>
+
+  <p *ngIf="allTeachers.length > 0" class="info">
+    ✅ Loaded {{ allTeachers.length }} teachers
+  </p>
+
+  <div class="form-group">
+    <label>Notice Text (applies to ALL teachers):</label>
+    <textarea 
+      [(ngModel)]="noticeText" 
+      class="form-control" 
+      rows="4" 
+      placeholder="Enter notice for all teachers">
+    </textarea>
+  </div>
+
+  <button 
+    (click)="updateAllTeachersNotice()" 
+    [disabled]="allTeachers.length === 0"
+    class="btn btn-primary">
+    📤 Update All Teachers
+  </button>
+
+  <p *ngIf="message" class="message" [ngClass]="{'success': message.includes('updated')}">
+    {{ message }}
+  </p>
+</div>
+
       </div>
       <!-- Homework -->
       <div class="card" *ngIf="activeTab === 'Homework'">

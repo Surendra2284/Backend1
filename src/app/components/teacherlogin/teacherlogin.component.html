@@ -80,11 +80,19 @@
       <section class="card" *ngIf="loggedInTeacher">
         <div class="welcome-row">
           <div class="welcome-left">
-            <img src="assets/teacher.png" class="profile-photo" alt="Teacher Photo">
+           <img 
+  [src]="photoDataUrl" 
+  class="profile-photo" 
+  alt="Teacher Photo"
+  (error)="photoDataUrl=''">
+
             <div>
               <h3>Welcome, {{ displayName }} 👋</h3>
               <p class="muted">
                 Managing class <strong>{{ loggedInTeacher.Assignclass }}</strong>
+              </p>
+              <p class="muted">
+                Notice From Principal <strong>{{ loggedInTeacher.Notice }}</strong>
               </p>
             </div>
           </div>

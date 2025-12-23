@@ -2,6 +2,7 @@ import { Component, OnInit } from '@angular/core';
 import { UserService } from '../../services/user.service';
 import { AdminService } from '../../services/admin.service';
 import { NoticeService } from '../../services/notice.service';
+import { TeacherService } from '../../services/teacher.service';
 import { StudentProgress, StudentProgressService } from '../../services/student-progress.service';
 @Component({
   selector: 'app-admin',
@@ -20,10 +21,14 @@ progressFilterClass: string = '';
 progressFilterDate: string = '';
 progressFilterSubject: string = '';
  sidebarOpen = false;
+ selectedTeacherId: string = '';
+  noticeText: string = '';
+  allTeachers: any[] = [];
   constructor(
     private userService: UserService,
     private adminService: AdminService,
     private noticeService: NoticeService,
+    private teacherService: TeacherService,
     private studentProgressService: StudentProgressService
   ) {}
 
@@ -114,6 +119,27 @@ loadAllProgress() {
       error: (err) => console.error('Failed to load pending notices', err),
     });
   }
+updateTeacherNotice(): void {
+    if (!this.selectedTeacherId || !this.noticeText.trim()) {
+      alert('Please select a teacher and enter notice text');
+      return;
+    }
+
+    const patch = { notice: this.noticeText };
+
+    this.teacherService.editTeacher(this.selectedTeacherId, patch).subscribe({
+      next: () => {
+        this.message = 'Teacher notice updated successfully';
+        this.noticeText = '';
+        this.selectedTeacherId = '';
+        alert('Notice updated!');
+      },
+      error: (err) => {
+        console.error('Failed to update notice', err);
+        this.message = 'Failed to update notice';
+      }
+    });
+  }
 
   // Approve a notice
   approveNotice(noticeId: string): void {
@@ -128,4 +154,57 @@ loadAllProgress() {
       },
     });
   }
+  updateAllTeachersNotice(): void {
+  if (!this.noticeText.trim()) {
+    alert('Please enter notice text');
+    return;
+  }
+
+  if (this.allTeachers.length === 0) {
+    alert('No teachers loaded. Please load teachers first.');
+    return;
+  }
+
+  // Confirm before updating all
+  if (!confirm(`Update notice for ${this.allTeachers.length} teachers?`)) {
+    return;
+  }
+
+  const patch = { notice: this.noticeText };
+  let updateCount = 0;
+  let errorCount = 0;
+
+  // Update each teacher
+  this.allTeachers.forEach(teacher => {
+    this.teacherService.editTeacher(teacher._id, patch).subscribe({
+      next: () => {
+        updateCount++;
+        // Check if all updates completed
+        if (updateCount + errorCount === this.allTeachers.length) {
+          this.message = `Notice updated for ${updateCount} teachers${errorCount > 0 ? `, ${errorCount} failed` : ''}`;
+          this.noticeText = '';
+          alert(`Updated ${updateCount}/${this.allTeachers.length} teachers`);
+        }
+      },
+      error: (err) => {
+        errorCount++;
+        console.error(`Failed to update teacher ${teacher._id}:`, err);
+        
+        if (updateCount + errorCount === this.allTeachers.length) {
+          this.message = `Notice updated for ${updateCount} teachers, ${errorCount} failed`;
+          alert(`Updated ${updateCount}/${this.allTeachers.length} teachers`);
+        }
+      }
+    });
+  });
+}
+loadAllTeachers(): void {
+  this.teacherService.getTeachers().subscribe({
+    next: (teachers) => {
+      this.allTeachers = teachers;
+      console.log('Loaded teachers:', this.allTeachers);
+    },
+    error: (err) => console.error('Failed to load teachers', err)
+  });
+}
 }

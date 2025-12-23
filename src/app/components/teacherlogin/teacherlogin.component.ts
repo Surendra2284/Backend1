@@ -77,7 +77,7 @@ class='All';
       studentName?: string;
     };
   } = {};
-
+ photoDataUrl: string = '';
   /** Which students will receive the CURRENT homework when saving */
   selectedForCurrentHomework: { [studentId: number]: boolean } = {};
 
@@ -114,9 +114,13 @@ remark = '';
 
     this.teacherService.getTeacherByUsername(username).subscribe({
       next: (teacher) => {
+         // 👈 Check actual structure
+    
         this.loggedInTeacher = teacher;
         this.displayName = teacher?.name || 'Teacher';
         this.class = teacher?.Assignclass || '';
+        this.photoDataUrl = this.getPhotoDataUrl(teacher?.photo);
+        
         if (teacher?.Assignclass) {
           this.loadStudents();
           this.loadNotices();
@@ -151,7 +155,35 @@ toggleTeacherSidebar() {
     }
   }
 
-  
+  getPhotoDataUrl(photo: any): string {
+  if (!photo || typeof photo !== 'string') {
+    return 'assets/teacher.png';
+  }
+
+  // If it already has a data URL prefix, return as is
+  if (photo.startsWith('data:image')) {
+    return photo;
+  }
+
+  try {
+    // Decode the base64 to see if it contains a data URL
+    const decoded = atob(photo.substring(0, 100)); // decode first 100 chars
+    
+    if (decoded.startsWith('data:image')) {
+      // The base64 string contains an encoded data URL
+      // Decode and return it
+      const fullDecoded = atob(photo);
+      return fullDecoded;
+    }
+  } catch (e) {
+    // Not valid base64, continue
+  }
+
+  // Otherwise, treat it as plain base64 and add the prefix
+  return `data:image/jpeg;base64,${photo}`;
+}
+
+
   /* -------------------------------------------------------------------------- */
   /*  Students                                                                  */
   /* -------------------------------------------------------------------------- */
@@ -751,3 +783,5 @@ getStudentNameById(studentId: number): string {
     return localISO.slice(0, 10);
   }
 }
+
+

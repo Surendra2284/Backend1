@@ -475,4 +475,13 @@ h3 {
   .main {
     margin-left: 0 !important;
   }
+  .profile-photo {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  background-color: #f0f0f0;
+  border: 2px solid #ddd;
+}
+
 }

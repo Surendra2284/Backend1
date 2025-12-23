@@ -12,6 +12,7 @@ export interface Teacher {
     photo: string | ArrayBuffer; // Store photo as base64 or Buffer
     classteacher: string;
     subject :string;
+    notice?: string;
     experience: number;
   }
 

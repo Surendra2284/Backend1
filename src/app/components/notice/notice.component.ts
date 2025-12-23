@@ -173,8 +173,9 @@ loadClasses() {
     
     next: (students: any[]) => {
       this.classList = [
-        ...new Set(students.map(s => s.class).filter(Boolean))
-      ].sort();
+  ...new Set(students.map(s => s.class).filter(Boolean))
+].sort().concat(["All"]);
+
 
       console.log("Loaded class list:", this.classList);
     },
