@@ -8,8 +8,8 @@ h1,h2,h3,p{margin:0 0 10px;font-family:Georgia,serif}
 .spinner{text-align:center;padding:50px 0}
 .loader{border:6px solid #f3f3f3;border-top:6px solid #bfa34f;border-radius:50%;width:50px;height:50px;margin:0 auto 15px;animation:spin 1s linear infinite}
 @keyframes spin{0%{transform:rotate(0)}100%{transform:rotate(360deg)}}
-.card{background:#fffaf0;padding:25px;margin-bottom:40px;border-radius:12px;border-left:6px solid #bfa34f;box-shadow:0 4px 12px rgba(0,0,0,.08)}
-.dual-section{display:flex;gap:30px;flex-wrap:wrap}
+.card{background:#fffaf0;padding:25px;margin-bottom:40px;text-align:justify;text-justify: inter-word;border-radius:12px;border-left:6px solid #bfa34f;box-shadow:0 4px 12px rgba(0,0,0,.08)}
+.dual-section{display:flex;gap:30px;flex-wrap:wrap;text-align:justify;text-justify: inter-word;}
 .notice-board,.director-message{flex:1 1 45%}
 .notice-list{list-style:none;padding:0}
 .notice-item{border-bottom:1px dashed #d4af37;padding:10px 0}
