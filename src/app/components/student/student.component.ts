@@ -83,6 +83,7 @@ loadTeachers(): void {
         this.page = 1;
       },
       error: (err) => console.error(err),
+      
     });
   }
 
@@ -337,6 +338,42 @@ loadTeachers(): void {
 
     XLSX.writeFile(wb, 'class_report.xlsx');
   }
+  
+  exportstudentReport() {
+  if (!this.students || !this.students.length) {
+    alert('Nothing to export');
+    return;
+  }
+
+
+  // 🔥 Create a SAFE export structure (NO photo field)
+  const exportData = this.students.map((s, index) => ({
+    'S.No': index + 1,
+    'Student ID': s.studentId || s.studentid || '',
+    'Name': s.Name || s.name || '',
+    'Class': s.Class || s.class || '',
+    'Mobile No': s.MobileNo || s.mobileNo || '',
+    'Email': s.Email || s.email || '',
+    'Role': s.Role || s.role || '',
+    'Class Teacher': s.Classteacher || s.classteacher || '',
+    'Address': (s.Address || s.address || '').substring(0, 200),
+    'Attendance %': s.Attendance ?? s.attendance ?? 0
+  }));
+
+  const ws = XLSX.utils.json_to_sheet(exportData);
+
+  // Optional: auto column width
+  ws['!cols'] = Object.keys(exportData[0]).map(() => ({ wch: 22 }));
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, ws, 'Students');
+
+  XLSX.writeFile(
+    wb,
+    `Student_Report_${new Date().toISOString().slice(0, 10)}.xlsx`
+  );
+}
+
 
   downloadTemplate() {
     const sample = [

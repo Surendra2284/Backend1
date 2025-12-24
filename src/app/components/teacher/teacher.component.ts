@@ -6,6 +6,8 @@ import { TeacherService } from '../../services/teacher.service';
 import { Teacher } from '../models/Teacher';
 import { AuthService } from '../../shared/auth-service';
 import { Router } from '@angular/router';
+import * as XLSX from 'xlsx';
+
 
 type SortKey = 'name' | 'subject' | 'Assignclass' | 'Email';
 
@@ -343,4 +345,56 @@ export class TeacherComponent implements OnInit, OnDestroy {
   nextPage() { this.page = Math.min(this.totalPages, this.page + 1); }
 
   trackById = (_: number, t: any) => t?._id ?? t?.teacherid ?? _;
+  
+  exportToExcel(): void {
+  if (!this.sorted.length) {
+    this.showToastMessage('⚠️ No data to export', 'error');
+    return;
+  }
+
+  console.log('Exporting teachers to Excel...', this.sorted);
+
+  // IMPORTANT: DO NOT include photo / base64 fields
+  const exportData = this.sorted.map((t, index) => ({
+    'S.No': index + 1,
+    'Teacher ID': t.teacherid || '',
+    'Name': t.name || '',
+    'Email': t.Email || '',
+    'Mobile': t.mobileNo || '',
+    'Subject': t.subject || '',
+    'Assigned Class': t.Assignclass || '',
+    'Class Teacher': t.classteacher || '',
+    'Experience (Years)': t.experience ?? '',
+    'Attendance %': t.attendance ?? '',
+    'Notice': (t.Notice || '').substring(0, 200) // safety limit
+  }));
+
+  const worksheet = XLSX.utils.json_to_sheet(exportData);
+
+  // Optional: auto column width
+  worksheet['!cols'] = Object.keys(exportData[0]).map(() => ({ wch: 22 }));
+
+  const workbook: XLSX.WorkBook = {
+    Sheets: { Teachers: worksheet },
+    SheetNames: ['Teachers']
+  };
+
+  XLSX.writeFile(
+    workbook,
+    `Teacher_List_${new Date().toISOString().slice(0, 10)}.xlsx`
+  );
+
+  this.showToastMessage('📤 Teacher list exported successfully');
+}
+
+ 
+   downloadTemplate() {
+     const sample = [
+       { Username: "john", Password: "12345", Role: "Teacher" }
+     ];
+     const ws = XLSX.utils.json_to_sheet(sample);
+     const wb = XLSX.utils.book_new();
+     XLSX.utils.book_append_sheet(wb, ws, "Template");
+     XLSX.writeFile(wb, "teacher_template.xlsx");
+   }
 }

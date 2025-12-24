@@ -316,7 +316,14 @@
         </ng-template>
       </table>
     </div>
+ <div class="d-flex justify-content-between mb-3">
+    
 
+    <div class="d-flex gap-2">
+      <button class="btn btn-outline-primary btn-sm" (click)="exportToExcel()">Export Excel</button>
+      <button class="btn btn-outline-secondary btn-sm" (click)="downloadTemplate()">Template</button>
+    </div>
+  </div>
     <!-- Pager -->
     <div class="d-flex align-items-center justify-content-between mt-2">
       <div class="text-muted small">
