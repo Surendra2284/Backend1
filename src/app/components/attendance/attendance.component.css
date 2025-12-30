@@ -2,8 +2,8 @@
    SCHOOL THEME COLORS
 ============================================================ */
 :root {
-  --primary: #5a00c8;
-  --primary-light: #7e2df1;
+  --primary: #d1bee9;
+  --primary-light: #c49ff9;
   --primary-dark: #3e0091;
   --bg-light: #f7f3ff;
   --card-bg: #ffffff;
@@ -204,7 +204,7 @@
    HISTORY LIST (Mobile)
 ============================================================ */
 .mobile-history-item {
-  background: white;
+  background: rgb(230, 201, 19);
   border: 1px solid var(--border);
   padding: 12px;
   border-radius: 10px;
@@ -217,7 +217,7 @@
 ============================================================ */
 .absent-item,
 .absent-row {
-  background: #fafafa;
+  background: #ae0b0b;
   border: 1px solid #e4e4e4;
   padding: 12px;
   border-radius: 10px;
@@ -234,7 +234,7 @@
 
 .themed-table th {
   background: var(--primary-light);
-  color: white;
+  color: rgb(51, 162, 55);
   padding: 10px;
 }
 

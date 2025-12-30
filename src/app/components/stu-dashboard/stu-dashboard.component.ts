@@ -29,7 +29,7 @@ export class StuDashboardComponent implements OnInit {
   @ViewChild('studentSidebar') studentSidebar!: ElementRef;
   @ViewChild('studentMainContent') studentMainContent!: ElementRef;
 
- activeTab: 'homework' | 'complain'|'attendance'|'notices' |'dashboard'|'Password'| 'TeacherTask' = 'homework';
+ activeTab: 'homework' | 'complain'|'attendance'|'notices' |'dashboard'|'Password'|'photo'| 'TeacherTask' = 'homework';
 
   /* --------------------------
      Student Info
@@ -149,7 +149,7 @@ loadTeacherTasks() {
       main.classList.add('expanded');
     }
   }
-selectTab(tab: 'homework' | 'complain'|'attendance'|'notices' |'dashboard'|'Password'| 'TeacherTask' = 'homework') {
+selectTab(tab: 'homework' | 'complain'|'attendance'|'notices'|'photo' |'dashboard'|'Password'| 'TeacherTask' = 'homework') {
   this.activeTab = tab;
   if (tab === 'TeacherTask') {
     this.loadTeacherTasks();

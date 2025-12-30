@@ -168,11 +168,12 @@ isMobile = false;
       return;
     }
 
-    const selectedStudentIds = this.students
-      .filter((s) => s.selected)
-      .map((s) => s.studentId)
-      .filter((id) => id != null);
+    
+const selectedStudents = this.students
+  .filter((s) => s.selected && s.studentId != null);
 
+const selectedStudentIds = selectedStudents.map((s) => s.studentId);
+const selectedStudentNames = selectedStudents.map((s) => s.name);
     if (!selectedStudentIds.length) {
       this.msg('Please select at least one student.');
       return;
@@ -183,7 +184,7 @@ isMobile = false;
       studentIds: selectedStudentIds, // (string | number)[]
       className: form.className,
       teacher: form.teacher,
-      username: form.username,
+      username: selectedStudentNames.join(', '), // use selected students' names
       date: form.date, // YYYY-MM-DD
       status: this.normalizeStatus(form.status),
     };

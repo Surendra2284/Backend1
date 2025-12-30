@@ -14,6 +14,7 @@
   <div class="nav-item" (click)="selectTab('complain')" [class.active]="activeTab === 'complain'">📢 Add Complain</div>
   <div class="nav-item" (click)="selectTab('TeacherTask')" [class.active]="activeTab === 'TeacherTask'">📢 Display Complains</div>
   <div class="nav-item" (click)="selectTab('Password')" [class.active]="activeTab === 'Password'">🔐 Change Password</div>
+  <div class="nav-item" (click)="selectTab('photo')" [class.active]="activeTab === 'photo'">🖼 Photo</div>
 </aside>
   
     
@@ -238,7 +239,10 @@
       <h2>Change Password</h2>
       <app-user-profile></app-user-profile>
     </section>
-
+<section *ngIf="activeTab === 'photo'" class="card">
+      <h2>Photo Upload</h2>
+      <app-upload-photo></app-upload-photo>
+    </section>
   </main>
 </div>
 

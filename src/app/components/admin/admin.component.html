@@ -417,6 +417,9 @@
       <div class="nav-item" (click)="selectTab('photo')" [class.active]="activeTab==='photo'">
         <span class="icon">🖼</span> <span>Photos</span>
       </div>
+      <div class="nav-item" (click)="selectTab('Photo-role')" [class.active]="activeTab==='Photo-role'">
+        <span class="icon">🖼</span> <span>Role Wise Photo</span>
+      </div>
       <div class="nav-item" (click)="selectTab('TeacherNotice')" [class.active]="activeTab==='TeacherNotice'">
         <span class="icon">📝</span> <span>Teacher Notice</span>
       </div>
@@ -530,7 +533,10 @@
         <h2>Photo Upload</h2>
         <app-upload-photo></app-upload-photo>
       </div>
-
+<div class="card" *ngIf="activeTab === 'Photo-role'">
+        <h2>Photo Upload</h2>
+        <app-role-photo-manager></app-role-photo-manager>
+      </div>
       <!-- Users -->
       <div class="card" *ngIf="activeTab === 'users'">
         <h2>User Details</h2>

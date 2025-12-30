@@ -69,6 +69,11 @@
            [class.active]="activeTab === 'Password'">
         <span class="icon">🔐</span> <span>Password</span>
       </div>
+      <div class="nav-item"
+           (click)="selectTab('photo')"
+           [class.active]="activeTab === 'photo'">
+        <span class="icon">🔐</span> <span>Photo Upload</span>
+      </div>
     </aside>
 
     <!-- MAIN CONTENT -->
@@ -220,13 +225,10 @@
       <!-- NOTICES -->
       <section *ngIf="activeTab === 'notices'" class="card">
         <h2>Notices</h2>
-
         <textarea [(ngModel)]="newNotice.Notice"
                   placeholder="Write notice..."
                   class="full-textarea"></textarea>
-
         <button class="btn btn-primary" (click)="addNotice()">Post Notice</button>
-
         <table class="data-table" style="margin-top:14px;">
           <thead>
             <tr>
@@ -310,23 +312,23 @@
         <h2>Change Password</h2>
         <app-user-profile></app-user-profile>
       </section>
+      <section *ngIf="activeTab === 'photo'" class="card">
+        <h2>Add Photo For Students </h2>
+       <app-role-photo-manager></app-role-photo-manager>
+      </section>
+      
       <section *ngIf="activeTab === 'Complains'" class="card">
-        
   <h2>📋 My Complains</h2>
-
   <div *ngFor="let c of complains" class="card">
   <p><b>{{ c.username }}</b> ({{ c.class }})</p>
   <p>{{ c.Notice }}</p>
   <small>{{ c.dated | date }}</small>
-
   <p *ngIf="c.resolved">✔ Resolved on {{ c.resolveDate | date }}</p>
-
   <div *ngIf="!c.resolved">
     <input [(ngModel)]="remark" placeholder="Admin remark">
     <button (click)="resolve(c)">Resolve</button>
   </div>
 </div>
-
   <ng-template #noTasks>
     <p class="empty">No Class Complain assigned.</p>
   </ng-template>

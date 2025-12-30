@@ -28,6 +28,7 @@ import { NoticupdatestudentComponent} from './NoticeUpdateStudent/noticupdatestu
 import { UserProfileComponent } from './components/userdetail/user-profile.component';
 import { StudentExlDataService } from './services/StudentExlDataService.service';
 import { ComplainComponent } from './components/complain/complain/complain.component';
+import { RolePhotoManagerComponent } from './components/role-photo-manager/role-photo-manager.component';
 
 @NgModule({
   declarations: [
@@ -54,7 +55,8 @@ import { ComplainComponent } from './components/complain/complain/complain.compo
     UserProfileComponent,
     NoticupdatestudentComponent,
     ComplainComponent,
-    TeacherTaskComponent
+    TeacherTaskComponent,
+    RolePhotoManagerComponent
   ],
   imports: [
     BrowserModule,

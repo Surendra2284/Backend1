@@ -39,6 +39,7 @@
     "@angular/cli": "15.2.11",
     "@angular/compiler-cli": "15.2.10",
     "@schematics/angular": "15.2.11",
+    "@types/jest": "^30.0.0",
     "jasmine-core": "~4.5.0",
     "jasmine-spec-reporter": "~7.0.0",
     "karma": "~6.4.0",

@@ -20,6 +20,7 @@ import { NoticupdatestudentComponent } from './NoticeUpdateStudent/noticupdatest
 import { UserProfileComponent } from './components/userdetail/user-profile.component';
 import { TeacherTaskComponent } from './components/teachertask/teacher-task.component';
 import { ComplainComponent } from './components/complain/complain/complain.component';
+import { RolePhotoManagerComponent } from './components/role-photo-manager/role-photo-manager.component';
 const routes: Routes = [
   
  { path: '', redirectTo: '/dashboard', pathMatch: 'full' },
@@ -41,7 +42,11 @@ const routes: Routes = [
   { path: 'Userprofile', component: UserProfileComponent },
   {path:'Student',component:StudentComponent},
   { path: 'teacher-task', component: TeacherTaskComponent },
-  { path: 'complain', component: ComplainComponent }
+  { path: 'complain', component: ComplainComponent },
+  {
+    path: 'role-photo-manager',
+    component: RolePhotoManagerComponent
+  },
 ];
 
 @NgModule({

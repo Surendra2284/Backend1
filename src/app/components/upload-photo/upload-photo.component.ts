@@ -13,6 +13,7 @@ export class UploadPhotoComponent implements OnInit {
   updatePhotoId: string = '';
   updatePhotoName: string = '';
   updatePhotoFile: File | null = null;
+   Role: string = '';
   photos: { _id: string; name: string; image: string }[] = []; // List of photos from MongoDB
   Photoadd: string = '';
   api:string = PhotoUrl; // API endpoint for photos

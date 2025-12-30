@@ -1,0 +1,185 @@
+<div class="photo-manager">
+
+  <!-- Header -->
+  <div class="header">
+    <h2>Role Based Photo Gallery</h2>
+    <span class="role-badge">Logged in as: {{ currentUserRole }}</span>
+  </div>
+
+  <!-- Messages -->
+  <div *ngIf="successMessage" class="alert success">
+    {{ successMessage }}
+  </div>
+  <div *ngIf="errorMessage" class="alert error">
+    {{ errorMessage }}
+  </div>
+
+  <!-- Upload section -->
+  <div class="card upload-card">
+    <h3>Upload Photo</h3>
+
+    <form (submit)="addPhoto($event)">
+      <div class="form-row">
+        <label>Photo name</label>
+        <input
+          type="text"
+          [(ngModel)]="newPhotoName"
+          name="newPhotoName"
+          placeholder="Enter photo title" />
+      </div>
+
+      <!-- Role selection:
+           - Admin can choose any
+           - Others are fixed to their role (just show text) -->
+      <div class="form-row" *ngIf="currentUserRole === 'Admin'; else fixedRole">
+        <label>Role</label>
+        <select [(ngModel)]="newPhotoRole" name="newPhotoRole">
+          <option value="" disabled>Select role</option>
+          <option value="Admin">Admin</option>
+          <option value="Teacher">Teacher</option>
+          <option value="Student">Student</option>
+        </select>
+      </div>
+
+      <ng-template #fixedRole>
+        <div class="form-row">
+          <label>Role</label>
+          <input
+            type="text"
+            [value]="currentUserRole"
+            disabled />
+        </div>
+      </ng-template>
+
+      <div class="form-row">
+        <label>Image</label>
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onFileSelect($event, 'new')" />
+      </div>
+
+      <!-- If not admin, bind role automatically -->
+      <button
+        type="submit"
+        class="btn primary"
+        (click)="currentUserRole !== 'Admin' ? newPhotoRole = currentUserRole : null">
+        Upload
+      </button>
+    </form>
+  </div>
+
+  <!-- Admin edit panel -->
+  <div *ngIf="currentUserRole === 'Admin'" class="card edit-card">
+    <h3>Edit Selected Photo</h3>
+    <p class="hint">Click on a photo card to load it here.</p>
+
+    <form (submit)="updatePhoto($event)">
+      <div class="form-row">
+        <label>Photo ID</label>
+        <input
+          type="text"
+          [(ngModel)]="updatePhotoId"
+          name="updatePhotoId"
+          placeholder="Select a photo from list"
+          readonly />
+      </div>
+
+      <div class="form-row">
+        <label>Name</label>
+        <input
+          type="text"
+          [(ngModel)]="updatePhotoName"
+          name="updatePhotoName"
+          placeholder="Photo title" />
+      </div>
+
+      <div class="form-row">
+        <label>Role</label>
+        <select [(ngModel)]="updatePhotoRole" name="updatePhotoRole">
+          <option value="" disabled>Select role</option>
+          <option value="Admin">Admin</option>
+          <option value="Teacher">Teacher</option>
+          <option value="Student">Student</option>
+        </select>
+      </div>
+
+      <div class="form-row checkbox-row">
+        <label>
+          <input
+            type="checkbox"
+            [(ngModel)]="updatePhotoApproved"
+            name="updatePhotoApproved" />
+          Approved
+        </label>
+      </div>
+
+      <div class="form-row">
+        <label>Replace image (optional)</label>
+        <input
+          type="file"
+          accept="image/*"
+          (change)="onFileSelect($event, 'update')" />
+      </div>
+
+      <div class="actions">
+        <button type="submit" class="btn secondary" [disabled]="!updatePhotoId">
+          Update
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- Gallery header -->
+  <div class="gallery-header">
+    <h3>Photos</h3>
+    <button class="btn flat" (click)="loadPhotos()">Refresh</button>
+  </div>
+
+  <!-- Gallery grid -->
+  <div class="gallery-grid" *ngIf="photos && photos.length; else noPhotos">
+    <div
+      class="photo-card"
+      *ngFor="let photo of photos"
+      (click)="currentUserRole === 'Admin' ? selectPhotoForEdit(photo) : null">
+
+      <div class="image-wrapper">
+        <img [src]="photo.image" [alt]="photo.name" />
+      </div>
+
+      <div class="photo-info">
+        <div class="photo-title">{{ photo.name }}</div>
+        <div class="photo-meta">
+          <span class="badge role-badge-small">{{ photo.Role }}</span>
+
+          <span
+            class="badge status-badge"
+            [ngClass]="photo.isApproved ? 'approved' : 'pending'">
+            {{ photo.isApproved ? 'Approved' : 'Pending' }}
+          </span>
+        </div>
+      </div>
+
+      <!-- Admin actions per card -->
+      <div class="card-actions" *ngIf="currentUserRole === 'Admin'">
+        <button
+          type="button"
+          class="btn tiny"
+          (click)="toggleApproval(photo); $event.stopPropagation()">
+          {{ photo.isApproved ? 'Unapprove' : 'Approve' }}
+        </button>
+        <button
+          type="button"
+          class="btn tiny danger"
+          (click)="deletePhoto(photo._id); $event.stopPropagation()">
+          Delete
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <ng-template #noPhotos>
+    <p class="empty-text">No photos found for this role.</p>
+  </ng-template>
+
+</div>
