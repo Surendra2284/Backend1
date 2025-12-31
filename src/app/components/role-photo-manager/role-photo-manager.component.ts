@@ -44,11 +44,12 @@ export class RolePhotoManagerComponent implements OnInit {
   constructor(private userService: UserService,private http: HttpClient) {}
 
   ngOnInit() {
-    this.loadPhotos();
+    
     const userDetails = this.userService.getUserDetails();
     this.role = userDetails.role;
     this.username = userDetails.username;
     this.currentUserRole = this.role as UserRole;
+    this.loadPhotos();
   }
 
   // Handle file selection
